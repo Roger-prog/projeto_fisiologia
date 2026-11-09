@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="438" viewBox="0 0 720 438"
+  role="img" aria-labelledby="titulo descricao" xml:lang="pt-BR">
+  <title id="titulo">Inspiração e expiração em repouso</title>
+  <desc id="descricao">Na inspiração, o diafragma se contrai e desce. Os pulmões aumentam de volume, a pressão intrapleural cai e o ar entra porque a pressão alveolar fica abaixo da atmosférica. Na expiração tranquila, o diafragma relaxa e sobe. Os pulmões diminuem de volume, a pressão intrapleural fica menos negativa e o ar sai porque a pressão alveolar supera a atmosférica.</desc>
+  <metadata>Esquema original do FisioAcessível. Licença pública de reutilização não definida.</metadata>
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12"
+      markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 10 5 0 10Z" fill="#214657"/>
+    </marker>
+  </defs>
+  <rect x="1" y="1" width="718" height="436" rx="22" fill="#f7fbfc" stroke="#c8dbe2"/>
+  <rect x="17" y="18" width="335" height="365" rx="16" fill="#e8f5ee" stroke="#a9c8b8" stroke-width="2"/>
+  <rect x="368" y="18" width="335" height="365" rx="16" fill="#ebf3f9" stroke="#abc7d9" stroke-width="2"/>
+  <g transform="translate(17)" font-family="system-ui, sans-serif" text-anchor="middle" fill="#17354a">
+    <text x="168" y="57" font-size="28" font-weight="700">Inspiração</text>
+    <text x="168" y="86" font-size="20" font-weight="600">O ar entra</text>
+    <g stroke="#36755d" stroke-width="3" stroke-linejoin="round" fill="#bce1d0">
+      <path d="M143 135c-28-12-65 14-79 57-6 19-8 38 1 47 10 10 65 7 79-10 10-13 11-87-1-94Z"/>
+      <path d="M193 135c28-12 65 14 79 57 6 19 8 38-1 47-10 10-65 7-79-10-10-13-11-87 1-94Z"/>
+    </g>
+    <path d="M168 132v31l-37 28m37-28 37 28" fill="none" stroke="#36755d" stroke-width="7" stroke-linecap="round"/>
+    <path d="M64 271q104-22 208 0" fill="none" stroke="#214657" stroke-width="4" stroke-linecap="round"/>
+    <g fill="none" stroke="#214657" stroke-width="3" stroke-linecap="round" marker-end="url(#seta)">
+      <path d="M168 102v43"/>
+      <path d="M294 237v33"/>
+    </g>
+    <text x="168" y="308" font-size="22" font-weight="700">Diafragma desce</text>
+    <text x="168" y="337" font-size="20">Alveolar abaixo da atmosférica</text>
+    <text x="168" y="363" font-size="20">Intrapleural mais negativa</text>
+  </g>
+  <g transform="translate(368)" font-family="system-ui, sans-serif" text-anchor="middle" fill="#17354a">
+    <text x="168" y="57" font-size="28" font-weight="700">Expiração</text>
+    <text x="168" y="86" font-size="20" font-weight="600">O ar sai</text>
+    <g stroke="#396988" stroke-width="3" stroke-linejoin="round" fill="#c7e1ef">
+      <path d="M143 139c-23-10-55 13-66 48-6 20-6 36 2 42 10 8 54-2 65-17 10-13 11-66-1-73Z"/>
+      <path d="M193 139c23-10 55 13 66 48 6 20 6 36-2 42-10 8-54-2-65-17-10-13-11-66 1-73Z"/>
+    </g>
+    <path d="M168 132v31l-34 25m34-25 34 25" fill="none" stroke="#396988" stroke-width="7" stroke-linecap="round"/>
+    <path d="M64 271q104-96 208 0" fill="none" stroke="#214657" stroke-width="4" stroke-linecap="round"/>
+    <g fill="none" stroke="#214657" stroke-width="3" stroke-linecap="round" marker-end="url(#seta)">
+      <path d="M168 145v-43"/>
+      <path d="M294 270v-33"/>
+    </g>
+    <text x="168" y="308" font-size="22" font-weight="700">Diafragma sobe</text>
+    <text x="168" y="337" font-size="20">Alveolar acima da atmosférica</text>
+    <text x="168" y="363" font-size="20">Intrapleural menos negativa</text>
+  </g>
+  <text x="360" y="415" font-family="system-ui, sans-serif" font-size="19" text-anchor="middle"
+    fill="#17354a">No fim de cada fase, as pressões alveolar e atmosférica se igualam.</text>
+</svg>

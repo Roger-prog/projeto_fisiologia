@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="444" viewBox="0 0 720 444"
+  role="img" aria-labelledby="titulo descricao" xml:lang="pt-BR">
+  <title id="titulo">Circuitos pulmonar e sistêmico</title>
+  <desc id="descricao">O ventrículo direito bombeia sangue pelas artérias pulmonares até os capilares dos pulmões. O sangue retorna pelas veias pulmonares ao átrio esquerdo e passa ao ventrículo esquerdo. A aorta e as artérias sistêmicas levam sangue aos capilares dos tecidos. As veias sistêmicas levam sangue de volta ao átrio direito, de onde passa ao ventrículo direito.</desc>
+  <metadata>Esquema original do FisioAcessível. Licença pública de reutilização não definida.</metadata>
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10"
+      markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0 0 10 5 0 10Z" fill="#2b4a60"/>
+    </marker>
+  </defs>
+  <rect x="1" y="1" width="718" height="442" rx="22" fill="#f7fbfc" stroke="#c8dbe2"/>
+  <g fill="none" stroke="#2b4a60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+    marker-end="url(#seta)">
+    <path d="M277 264h23q12 0 12-12V132"/>
+    <path d="M488 83h51q12 0 12 12v83"/>
+    <path d="M551 287v74q0 12-12 12h-46"/>
+    <path d="M232 373H45q-12 0-12-12V219q0-12 12-12h9"/>
+  </g>
+  <rect x="232" y="41" width="256" height="84" rx="15" fill="#e4f4ec" stroke="#36755d" stroke-width="2"/>
+  <rect x="61" y="186" width="216" height="101" rx="15" fill="#e9f2f9" stroke="#396988" stroke-width="2"/>
+  <rect x="443" y="186" width="216" height="101" rx="15" fill="#e9f2f9" stroke="#396988" stroke-width="2"/>
+  <rect x="232" y="331" width="256" height="84" rx="15" fill="#e4f4ec" stroke="#36755d" stroke-width="2"/>
+  <g fill="none" stroke="#2b4a60" stroke-width="2.5" marker-end="url(#seta)">
+    <path d="M169 223v22"/>
+    <path d="M551 223v22"/>
+  </g>
+  <g font-family="system-ui, sans-serif" text-anchor="middle" fill="#17354a">
+    <text x="360" y="76" font-size="23" font-weight="700">Capilares pulmonares</text>
+    <text x="360" y="105" font-size="20">O₂ entra no sangue</text>
+    <text x="169" y="214" font-size="21" font-weight="650">Átrio direito</text>
+    <text x="169" y="271" font-size="21" font-weight="650">Ventrículo direito</text>
+    <text x="551" y="214" font-size="21" font-weight="650">Átrio esquerdo</text>
+    <text x="551" y="271" font-size="21" font-weight="650">Ventrículo esquerdo</text>
+    <text x="360" y="242" font-size="22" font-weight="650">Coração</text>
+    <text x="360" y="366" font-size="23" font-weight="700">Capilares dos tecidos</text>
+    <text x="360" y="395" font-size="20">O₂ vai aos tecidos</text>
+  </g>
+  <g font-family="system-ui, sans-serif" font-size="20" font-weight="600" fill="#24445a">
+    <text x="291" y="149" text-anchor="end">Artérias<tspan x="291" dy="24">pulmonares</tspan></text>
+    <text x="570" y="133">Veias<tspan x="570" dy="24">pulmonares</tspan></text>
+    <text x="570" y="325">Aorta e<tspan x="570" dy="24">artérias</tspan></text>
+    <text x="53" y="325">Veias<tspan x="53" dy="24">sistêmicas</tspan></text>
+  </g>
+</svg>
