@@ -6,15 +6,18 @@ import { servirManifestoSemClipes } from "./fixtures/narracao";
 for (const aula of lessons) {
   const rota = `/aulas/${aula.id}/`;
 
-  test(`carrega a figura com texto alternativo em ${aula.title}`, async ({ page }) => {
-    await page.goto(rota);
-    const figura = page.getByRole("img", { name: aula.figure.alt, exact: true });
-    await expect(figura).toBeVisible();
-    await figura.scrollIntoViewIfNeeded();
-    await expect.poll(() => figura.evaluate((elemento) => (elemento as HTMLImageElement).naturalWidth))
-      .toBeGreaterThan(0);
-    await expect(page.getByText(aula.figure.description, { exact: true })).toBeVisible();
-  });
+  const figuraDaAula = aula.figure;
+  if (figuraDaAula) {
+    test(`carrega a figura com texto alternativo em ${aula.title}`, async ({ page }) => {
+      await page.goto(rota);
+      const figura = page.getByRole("img", { name: figuraDaAula.alt, exact: true });
+      await expect(figura).toBeVisible();
+      await figura.scrollIntoViewIfNeeded();
+      await expect.poll(() => figura.evaluate((elemento) => (elemento as HTMLImageElement).naturalWidth))
+        .toBeGreaterThan(0);
+      await expect(page.getByText(figuraDaAula.description, { exact: true })).toBeVisible();
+    });
+  }
 
   test(`responde, revisita e refaz os exercícios de ${aula.title}`, async ({ page }) => {
     await page.goto(rota);
@@ -97,12 +100,15 @@ test.describe("sem JavaScript e sem imagens", () => {
       await page.goto(`/aulas/${aula.id}/`);
 
       const artigo = page.getByRole("article", { name: aula.title });
-      const figura = artigo.getByRole("img", { name: aula.figure.alt, exact: true });
-      await figura.scrollIntoViewIfNeeded();
-      await expect.poll(() => figura.evaluate((elemento) => {
-        const imagem = elemento as HTMLImageElement;
-        return imagem.complete && imagem.naturalWidth === 0;
-      })).toBe(true);
+      const figuraDaAula = aula.figure;
+      if (figuraDaAula) {
+        const figura = artigo.getByRole("img", { name: figuraDaAula.alt, exact: true });
+        await figura.scrollIntoViewIfNeeded();
+        await expect.poll(() => figura.evaluate((elemento) => {
+          const imagem = elemento as HTMLImageElement;
+          return imagem.complete && imagem.naturalWidth === 0;
+        })).toBe(true);
+      }
 
       await expect(artigo.getByText(aula.objective, { exact: true })).toBeVisible();
       await expect(artigo.getByText(aula.introduction, { exact: true })).toBeVisible();
@@ -110,7 +116,9 @@ test.describe("sem JavaScript e sem imagens", () => {
         await expect(artigo.getByRole("heading", { name: secao.title, exact: true })).toBeVisible();
         await expect(artigo.getByText(secao.paragraphs[0], { exact: true })).toBeVisible();
       }
-      await expect(artigo.getByText(aula.figure.description, { exact: true })).toBeVisible();
+      if (figuraDaAula) {
+        await expect(artigo.getByText(figuraDaAula.description, { exact: true })).toBeVisible();
+      }
       await expect(artigo.getByText(aula.summary[0], { exact: true })).toBeVisible();
       await expect(artigo.getByRole("heading", { name: "Referências da aula", exact: true })).toBeVisible();
     });

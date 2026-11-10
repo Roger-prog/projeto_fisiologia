@@ -4,7 +4,16 @@ import { lessons } from "../src/data";
 import { getLessonSteps, guidedLessonHref } from "../src/lib/lesson-steps";
 import { servirManifestoSemClipes } from "./fixtures/narracao";
 
-const lesson = lessons.find(({ id }) => id === "mecanica-respiratoria")!;
+const lesson = lessons.find(({ id }) => id === "mecanica-respiratoria");
+if (!lesson) {
+  throw new Error("A aula mecanica-respiratoria não foi encontrada.");
+}
+
+const figure = lesson.figure;
+if (!figure) {
+  throw new Error("A aula mecanica-respiratoria precisa de uma figura para este teste.");
+}
+
 const fullLesson = `/aulas/${lesson.id}/`;
 const steps = getLessonSteps(lesson);
 const [introduction, ventilation, pressures] = steps;
@@ -129,13 +138,13 @@ test.describe("etapa em tela estreita", () => {
   test.use({ viewport: { width: 320, height: 720 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
 
   test("mantém descrição sequencial e passa no axe com texto extra grande", async ({ page }) => {
-    await page.goto(stepPath(lesson.figure.sectionId));
+    await page.goto(stepPath(figure.sectionId));
     const html = page.locator("html");
     await page.getByRole("banner").getByText("Acessibilidade", { exact: true }).click();
     await page.getByLabel("Tamanho do texto", { exact: true }).selectOption({ label: "Extra grande" });
     await expect(html).toHaveAttribute("data-text-size", "extra-large");
     const description = page.getByRole("list", { name: "Descrição sequencial do diagrama" });
-    await expect(description.getByRole("listitem")).toHaveCount(lesson.figure.descriptionSteps.length);
+    await expect(description.getByRole("listitem")).toHaveCount(figure.descriptionSteps.length);
     expect(await html.evaluate((element) => element.scrollWidth)).toBeLessThanOrEqual(320);
     const { violations } = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
