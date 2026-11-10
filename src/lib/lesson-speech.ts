@@ -15,7 +15,7 @@ function getStepNarration(step: LessonStep, figure?: Lesson["figure"]) {
 }
 
 export function getStepSpeechText(lesson: Lesson, step: LessonStep) {
-  const figure = step.id === lesson.figure.sectionId ? lesson.figure : undefined;
+  const figure = step.id === lesson.figure?.sectionId ? lesson.figure : undefined;
   return getStepNarration(step, figure).join("\n");
 }
 
@@ -25,8 +25,7 @@ export function getLessonSpeechText(lesson: Lesson) {
   return [
     `${lesson.title}.`,
     ...steps.slice(0, -1).flatMap((step) => getStepNarration(step)),
-    `Descrição do esquema. ${lesson.figure.title}.`,
-    ...lesson.figure.descriptionSteps,
+    ...(lesson.figure ? [`Descrição do esquema. ${lesson.figure.title}.`, ...lesson.figure.descriptionSteps] : []),
     "Termos importantes.",
     ...lesson.terms.map(({ term, definition }) => `${term}. ${definition}`),
     ...getStepNarration(summary),

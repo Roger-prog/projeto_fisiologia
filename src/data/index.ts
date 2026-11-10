@@ -1,3 +1,5 @@
+import { musculoCardiacoLesson } from "./lessons/musculo-cardiaco";
+import { cicloCardiacoLesson } from "./lessons/ciclo-cardiaco";
 import { cardiovascularLesson } from "./lessons/cardiovascular";
 import { respiratoryLesson } from "./lessons/respiratory";
 import { modules } from "./modules";
@@ -8,7 +10,7 @@ export * from "./types";
 export { figureCredits } from "./credits";
 export { modules, references };
 
-export const lessons: readonly Lesson[] = [cardiovascularLesson, respiratoryLesson];
+export const lessons: readonly Lesson[] = [cardiovascularLesson, musculoCardiacoLesson, cicloCardiacoLesson, respiratoryLesson];
 
 export function getLesson(id: string) {
   return lessons.find((lesson) => lesson.id === id);

@@ -64,7 +64,7 @@ export default async function GuidedLessonPage({ params }: PageProps) {
             <LessonStepContent step={step} />
             {simulation && <LessonSimulationLink simulation={simulation} />}
           </div>
-          {lesson.figure.sectionId === step.id && (
+          {lesson.figure && lesson.figure.sectionId === step.id && (
             <section className="lesson-section" aria-labelledby="diagrama-etapa">
               <h2 id="diagrama-etapa">Diagrama</h2>
               <LessonDiagram figure={lesson.figure} />

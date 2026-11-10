@@ -67,7 +67,7 @@ export interface Lesson {
   introductionSummary: string;
   sections: readonly LessonSection[];
   terms: readonly LessonTerm[];
-  figure: LessonFigure;
+  figure?: LessonFigure;
   simulation?: { sectionId: string; href: string; label: string };
   summary: readonly string[];
   questions: readonly Question[];

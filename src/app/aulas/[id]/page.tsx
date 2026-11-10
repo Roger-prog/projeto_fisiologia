@@ -49,6 +49,7 @@ export default async function LessonPage({ params }: PageProps) {
   const [introduction] = steps;
   const explanationSteps = steps.filter((step) => step.kind === "section");
   const narration = getLessonNarrationClips(lesson);
+  const visibleOutline = lesson.figure ? outline : outline.filter(({ id }) => id !== "diagrama");
 
   return (
     <div className="site-shell inner-page lesson-page">
@@ -63,7 +64,7 @@ export default async function LessonPage({ params }: PageProps) {
 
       <article aria-labelledby="titulo-aula">
         <header className="lesson-header">
-          <p className="eyebrow"><BookOpen size={17} aria-hidden="true" />Aula piloto · {module.title}</p>
+          <p className="eyebrow"><BookOpen size={17} aria-hidden="true" />Aula · {module.title}</p>
           <h1 id="titulo-aula">{lesson.title}</h1>
           <div className="objective">
             <h2>Objetivo de aprendizagem</h2>
@@ -76,7 +77,7 @@ export default async function LessonPage({ params }: PageProps) {
           <nav className="lesson-outline" aria-labelledby="nesta-aula">
             <h2 id="nesta-aula">Nesta aula</h2>
             <ul role="list">
-              {outline.map(({ id, label }) => (
+              {visibleOutline.map(({ id, label }) => (
                 <li key={id}>
                   <a href={`#${id}`}>{label}</a>
                   {id === "explicacao" && (
@@ -129,10 +130,12 @@ export default async function LessonPage({ params }: PageProps) {
               ))}
             </section>
 
-            <section className="lesson-section" aria-labelledby="diagrama">
-              <h2 id="diagrama" tabIndex={-1}>Diagrama</h2>
-              <LessonDiagram figure={lesson.figure} />
-            </section>
+            {lesson.figure && (
+              <section className="lesson-section" aria-labelledby="diagrama">
+                <h2 id="diagrama" tabIndex={-1}>Diagrama</h2>
+                <LessonDiagram figure={lesson.figure} />
+              </section>
+            )}
 
             <section className="lesson-section" aria-labelledby="termos">
               <h2 id="termos" tabIndex={-1}>Termos importantes</h2>

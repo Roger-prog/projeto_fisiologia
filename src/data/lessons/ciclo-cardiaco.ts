@@ -1,0 +1,183 @@
+import type { Lesson } from "../types";
+
+export const cicloCardiacoLesson: Lesson = {
+  id: "ciclo-cardiaco",
+  moduleId: "cardiovascular",
+  title: "Ciclo cardíaco",
+  objective: "Descrever as fases de enchimento e ejeção ventricular, explicar a abertura e o fechamento das valvas a partir das pressões e calcular volume sistólico e fração de ejeção.",
+  introduction: "A cada batimento, os ventrículos primeiro recebem sangue e depois o ejetam. As valvas não abrem por uma ordem elétrica direta: elas respondem às diferenças de pressão entre as câmaras e os vasos. Vamos acompanhar um ciclo do ventrículo esquerdo, relacionando pressão, volume e fluxo.",
+  introductionSummary: "No ciclo cardíaco, as mudanças de pressão abrem ou fecham valvas; isso determina quando o ventrículo enche e quando ejeta sangue.",
+  sections: [
+    {
+      id: "sistole-diastole",
+      title: "Sístole, diástole e sequência do batimento",
+      objective: "Diferenciar contração e relaxamento das fases de enchimento e ejeção.",
+      paragraphs: [
+        "O ciclo cardíaco reúne os eventos de um batimento até o início do seguinte. Sístole ventricular é o período associado à contração e ao desenvolvimento de pressão ventricular. Diástole ventricular é o período de relaxamento e enchimento. O funcionamento do coração depende da alternância entre essas fases.",
+        "Vamos acompanhar o ventrículo esquerdo. Na diástole, a pressão ventricular geralmente está abaixo da pressão no átrio esquerdo, permitindo a abertura da valva mitral e o enchimento. Quando o ventrículo começa a contrair, sua pressão sobe. Depois, se ela supera a pressão na aorta, a valva aórtica abre e ocorre ejeção.",
+        "O ventrículo direito segue uma sequência semelhante, mas trabalha com pressões menores por estar ligado à circulação pulmonar. Os dois ventrículos normalmente ejetam volumes aproximadamente iguais ao longo do tempo, embora as pressões sejam diferentes.",
+      ],
+      summary: "A sístole ventricular produz pressão e ejeção; a diástole permite relaxamento e enchimento.",
+    },
+    {
+      id: "enchimento",
+      title: "Enchimento ventricular",
+      objective: "Explicar a passagem do sangue do átrio para o ventrículo durante a diástole.",
+      paragraphs: [
+        "Após a fase inicial de relaxamento, a pressão do ventrículo esquerdo fica abaixo da pressão do átrio esquerdo. A valva mitral abre e o sangue flui para o ventrículo. Uma parcela importante do enchimento em repouso ocorre de forma passiva, sem exigir contração atrial naquele instante.",
+        "À medida que as pressões se aproximam, o enchimento fica mais lento. Perto do fim da diástole, a contração atrial acrescenta sangue ao ventrículo. Essa contribuição pode se tornar particularmente relevante quando o relaxamento ventricular está prejudicado ou quando a frequência cardíaca aumenta.",
+        "O volume presente no ventrículo ao final do enchimento recebe o nome de volume diastólico final, ou VDF. Ele é uma das grandezas utilizadas para avaliar o bombeamento cardíaco.",
+      ],
+      summary: "Com a mitral aberta e a aórtica fechada, o ventrículo enche; ao fim da diástole, seu volume é o VDF.",
+    },
+    {
+      id: "contracao-isovolumetrica",
+      title: "Contração isovolumétrica",
+      objective: "Explicar por que a pressão ventricular sobe sem alteração imediata de volume.",
+      paragraphs: [
+        "A ativação elétrica ventricular antecede o desenvolvimento da força. Quando a pressão do ventrículo esquerdo supera a do átrio esquerdo, a valva mitral se fecha. A valva aórtica ainda permanece fechada porque a pressão ventricular não superou a pressão aórtica.",
+        "Durante esse intervalo, as duas valvas estão fechadas. O ventrículo desenvolve tensão e a pressão aumenta, mas praticamente não entra nem sai sangue; por isso, o volume permanece aproximadamente constante. Essa é a contração isovolumétrica.",
+        "O fechamento das valvas atrioventriculares, mitral e tricúspide, está associado ao primeiro som cardíaco, chamado de B1. O som não corresponde à abertura das valvas de saída.",
+      ],
+      summary: "As valvas de entrada e saída estão fechadas durante a contração isovolumétrica: a pressão sobe, mas o volume não muda de forma importante.",
+    },
+    {
+      id: "ejecao",
+      title: "Ejeção ventricular",
+      objective: "Reconhecer o momento de abertura da valva aórtica e definir volume sistólico.",
+      paragraphs: [
+        "Quando a pressão do ventrículo esquerdo supera a pressão na aorta, a valva aórtica se abre e o sangue é ejetado. O volume ventricular diminui durante essa fase. A ejeção começa de maneira mais rápida e depois desacelera conforme a força desenvolvida e o gradiente de pressão se modificam.",
+        "Ao final da ejeção, uma parte do sangue permanece no ventrículo. Esse volume residual é o volume sistólico final, ou VSF. A quantidade ejetada em um batimento, chamada de volume sistólico, é a diferença entre o volume diastólico final e o volume sistólico final.",
+      ],
+      summary: "A valva aórtica abre quando a pressão ventricular supera a aórtica; o volume sistólico é VDF menos VSF.",
+      example: {
+        title: "Cálculo do volume sistólico",
+        formula: { visual: "VS = VDF − VSF", spoken: "Volume sistólico é igual ao volume diastólico final menos o volume sistólico final." },
+        paragraphs: [
+          "Considere um exemplo em que o ventrículo contém 120 mililitros ao final da diástole e 50 mililitros ao final da sístole. O volume sistólico é 120 menos 50, ou 70 mililitros por batimento.",
+          "Esses valores são ilustrativos. O volume sistólico real varia conforme enchimento, contratilidade e condições de ejeção.",
+        ],
+      },
+    },
+    {
+      id: "relaxamento-isovolumetrico",
+      title: "Relaxamento isovolumétrico",
+      objective: "Explicar o fechamento da valva aórtica e a transição para novo enchimento.",
+      paragraphs: [
+        "Depois da ejeção, o músculo ventricular começa a relaxar e a pressão ventricular cai. Quando a pressão na aorta supera a pressão no ventrículo esquerdo, a valva aórtica se fecha. O fechamento das valvas semilunares, aórtica e pulmonar, está associado ao segundo som cardíaco, ou B2.",
+        "Nesse momento, a valva mitral ainda está fechada. Durante o relaxamento isovolumétrico, as duas valvas permanecem fechadas: a pressão ventricular cai e o volume se mantém próximo ao volume sistólico final.",
+        "Quando a pressão ventricular fica abaixo da pressão do átrio esquerdo, a valva mitral se abre e começa um novo enchimento. Assim, o término de uma fase é determinado pelas pressões que se modificam no coração.",
+      ],
+      summary: "A valva aórtica fecha, a pressão ventricular cai com as duas valvas fechadas e a mitral só abre quando a pressão atrial supera a ventricular.",
+    },
+    {
+      id: "fracao-ejecao",
+      title: "Fração de ejeção e relação com o eletrocardiograma",
+      objective: "Calcular a fração de ejeção e distinguir eventos elétricos e mecânicos.",
+      paragraphs: [
+        "A fração de ejeção expressa qual proporção do volume diastólico final foi ejetada na sístole. É calculada dividindo o volume sistólico pelo volume diastólico final e multiplicando por 100 para expressar o resultado em porcentagem. Ela é uma medida de desempenho sistólico, mas não descreve isoladamente toda a função do coração.",
+        "No eletrocardiograma, o complexo QRS corresponde principalmente à despolarização ventricular e precede a contração mecânica. A onda T está relacionada à repolarização ventricular e ocorre próximo ao período de relaxamento. Portanto, ondas elétricas, sons cardíacos e mudanças de pressão não são o mesmo evento.",
+        "Quando a frequência cardíaca aumenta bastante, o tempo disponível para a diástole tende a diminuir proporcionalmente mais. Isso pode reduzir o tempo de enchimento ventricular, razão pela qual a frequência e a função de relaxamento influenciam o desempenho cardíaco.",
+      ],
+      summary: "A fração de ejeção é a porcentagem do VDF ejetada a cada batimento; o ECG indica eventos elétricos que antecedem alterações mecânicas.",
+      example: {
+        title: "Cálculo da fração de ejeção",
+        formula: { visual: "FE = (VS ÷ VDF) × 100%", spoken: "Fração de ejeção é volume sistólico dividido por volume diastólico final, vezes cem por cento." },
+        paragraphs: [
+          "Usando os valores do exemplo anterior, o volume sistólico é 70 mililitros e o volume diastólico final é 120 mililitros. A fração de ejeção é 70 dividido por 120, multiplicado por 100: aproximadamente 58,3 por cento.",
+          "Uma fração de ejeção isolada não permite concluir, sozinha, como estão o enchimento, a pressão arterial ou a oferta de sangue aos tecidos.",
+        ],
+      },
+    },
+  ],
+  terms: [
+    { term: "Sístole", definition: "Período de contração e desenvolvimento de pressão, associado à ejeção ventricular." },
+    { term: "Diástole", definition: "Período de relaxamento e enchimento dos ventrículos." },
+    { term: "Contração isovolumétrica", definition: "Aumento da pressão ventricular com as valvas de entrada e saída fechadas e volume aproximadamente constante." },
+    { term: "Relaxamento isovolumétrico", definition: "Queda da pressão ventricular com ambas as valvas fechadas, antes do novo enchimento." },
+    { term: "Volume diastólico final (VDF)", definition: "Volume de sangue no ventrículo ao final da diástole." },
+    { term: "Volume sistólico final (VSF)", definition: "Volume que permanece no ventrículo ao final da ejeção." },
+    { term: "Volume sistólico (VS)", definition: "Volume ejetado a cada batimento: VDF menos VSF." },
+    { term: "Fração de ejeção (FE)", definition: "Porcentagem do VDF ejetada durante a sístole." },
+  ],
+  summary: [
+    "A sequência ventricular inclui enchimento, contração isovolumétrica, ejeção e relaxamento isovolumétrico.",
+    "As valvas abrem e fecham de acordo com diferenças de pressão, e não por comandos elétricos diretos.",
+    "Na contração e no relaxamento isovolumétricos, as valvas estão fechadas e o volume praticamente não muda.",
+    "Volume sistólico é VDF menos VSF; fração de ejeção é VS dividido por VDF, multiplicado por 100.",
+    "O primeiro e o segundo sons cardíacos estão associados ao fechamento de valvas; o ECG registra atividade elétrica.",
+  ],
+  questions: [
+    {
+      id: "cc-mitral", sectionId: "enchimento", concept: "Enchimento ventricular",
+      prompt: "Em condições normais, quando a valva mitral se abre para permitir o enchimento ventricular?",
+      options: [
+        { id: "a", text: "Quando a pressão ventricular fica abaixo da pressão atrial esquerda." },
+        { id: "b", text: "Quando a pressão ventricular supera a pressão aórtica." },
+        { id: "c", text: "Quando a pressão ventricular supera a pressão atrial esquerda." },
+        { id: "d", text: "Sempre que o complexo QRS aparece, independentemente das pressões." },
+      ],
+      correctOptionId: "a",
+      explanation: "O fluxo do átrio para o ventrículo exige que a pressão atrial supere a ventricular, permitindo a abertura da mitral.",
+      supplement: "A pressão aórtica determina a abertura ou o fechamento da valva aórtica, não o enchimento direto pela mitral.",
+    },
+    {
+      id: "cc-isovolumetrica", sectionId: "contracao-isovolumetrica", concept: "Contração isovolumétrica",
+      prompt: "Na contração isovolumétrica do ventrículo esquerdo, o que acontece?",
+      options: [
+        { id: "a", text: "A mitral está aberta e o ventrículo enche rapidamente." },
+        { id: "b", text: "Ambas as valvas estão fechadas e a pressão ventricular aumenta." },
+        { id: "c", text: "A aórtica está aberta e ocorre ejeção rápida." },
+        { id: "d", text: "Ambas as valvas estão abertas e o volume aumenta." },
+      ],
+      correctOptionId: "b",
+      explanation: "Sem entrada ou saída importante de sangue, o volume se mantém aproximadamente constante enquanto a contração eleva a pressão.",
+      supplement: "A ejeção só começa quando a pressão ventricular supera a pressão na aorta.",
+    },
+    {
+      id: "cc-volume", sectionId: "ejecao", concept: "Cálculo do volume sistólico",
+      prompt: "Se o VDF é 130 mililitros e o VSF é 60 mililitros, qual é o volume sistólico?",
+      options: [
+        { id: "a", text: "60 mililitros." },
+        { id: "b", text: "130 mililitros." },
+        { id: "c", text: "70 mililitros." },
+        { id: "d", text: "190 mililitros." },
+      ],
+      correctOptionId: "c",
+      explanation: "Volume sistólico é volume diastólico final menos volume sistólico final: 130 menos 60 é igual a 70 mililitros.",
+      supplement: "O VSF é o sangue que permaneceu no ventrículo depois da ejeção, não o sangue ejetado.",
+    },
+    {
+      id: "cc-segundo-som", sectionId: "relaxamento-isovolumetrico", concept: "Sons cardíacos",
+      prompt: "O segundo som cardíaco, chamado B2, está associado principalmente a qual evento?",
+      options: [
+        { id: "a", text: "Abertura da valva mitral." },
+        { id: "b", text: "Fechamento das valvas atrioventriculares." },
+        { id: "c", text: "Contração dos átrios." },
+        { id: "d", text: "Fechamento das valvas aórtica e pulmonar." },
+      ],
+      correctOptionId: "d",
+      explanation: "O segundo som decorre principalmente do fechamento das valvas semilunares no fim da ejeção ventricular.",
+      supplement: "O primeiro som, B1, está relacionado ao fechamento das valvas mitral e tricúspide.",
+    },
+    {
+      id: "cc-fracao-ejecao", sectionId: "fracao-ejecao", concept: "Cálculo da fração de ejeção",
+      prompt: "Um ventrículo apresenta VDF de 100 mililitros e ejeta 60 mililitros. Qual é sua fração de ejeção?",
+      options: [
+        { id: "a", text: "40 por cento." },
+        { id: "b", text: "60 por cento." },
+        { id: "c", text: "100 por cento." },
+        { id: "d", text: "160 por cento." },
+      ],
+      correctOptionId: "b",
+      explanation: "A fração de ejeção é 60 dividido por 100, multiplicado por 100 por cento. O resultado é 60 por cento.",
+      supplement: "Fração de ejeção e volume sistólico são grandezas relacionadas, mas não equivalentes: a primeira é percentual e a segunda é um volume.",
+    },
+  ],
+  quickReview: [
+    { id: "revisao-cc-sequencia", prompt: "Quais são as quatro fases básicas do ciclo ventricular, começando no enchimento?", answer: "Enchimento, contração isovolumétrica, ejeção e relaxamento isovolumétrico." },
+    { id: "revisao-cc-valvas", prompt: "O que abre a valva aórtica e o que a fecha?", answer: "Ela abre quando a pressão ventricular supera a aórtica e fecha quando a pressão aórtica volta a superar a ventricular." },
+    { id: "revisao-cc-formulas", prompt: "Como calcular volume sistólico e fração de ejeção?", answer: "Volume sistólico é VDF menos VSF. Fração de ejeção é o volume sistólico dividido pelo VDF, vezes cem por cento." },
+  ],
+  referenceIds: ["openstax-fisiologia-cardiaca", "openstax-coracao"],
+};
