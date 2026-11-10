@@ -1,44 +1,71 @@
 import { getAudioActive, subscribeAudioActivity } from "./audio-activity";
 import type { VoiceRecognitionTurn, VoiceRecognizer } from "./voice-recognition";
 
-export type VoiceSessionState = "inactive" | "requesting" | "listening" | "processing" | "narrating" | "error" | "unavailable";
+export type VoiceSessionState = "inactive" | "requesting" | "listening" | "processing" | "narrating" | "recovering" | "suspended" | "error" | "unavailable";
 
-const permissionLimitMs = 25_000;
-const startupLimitMs = 8_000;
-const listeningLimitMs = 12_000;
-const sessionLimitMs = 10 * 60_000;
-const abortSettleMs = 350;
+export type VoiceDiagnosticEvent = {
+  type: "session-started" | "session-ended" | "recognition-started" | "recognition-result" | "recognition-ended"
+    | "narration-started" | "narration-ended" | "retry-scheduled" | "recognition-error" | "permission-denied" | "suspended";
+  code?: string;
+  attempt?: number;
+  delayMs?: number;
+};
+
+const permissionWaitMs = 60_000;
+const startupWaitMs = 8_000;
+const releaseWaitMs = 5_000;
 const resumeDelayMs = 250;
+const stableListeningMs = 2_000;
+const retryDelaysMs = [500, 1000, 2000, 4000];
+const releaseMessage = "O navegador não confirmou a liberação do microfone. Aguarde e tente ativar novamente. Se o bloqueio persistir, recarregue a página.";
+const deniedMessage = "O navegador não autorizou o microfone. Confira a permissão e ative a interação por voz novamente.";
+
+const permissionErrors = new Set(["not-allowed", "service-not-allowed", "NotAllowedError", "SecurityError", "permission-denied"]);
+const transientErrors = new Set(["network", "NetworkError", "audio-capture", "NotReadableError", "InvalidStateError", "unexpected-end", "startup-timeout"]);
+const knownCodes = new Set([
+  ...permissionErrors, ...transientErrors,
+  "no-speech", "no-match", "idle-end", "aborted", "bad-grammar", "phrases-not-supported",
+  "language-not-supported", "NotSupportedError", "NotFoundError",
+  "RecognitionBusyError", "release-timeout", "command-error",
+]);
+
+export function sanitizeVoiceDiagnosticCode(code: string) {
+  return knownCodes.has(code) ? code : "unknown";
+}
 
 type Timer = ReturnType<typeof setTimeout>;
 type Turn = {
   controls?: VoiceRecognitionTurn;
   timer?: Timer;
+  startedAt?: number;
   stopping: boolean;
-  listening: boolean;
+  command?: { transcript: string; href: string };
 };
+type Retry = { code: string; attempt: number; delayMs: number; message: string };
 
-function recognitionError(code: string) {
+function errorMessage(code: string) {
   switch (code) {
-    case "not-allowed":
-    case "NotAllowedError":
-    case "SecurityError":
-      return "O navegador não autorizou o microfone. Confira a permissão e ative a interação por voz novamente.";
-    case "audio-capture":
-    case "NotFoundError":
-      return "O navegador não encontrou um microfone disponível. Confira o dispositivo e tente novamente.";
-    case "network":
-      return "A conexão com o reconhecimento do navegador falhou. Confira a rede e tente novamente.";
+    case "RecognitionBusyError":
+    case "release-timeout":
+      return releaseMessage;
     case "language-not-supported":
       return "O reconhecimento em português brasileiro está indisponível neste navegador.";
     case "NotSupportedError":
       return "O reconhecimento neste navegador não oferece os controles necessários. Use os controles da página para continuar.";
-    case "service-not-allowed":
-      return "O navegador bloqueou o serviço de reconhecimento. Confira as permissões para ativar novamente.";
+    case "NotFoundError":
+      return "O navegador não encontrou um microfone disponível. Confira o dispositivo e tente novamente.";
+    case "network":
+    case "NetworkError":
+      return "A conexão com o reconhecimento de voz não foi restabelecida. Confira a rede e ative novamente.";
+    case "audio-capture":
+    case "NotReadableError":
+      return "Não foi possível acessar o microfone. Confira o dispositivo e ative novamente.";
     case "aborted":
       return "O navegador interrompeu a escuta. Ative novamente quando quiser continuar.";
+    case "startup-timeout":
+      return "O navegador não iniciou a escuta. Confira a permissão do microfone e ative novamente.";
     default:
-      return "Não foi possível iniciar a escuta. Ative a interação por voz novamente para tentar outra vez.";
+      return "Não foi possível retomar a escuta. Ative a interação por voz novamente para tentar outra vez.";
   }
 }
 
@@ -46,15 +73,26 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
   onState: (state: VoiceSessionState, message: string) => void;
   onTranscript: (transcript: string) => void;
   onEnd: () => void;
+  onDiagnostic?: (event: VoiceDiagnosticEvent) => void;
 }) {
   let current: Turn | null = null;
   let ended = false;
+  let attempted = false;
   let hasListened = false;
-  let misses = 0;
-  let nextHint = "";
+  let pageHidden = false;
+  let suspended = false;
+  let audioActive = false;
+  let failures = 0;
+  let quietTurns = 0;
+  let retry: Retry | undefined;
   let restartTimer: Timer | undefined;
-  let sessionTimer: Timer | undefined;
   let unsubscribeAudio: (() => void) | undefined;
+  let microphonePermission: PermissionStatus | undefined;
+  let observedGrant = false;
+
+  function report(event: VoiceDiagnosticEvent) {
+    callbacks.onDiagnostic?.(event);
+  }
 
   function emit(state: VoiceSessionState, message: string) {
     callbacks.onState(state, message);
@@ -69,7 +107,7 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
     try {
       turn.controls?.abort();
     } catch {
-      // Browser implementations may reject abort after the native turn has already ended.
+      // A browser may reject abort while its native recognition service is already closing.
     }
   }
 
@@ -77,14 +115,16 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
     if (ended) return;
     ended = true;
     clearRestart();
-    clearTimeout(sessionTimer);
     unsubscribeAudio?.();
+    microphonePermission?.removeEventListener("change", onPermissionChange);
     window.removeEventListener("pagehide", onPageHide);
-    document.removeEventListener("visibilitychange", onVisibilityChange);
+    window.removeEventListener("pageshow", onPageShow);
+    document.removeEventListener("visibilitychange", reconcile);
 
     if (current) {
       const turn = current;
       current = null;
+      turn.command = undefined;
       clearTimeout(turn.timer);
       if (!turn.stopping) abort(turn);
     }
@@ -93,143 +133,285 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
   function end(state: "inactive" | "error", message: string) {
     if (ended) return;
     dispose();
+    report({ type: "session-ended" });
     emit(state, message);
     callbacks.onEnd();
   }
 
-  function onPageHide() {
-    end("inactive", "A sessão terminou ao ocultar a página. Ative novamente para continuar.");
+  function denied(code: string) {
+    report({ type: "permission-denied", code });
+    end("error", deniedMessage);
   }
 
-  function onVisibilityChange() {
-    if (document.hidden) onPageHide();
+  function permissionLost() {
+    const state = microphonePermission?.state;
+    return state === "denied" || (observedGrant && state === "prompt");
+  }
+
+  function onPermissionChange() {
+    if (permissionLost()) denied("permission-denied");
+    else if (microphonePermission?.state === "granted") observedGrant = true;
+  }
+
+  async function watchPermission() {
+    try {
+      const status = await navigator.permissions?.query({ name: "microphone" as PermissionName });
+      if (!status || ended) return;
+      microphonePermission = status;
+      status.addEventListener("change", onPermissionChange);
+      onPermissionChange();
+    } catch {
+      // Some browsers expose speech recognition without a microphone permission query.
+    }
+  }
+
+  function hidden() {
+    return pageHidden || document.hidden;
+  }
+
+  function onPageHide() {
+    pageHidden = true;
+    reconcile();
+  }
+
+  function onPageShow() {
+    pageHidden = false;
+    reconcile();
   }
 
   function scheduleTurn() {
-    if (ended || current || restartTimer !== undefined || getAudioActive()) return;
+    if (ended || current || restartTimer !== undefined || hidden() || getAudioActive()) return;
+    if (retry) {
+      const { code, attempt, delayMs, message } = retry;
+      report({ type: "retry-scheduled", code, attempt, delayMs });
+      emit("recovering", message);
+    } else {
+      emit("processing", "Preparando a próxima escuta.");
+    }
     restartTimer = setTimeout(() => {
       restartTimer = undefined;
       beginTurn();
-    }, resumeDelayMs);
+    }, retry?.delayMs ?? resumeDelayMs);
   }
 
-  function closeTurn(turn: Turn) {
-    if (current !== turn) return;
+  function clearTurnTimer(turn: Turn) {
     clearTimeout(turn.timer);
-    current = null;
-    scheduleTurn();
+    turn.timer = undefined;
+  }
+
+  function waitForRelease(turn: Turn) {
+    if (turn.timer !== undefined || hidden()) return;
+    // A timer cannot prove native release. Wait for end and retain the adapter's lease otherwise.
+    turn.timer = setTimeout(() => {
+      report({ type: "recognition-error", code: "release-timeout" });
+      end("error", releaseMessage);
+    }, releaseWaitMs);
   }
 
   function stopTurn(turn: Turn) {
     if (current !== turn || turn.stopping) return;
     turn.stopping = true;
-    clearTimeout(turn.timer);
-    // Wait for the browser's end event, with a bounded fallback for incomplete implementations.
-    turn.timer = setTimeout(() => closeTurn(turn), abortSettleMs);
+    clearTurnTimer(turn);
+    waitForRelease(turn);
     abort(turn);
   }
 
-  function onAudioChange() {
+  function reconcile() {
     if (ended) return;
-    if (getAudioActive()) {
+    const wasAudioActive = audioActive;
+    audioActive = getAudioActive();
+    if (wasAudioActive !== audioActive) report({ type: audioActive ? "narration-started" : "narration-ended" });
+
+    const isHidden = hidden();
+    if (isHidden && !suspended) report({ type: "suspended" });
+    suspended = isHidden;
+    if (isHidden || audioActive) {
       clearRestart();
-      if (current) stopTurn(current);
-      emit("narrating", "A escuta está pausada durante o áudio.");
-    } else {
-      emit("processing", "Preparando a próxima escuta.");
-      scheduleTurn();
+      if (current) {
+        current.command = undefined;
+        stopTurn(current);
+      }
+      if (isHidden && current?.stopping) clearTurnTimer(current);
+      if (isHidden) emit("suspended", "O microfone está suspenso. A escuta pode voltar quando você retornar à página.");
+      else emit("narrating", "A escuta está pausada durante o áudio.");
     }
+    if (!isHidden && current?.stopping) waitForRelease(current);
+    if (!isHidden && !audioActive) scheduleTurn();
   }
 
-  function missTurn(hint: string) {
-    misses += 1;
-    if (misses >= 2) {
-      end("inactive", `${hint} A sessão foi encerrada. Ative novamente para continuar.`);
+  function planQuietRetry(code: "no-speech" | "no-match" | "idle-end", message: string) {
+    failures = 0;
+    quietTurns += 1;
+    retry = {
+      code,
+      attempt: quietTurns,
+      delayMs: retryDelaysMs[Math.min(quietTurns, retryDelaysMs.length) - 1],
+      message,
+    };
+  }
+
+  function planRecovery(code: string) {
+    failures += 1;
+    quietTurns = 0;
+    if (failures > retryDelaysMs.length) {
+      end("error", errorMessage(code));
       return;
     }
-    nextHint = `${hint} Diga um comando para tentar novamente.`;
-    emit("processing", nextHint);
-    if (current) stopTurn(current);
-    else scheduleTurn();
+    retry = {
+      code,
+      attempt: failures,
+      delayMs: retryDelaysMs[failures - 1],
+      message: "O reconhecimento foi interrompido. Tentando recuperar a escuta.",
+    };
+  }
+
+  function handleRecognitionError(turn: Turn, rawCode: string) {
+    if (current !== turn) return;
+    const code = sanitizeVoiceDiagnosticCode(rawCode);
+    if (permissionErrors.has(code)) {
+      report({ type: "recognition-error", code });
+      denied(code);
+      return;
+    }
+    if (turn.stopping) return;
+    report({ type: "recognition-error", code });
+    if (code === "no-speech") {
+      planQuietRetry(code, "Nenhuma fala foi detectada. A escuta será retomada.");
+    } else if (transientErrors.has(code)) {
+      planRecovery(code);
+    } else {
+      end("error", errorMessage(code));
+      return;
+    }
+    if (retry && !ended) emit("recovering", retry.message);
+    stopTurn(turn);
+  }
+
+  function onTurnEnd(turn: Turn) {
+    if (current !== turn) return;
+    clearTimeout(turn.timer);
+    current = null;
+    report({ type: "recognition-ended" });
+
+    const command = turn.command;
+    turn.command = undefined;
+    if (command && command.href === window.location.href && !hidden() && !getAudioActive()) {
+      if (permissionLost()) {
+        denied("permission-denied");
+        return;
+      }
+      try {
+        callbacks.onTranscript(command.transcript);
+      } catch {
+        report({ type: "recognition-error", code: "command-error" });
+        end("error", "Não foi possível executar o comando. Ative novamente para tentar outra vez.");
+      }
+    } else if (!turn.stopping) {
+      if (turn.startedAt !== undefined && Date.now() - turn.startedAt >= stableListeningMs) {
+        planQuietRetry("idle-end", "O navegador encerrou este turno. A escuta será retomada.");
+      } else {
+        report({ type: "recognition-error", code: "unexpected-end" });
+        if (!hasListened && !observedGrant) {
+          end("error", "O navegador não concluiu a ativação do microfone. Confira a permissão e ative novamente.");
+          return;
+        }
+        planRecovery("unexpected-end");
+      }
+    }
+    scheduleTurn();
   }
 
   function beginTurn() {
-    if (ended || current || getAudioActive()) return;
-    if (document.hidden) {
-      onPageHide();
+    if (ended || current || hidden() || getAudioActive()) return;
+    if (permissionLost()) {
+      denied("permission-denied");
       return;
     }
 
-    const turn: Turn = { stopping: false, listening: false };
+    const initial = !attempted;
+    attempted = true;
+    const turn: Turn = { stopping: false };
+    const recovery = retry;
+    retry = undefined;
     current = turn;
-    const isCurrent = () => current === turn && !turn.stopping;
+    const acceptsInput = () => current === turn && !turn.stopping;
 
     try {
       turn.controls = recognizer.createTurn({
         onStart: () => {
-          if (!isCurrent()) return;
+          if (!acceptsInput()) return;
           hasListened = true;
-          turn.listening = true;
-          emit("listening", nextHint || "Diga um comando curto em português brasileiro.");
-          clearTimeout(turn.timer);
-          turn.timer = setTimeout(() => missTurn("Nenhum comando foi recebido."), listeningLimitMs);
+          turn.startedAt = Date.now();
+          clearTurnTimer(turn);
+          report({ type: "recognition-started" });
+          emit("listening", "Diga um comando curto em português brasileiro.");
         },
         onFinal: (transcript) => {
-          if (!isCurrent() || !turn.listening) return;
-          if (getAudioActive()) {
-            onAudioChange();
+          if (!acceptsInput() || turn.startedAt === undefined) return;
+          if (permissionLost()) {
+            denied("permission-denied");
             return;
           }
-          misses = 0;
-          nextHint = "";
+          if (hidden() || getAudioActive()) {
+            reconcile();
+            return;
+          }
+          failures = 0;
+          quietTurns = 0;
+          turn.command = { transcript, href: window.location.href };
+          report({ type: "recognition-result" });
           emit("processing", "Comando recebido.");
           stopTurn(turn);
-          try {
-            callbacks.onTranscript(transcript);
-          } catch {
-            end("error", "Não foi possível executar o comando. Ative novamente para tentar outra vez.");
-          }
         },
         onNoMatch: () => {
-          if (isCurrent()) missTurn("Não foi possível entender a fala.");
+          if (!acceptsInput()) return;
+          const message = "Não foi possível entender a fala. A escuta será retomada.";
+          planQuietRetry("no-match", message);
+          emit("recovering", message);
+          stopTurn(turn);
         },
-        onError: (code) => {
-          if (!isCurrent()) return;
-          if (code === "no-speech") missTurn("Nenhuma fala foi detectada.");
-          else end("error", recognitionError(code));
-        },
-        onEnd: () => {
-          if (current !== turn) return;
-          closeTurn(turn);
-          if (turn.stopping) return;
-          if (turn.listening) missTurn("A escuta terminou sem receber um comando.");
-          else end("error", "O navegador encerrou a solicitação do microfone. Ative novamente para continuar.");
-        },
+        onError: (code) => handleRecognitionError(turn, code),
+        onEnd: () => onTurnEnd(turn),
       });
-      emit(hasListened ? "processing" : "requesting", hasListened
-        ? nextHint || "Preparando a próxima escuta."
-        : "Aguarde a autorização do microfone no navegador.");
-      turn.timer = setTimeout(() => end("error", "O navegador não iniciou a escuta. Confira a permissão do microfone e ative novamente."),
-        hasListened ? startupLimitMs : permissionLimitMs);
+      if (initial) emit("requesting", "Aguarde a autorização do microfone no navegador.");
+      else if (recovery) emit("recovering", recovery.message);
+      turn.timer = setTimeout(() => {
+        if (initial) {
+          report({ type: "recognition-error", code: "startup-timeout" });
+          end("error", errorMessage("startup-timeout"));
+        } else {
+          handleRecognitionError(turn, "startup-timeout");
+        }
+      }, initial ? permissionWaitMs : startupWaitMs);
       turn.controls.start();
     } catch (error) {
-      end("error", recognitionError(error instanceof Error ? error.name : ""));
+      if (current !== turn) return;
+      clearTimeout(turn.timer);
+      current = null;
+      const rawCode = error instanceof Error || error instanceof DOMException ? error.name : "";
+      const code = sanitizeVoiceDiagnosticCode(rawCode);
+      report({ type: "recognition-error", code });
+      if (permissionErrors.has(code)) denied(code);
+      else if (transientErrors.has(code)) {
+        planRecovery(code);
+        scheduleTurn();
+      } else {
+        end("error", errorMessage(code));
+      }
     }
   }
 
   return {
     start() {
       if (ended || unsubscribeAudio) return;
-      if (document.hidden) {
-        onPageHide();
-        return;
-      }
-      unsubscribeAudio = subscribeAudioActivity(onAudioChange);
+      report({ type: "session-started" });
+      unsubscribeAudio = subscribeAudioActivity(reconcile);
       window.addEventListener("pagehide", onPageHide);
-      document.addEventListener("visibilitychange", onVisibilityChange);
-      sessionTimer = setTimeout(() => end("inactive", "A sessão de voz atingiu o limite de tempo. Ative novamente para continuar."), sessionLimitMs);
-      if (getAudioActive()) onAudioChange();
+      window.addEventListener("pageshow", onPageShow);
+      document.addEventListener("visibilitychange", reconcile);
+      if (hidden() || getAudioActive()) reconcile();
       else beginTurn();
+      if (!ended) void watchPermission();
     },
     end: () => end("inactive", "Sessão de voz encerrada."),
     dispose,

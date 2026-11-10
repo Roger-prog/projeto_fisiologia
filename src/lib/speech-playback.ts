@@ -2,6 +2,7 @@ import { beginAudioActivity, stopActiveAudio } from "./audio-activity";
 
 const speechLanguage = "pt-BR";
 const maxChunkLength = 220;
+const utteranceStartupTimeoutMs = 8_000;
 const utteranceTimeoutMs = 45_000;
 
 export type AudioPlayback = {
@@ -101,6 +102,11 @@ export function createSpeechPlayback({
     onError();
   }
 
+  function waitForUtteranceEnd() {
+    clearTimeout(timer);
+    timer = setTimeout(fail, utteranceTimeoutMs);
+  }
+
   function speakChunk(index: number) {
     if (index >= chunks.length) {
       current = null;
@@ -114,6 +120,9 @@ export function createSpeechPlayback({
       utterance.lang = speechLanguage;
       utterance.rate = rate;
       if (voice) utterance.voice = voice;
+      utterance.onstart = () => {
+        if (current === utterance && !synthesis.paused) waitForUtteranceEnd();
+      };
       utterance.onend = () => {
         if (current !== utterance) return;
         clearTimeout(timer);
@@ -124,7 +133,11 @@ export function createSpeechPlayback({
         fail();
       };
       current = utterance;
-      timer = setTimeout(fail, utteranceTimeoutMs);
+      timer = setTimeout(() => {
+        // Some engines do not report start; avoid cutting off audio that is already playing.
+        if (synthesis.speaking && !synthesis.paused) waitForUtteranceEnd();
+        else fail();
+      }, utteranceStartupTimeoutMs);
       synthesis.speak(utterance);
     } catch {
       fail();
@@ -143,7 +156,7 @@ export function createSpeechPlayback({
       clearTimeout(timer);
     } : undefined,
     resume: canPauseSpeech() ? () => {
-      timer = setTimeout(fail, utteranceTimeoutMs);
+      waitForUtteranceEnd();
       synthesis.resume();
     } : undefined,
     stop,
@@ -154,12 +167,21 @@ export function stopActiveSpeech() {
   stopActiveAudio();
 }
 
-export function speakVoiceFeedback(text: string) {
+export function speakVoiceFeedback(text: string, onError?: () => void) {
   if (!isSpeechAvailable() || !text.trim()) return false;
 
   try {
-    createSpeechPlayback({ text, rate: 1, onComplete: () => {}, onError: () => {} }).start();
-    return true;
+    let failed = false;
+    createSpeechPlayback({
+      text,
+      rate: 1,
+      onComplete: () => {},
+      onError: () => {
+        failed = true;
+        onError?.();
+      },
+    }).start();
+    return !failed;
   } catch {
     return false;
   }

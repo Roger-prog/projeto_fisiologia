@@ -15,6 +15,7 @@ import { getLessonSteps, guidedLessonHref } from "@/lib/lesson-steps";
 import { speakVoiceFeedback, stopActiveSpeech } from "@/lib/speech-playback";
 import { getClientStudyState } from "@/lib/study-storage";
 import { parseVoiceCommand, type VoiceCommand } from "@/lib/voice-commands";
+import { sanitizeVoiceDiagnosticCode, type VoiceDiagnosticEvent } from "@/lib/voice-session";
 import { useVoiceSession } from "./use-voice-session";
 import { describeVoiceOptions, getVoiceContext } from "./voice-context";
 
@@ -23,9 +24,11 @@ export type VoiceActionResult = { message: string; speak?: boolean };
 type ActionHandler = (command: VoiceAction) => VoiceActionResult | undefined;
 type RegisterAction = (handler: ActionHandler) => () => void;
 type Feedback = { message: string; announce: boolean };
+type DiagnosticEntry = VoiceDiagnosticEvent & { timestamp: string };
 type VoiceInterface = {
   session: ReturnType<typeof useVoiceSession>;
   feedback: Feedback | null;
+  diagnostics: readonly DiagnosticEntry[] | null;
   activate: () => void;
   end: () => void;
   hearOptions: () => void;
@@ -35,6 +38,7 @@ type VoiceInterface = {
 const ActionsContext = createContext<RegisterAction | null>(null);
 const ControlsContext = createContext<VoiceInterface | null>(null);
 const navigationTimeout = 5000;
+const diagnosticLimit = 40;
 
 export function useVoiceActions(handler: ActionHandler) {
   const register = useContext(ActionsContext);
@@ -53,6 +57,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   const handlers = useRef(new Set<ActionHandler>());
   const pending = useRef<{ href: string; until: number } | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [diagnostics, setDiagnostics] = useState<readonly DiagnosticEntry[] | null>(null);
 
   const register = useCallback<RegisterAction>((handler) => {
     handlers.current.add(handler);
@@ -65,9 +70,30 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("diagnostico-voz") === "1") {
+      setDiagnostics((current) => current ?? []);
+    }
+  }, [pathname]);
+
+  const recordDiagnostic = useCallback(({ type, code, attempt, delayMs }: VoiceDiagnosticEvent) => {
+    const timestamp = new Date().toISOString();
+    const errorCode = code === undefined ? undefined : sanitizeVoiceDiagnosticCode(code);
+    setDiagnostics((current) => current === null ? current : [
+      ...current.slice(-(diagnosticLimit - 1)),
+      { type, code: errorCode, attempt, delayMs, timestamp },
+    ]);
+  }, []);
+
   function publish({ message, speak = true }: VoiceActionResult) {
-    const played = speak && speakVoiceFeedback(message);
-    setFeedback({ message, announce: speak && !played });
+    const entry = { message, announce: false };
+    setFeedback(entry);
+    if (!speak) return;
+
+    function announceFallback() {
+      setFeedback((current) => current === entry ? { ...entry, announce: true } : current);
+    }
+    if (!speakVoiceFeedback(message, announceFallback)) announceFallback();
   }
 
   function endActions() {
@@ -170,7 +196,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const session = useVoiceSession(handleTranscript, endActions);
+  const session = useVoiceSession(handleTranscript, endActions, diagnostics === null ? undefined : recordDiagnostic);
 
   function endInteraction() {
     session.end();
@@ -180,6 +206,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   const controls: VoiceInterface = {
     session,
     feedback,
+    diagnostics,
     activate() {
       setFeedback(null);
       stopActiveSpeech();

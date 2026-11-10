@@ -18,6 +18,7 @@ export function SiteHeader() {
   return (
     <>
       <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
+      <a className="skip-link" href="#interacao-por-voz">Ir para a interação por voz</a>
       <header className="site-header">
         <div className="site-shell header-inner">
           <Wordmark />

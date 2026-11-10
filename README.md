@@ -41,7 +41,7 @@ O site usa a chave `fisioacessivel:study:v1` no `localStorage` da origem atual. 
 
 ### Comandos de voz
 
-O reconhecimento usa a Web Speech API quando disponível. A permissão é solicitada pelo navegador após a ativação explícita. O processamento pode depender do serviço de voz do navegador e o site não guarda gravações ou transcrições. A sessão pausa a escuta enquanto o site fala. Os controles convencionais ficam disponíveis. [Comandos, privacidade e roteiro de testes](docs/interacao-por-voz.md)
+O reconhecimento usa a Web Speech API quando disponível. A permissão é solicitada pelo navegador após a ativação explícita. A sessão pausa a escuta enquanto o site fala ou fica em segundo plano, e tenta retomar quando o navegador permite. A preferência por voz é salva separadamente da autorização do microfone. O processamento pode depender do serviço de voz do navegador e o site não guarda gravações ou transcrições. [Comandos, privacidade, diagnóstico e roteiro de testes](docs/interacao-por-voz.md)
 
 ## Testar
 

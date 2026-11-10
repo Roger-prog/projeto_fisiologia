@@ -17,6 +17,27 @@
   min-width: 0;
 }
 
+.controls {
+  min-inline-size: 0;
+}
+
+.preference {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.preference input {
+  flex: none;
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  accent-color: var(--accent);
+}
+
 .title {
   display: flex;
   flex-wrap: wrap;
@@ -42,6 +63,19 @@
 
 .feedback {
   flex-basis: 100%;
+}
+
+.diagnostics {
+  flex-basis: 100%;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.diagnostics summary {
+  min-block-size: 44px;
+  padding-block: 0.55rem;
+  cursor: pointer;
 }
 
 .inner :global(.button) {

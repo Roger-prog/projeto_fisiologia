@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { getBrowserVoiceRecognizer, isVoiceRecognitionAvailable } from "@/lib/voice-recognition";
-import { createVoiceSession, type VoiceSessionState } from "@/lib/voice-session";
+import { createVoiceSession, type VoiceDiagnosticEvent, type VoiceSessionState } from "@/lib/voice-session";
 
 type Support = "pending" | "available" | "unavailable";
 type Snapshot = { state: VoiceSessionState; message: string };
@@ -21,15 +21,19 @@ function getServerSupport(): Support {
   return "pending";
 }
 
-export function useVoiceSession(onTranscript: (text: string) => void, onEnd?: () => void) {
+export function useVoiceSession(
+  onTranscript: (text: string) => void,
+  onEnd?: () => void,
+  onDiagnostic?: (event: VoiceDiagnosticEvent) => void,
+) {
   const support = useSyncExternalStore(subscribeSupport, getClientSupport, getServerSupport);
   const [snapshot, setSnapshot] = useState<Snapshot>({ state: "inactive", message: "" });
   const session = useRef<ReturnType<typeof createVoiceSession> | null>(null);
-  const callbacks = useRef({ onTranscript, onEnd });
+  const callbacks = useRef({ onTranscript, onEnd, onDiagnostic });
 
   useEffect(() => {
-    callbacks.current = { onTranscript, onEnd };
-  }, [onTranscript, onEnd]);
+    callbacks.current = { onTranscript, onEnd, onDiagnostic };
+  }, [onTranscript, onEnd, onDiagnostic]);
 
   useEffect(() => () => {
     session.current?.dispose();
@@ -47,6 +51,7 @@ export function useVoiceSession(onTranscript: (text: string) => void, onEnd?: ()
     const current = createVoiceSession(recognizer, {
       onState: (state, message) => setSnapshot({ state, message }),
       onTranscript: (text) => callbacks.current.onTranscript(text),
+      onDiagnostic: (event) => callbacks.current.onDiagnostic?.(event),
       onEnd: () => {
         session.current = null;
         callbacks.current.onEnd?.();
@@ -59,7 +64,8 @@ export function useVoiceSession(onTranscript: (text: string) => void, onEnd?: ()
   const { state, message } = support === "unavailable"
     ? { state: "unavailable" as const, message: unavailableMessage }
     : snapshot;
-  const active = state === "requesting" || state === "listening" || state === "processing" || state === "narrating";
+  const active = state === "requesting" || state === "listening" || state === "processing"
+    || state === "narrating" || state === "recovering" || state === "suspended";
 
   return { support, state, message, active, start, end: () => session.current?.end() };
 }

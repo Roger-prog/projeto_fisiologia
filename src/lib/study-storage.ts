@@ -17,7 +17,7 @@ type SavedLesson = {
 type ReviewEvent = { itemId: string; grade: ReviewGrade; reviewedAt: string };
 
 type StudyState = {
-  preferences: { contrast: Contrast; textSize: TextSize };
+  preferences: { contrast: Contrast; textSize: TextSize; preferVoice: boolean };
   progress: {
     lastLesson: LessonVisit | null;
     lessons: Record<string, SavedLesson>;
@@ -35,7 +35,7 @@ const emptyProgress: StudyState["progress"] = {
   reviewHistory: [],
 };
 const defaultStudyState: StudyState = {
-  preferences: { contrast: "default", textSize: "normal" },
+  preferences: { contrast: "default", textSize: "normal", preferVoice: false },
   progress: emptyProgress,
 };
 const emptyLesson: SavedLesson = {
@@ -135,7 +135,7 @@ function parseState(rawValue: string | null): StudyState {
 
   try {
     const saved = asRecord(JSON.parse(rawValue));
-    const { contrast, textSize } = asRecord(saved.preferences);
+    const { contrast, textSize, preferVoice } = asRecord(saved.preferences);
     const progress = asRecord(saved.progress);
     const lessons = Object.entries(asRecord(progress.lessons))
       .map(([lessonId, lesson]) => [lessonId, readLesson(lesson)] as const);
@@ -144,6 +144,7 @@ function parseState(rawValue: string | null): StudyState {
       preferences: {
         contrast: contrast === "high" ? "high" : "default",
         textSize: textSize === "large" || textSize === "extra-large" ? textSize : "normal",
+        preferVoice: preferVoice === true,
       },
       progress: {
         lastLesson: readLessonVisit(progress.lastLesson),

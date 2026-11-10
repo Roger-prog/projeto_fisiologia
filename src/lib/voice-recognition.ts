@@ -35,6 +35,7 @@ type BrowserRecognition = {
 };
 
 type RecognitionConstructor = new () => BrowserRecognition;
+let activeTurn: object | null = null;
 
 function getBrowserConstructor() {
   if (typeof window === "undefined" || !window.isSecureContext) return null;
@@ -61,23 +62,35 @@ export function getBrowserVoiceRecognizer(): VoiceRecognizer | null {
         throw new DOMException("Reconhecimento sem controle de início ou interrupção.", "NotSupportedError");
       }
       recognition.lang = "pt-BR";
+      // One final result per turn gives the command a safe boundary before it can start audio.
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
-      function detachRecognitionEvents() {
+      const turn = {};
+      let finalDelivered = false;
+
+      function detachInputEvents() {
         recognition.onstart = null;
         recognition.onresult = null;
         recognition.onnomatch = null;
+      }
+
+      function releaseTurn() {
+        if (activeTurn === turn) activeTurn = null;
+        detachInputEvents();
         recognition.onerror = null;
+        recognition.onend = null;
       }
 
       recognition.onstart = events.onStart;
       recognition.onresult = ({ resultIndex = 0, results }) => {
+        if (activeTurn !== turn || finalDelivered) return;
         for (let index = resultIndex; index < results.length; index++) {
           const result = results[index];
           const transcript = result?.isFinal ? result[0]?.transcript.trim() : undefined;
           if (transcript) {
+            finalDelivered = true;
             events.onFinal(transcript);
             break;
           }
@@ -86,17 +99,28 @@ export function getBrowserVoiceRecognizer(): VoiceRecognizer | null {
       recognition.onnomatch = events.onNoMatch;
       recognition.onerror = ({ error }) => events.onError(error);
       recognition.onend = () => {
-        detachRecognitionEvents();
-        recognition.onend = null;
+        releaseTurn();
         events.onEnd();
       };
 
       return {
-        start: () => recognition.start(),
+        start: () => {
+          if (activeTurn) {
+            if (activeTurn !== turn) releaseTurn();
+            throw new DOMException("Reconhecimento anterior ainda em liberação.", "RecognitionBusyError");
+          }
+          activeTurn = turn;
+          try {
+            recognition.start();
+          } catch (error) {
+            releaseTurn();
+            throw error;
+          }
+        },
         abort: () => {
-          // Keep the end callback so the session can wait for the browser to release the turn.
-          detachRecognitionEvents();
-          recognition.abort();
+          // Permission errors can still arrive during release. Keep onerror and onend attached.
+          detachInputEvents();
+          if (activeTurn === turn) recognition.abort();
         },
       };
     },
