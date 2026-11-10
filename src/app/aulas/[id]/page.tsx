@@ -8,6 +8,7 @@ import { LessonModeNav } from "@/components/study/lesson-mode-nav";
 import { LessonQuiz } from "@/components/study/lesson-quiz";
 import { LessonDiagram, LessonSimulationLink, LessonStepContent } from "@/components/study/lesson-step-content";
 import { LessonProgress } from "@/components/study/study-provider";
+import { StudyOrientation } from "@/components/study/study-orientation";
 import { TrackLessonVisit } from "@/components/study/track-lesson-visit";
 import { getLesson, getLessonReferences, getModule, lessons } from "@/data";
 import { getLessonSpeechText } from "@/lib/lesson-speech";
@@ -68,6 +69,14 @@ export default async function LessonPage({ params }: PageProps) {
             <p>{lesson.objective}</p>
           </div>
           <LessonModeNav lessonId={lesson.id} stepIds={steps.map(({ id }) => id)} current="complete" />
+          <div className="mt-4 max-w-xl">
+            <StudyOrientation
+              lessonTitle={lesson.title}
+              stageTitle="Aula completa"
+              actions={["Ouvir a aula", "Modo guiado", "Modo revisão", "Exercícios"]}
+              continuation="Depois de iniciar o áudio, use Parar leitura se quiser interromper. Use Modo guiado para estudar uma etapa de cada vez."
+            />
+          </div>
         </header>
 
         <div className="lesson-layout">

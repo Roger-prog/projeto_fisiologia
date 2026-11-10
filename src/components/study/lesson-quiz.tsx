@@ -2,10 +2,12 @@
 
 import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, RotateCcw } from "lucide-react";
 import Link from "next/link";
-import { type FormEvent, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { Question } from "@/data";
+import { stopActiveSpeech } from "@/lib/speech-playback";
 import { resetLessonResponses, resetQuestionResponse, saveResponse } from "@/lib/study-storage";
-import { QuestionFeedback, QuestionOptions } from "./question-parts";
+import { QuestionNarration } from "./question-narration";
+import { QuestionConfirmation, QuestionFeedback, QuestionOptions } from "./question-parts";
 import { useStudy } from "./study-provider";
 
 type LessonQuizProps = {
@@ -13,9 +15,10 @@ type LessonQuizProps = {
   lessonTitle: string;
   questions: readonly Question[];
   concepts: readonly string[];
+  compact?: boolean;
 };
 
-export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: LessonQuizProps) {
+export function LessonQuiz({ lessonId, lessonTitle, questions, concepts, compact = false }: LessonQuizProps) {
   const [requestedIndex, setRequestedIndex] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [retryIndex, setRetryIndex] = useState<number | null>(null);
@@ -47,16 +50,17 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
   if (!questions.length) return null;
 
   function showStep(index: number) {
+    stopActiveSpeech();
     pendingFocus.current = "step";
     setRequestedIndex(index);
     setSelectedId(null);
     setRetryIndex(null);
   }
 
-  function checkAnswer(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function checkAnswer() {
     if (!question || !selectedId || answer) return;
 
+    stopActiveSpeech();
     pendingFocus.current = "feedback";
     setRequestedIndex(currentIndex);
     saveResponse(lessonId, question.id, selectedId);
@@ -76,13 +80,18 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
         <ClipboardList aria-hidden="true" size={22} />
         <h2 id={titleId}>Exercícios de fixação</h2>
       </div>
-      <p className="muted">Responda uma pergunta por vez. Você pode voltar e repetir a atividade no seu ritmo.</p>
+      <p className="muted">
+        {compact
+          ? "Escolha uma alternativa e use Conferir resposta."
+          : "Responda uma pergunta por vez. Você pode voltar e repetir a atividade no seu ritmo."}
+      </p>
 
       {question ? (
-        <form className="quiz-body" onSubmit={checkAnswer}>
+        <form className="quiz-body" onSubmit={(event) => event.preventDefault()}>
           <h3 className="quiz-step" ref={stepHeadingRef} tabIndex={-1}>
             Pergunta {currentIndex + 1} de {questions.length}
           </h3>
+          <QuestionNarration key={`${question.id}-${Boolean(answer)}`} question={question} />
           <QuestionOptions
             question={question}
             groupName={radioGroupName}
@@ -113,7 +122,7 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
                 </button>
               </>
             ) : (
-              <button type="submit" className="button button-primary">Conferir resposta</button>
+              <QuestionConfirmation onConfirm={checkAnswer} />
             )}
           </div>
         </form>
@@ -133,7 +142,11 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
           <div className="quiz-concepts">
             <h4>Conceitos para revisar</h4>
             <ul>{concepts.map((concept) => <li key={concept}>{concept}</li>)}</ul>
-            <Link href={`/revisao/#revisao-${lessonId}`}>Ir para a revisão rápida</Link>
+            {compact ? (
+              <Link className="text-link" href="/minhas-revisoes/">Minhas Revisões</Link>
+            ) : (
+              <Link href={`/revisao/#revisao-${lessonId}`}>Ir para a revisão rápida</Link>
+            )}
           </div>
           <div className="control-row quiz-actions">
             <button type="button" className="button button-secondary" onClick={() => showStep(questions.length - 1)}>

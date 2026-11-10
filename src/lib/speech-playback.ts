@@ -1,5 +1,10 @@
 const speechLanguage = "pt-BR";
 const maxChunkLength = 220;
+let interruptActiveSpeech: (() => void) | undefined;
+
+export function stopActiveSpeech() {
+  interruptActiveSpeech?.();
+}
 
 export type AudioPlayback = {
   start: () => void;
@@ -43,11 +48,13 @@ export function createSpeechPlayback({
   rate,
   onComplete,
   onError,
+  onInterrupt,
 }: {
   text: string;
   rate: number;
   onComplete: () => void;
   onError: () => void;
+  onInterrupt: () => void;
 }): AudioPlayback {
   const synthesis = window.speechSynthesis;
   const chunks = getSpeechChunks(text);
@@ -55,9 +62,44 @@ export function createSpeechPlayback({
   const voice = voices.find((item) => item.localService && item.lang.toLowerCase() === "pt-br");
   let current: SpeechSynthesisUtterance | null = null;
 
+  function release() {
+    if (interruptActiveSpeech === interrupt) interruptActiveSpeech = undefined;
+    window.removeEventListener("pagehide", interrupt);
+    document.removeEventListener("visibilitychange", interruptWhenHidden);
+  }
+
+  function stop() {
+    release();
+    if (!current) return;
+    current = null;
+    try {
+      synthesis.cancel();
+      // Some browsers keep the shared queue paused after cancellation.
+      if (synthesis.paused) synthesis.resume?.();
+    } catch {
+      // The inactive utterance cannot schedule any further chunks.
+    }
+  }
+
+  function interrupt() {
+    stop();
+    onInterrupt();
+  }
+
+  function interruptWhenHidden() {
+    if (document.hidden) interrupt();
+  }
+
+  function fail() {
+    current = null;
+    release();
+    onError();
+  }
+
   function speakChunk(index: number) {
     if (index >= chunks.length) {
       current = null;
+      release();
       onComplete();
       return;
     }
@@ -71,32 +113,25 @@ export function createSpeechPlayback({
         if (current === utterance) speakChunk(index + 1);
       };
       utterance.onerror = () => {
-        if (current !== utterance) return;
-        current = null;
-        onError();
+        if (current === utterance) fail();
       };
       current = utterance;
       synthesis.speak(utterance);
     } catch {
-      current = null;
-      onError();
+      fail();
     }
   }
 
   return {
-    start: () => speakChunk(0),
+    start: () => {
+      stopActiveSpeech();
+      interruptActiveSpeech = interrupt;
+      window.addEventListener("pagehide", interrupt);
+      document.addEventListener("visibilitychange", interruptWhenHidden);
+      speakChunk(0);
+    },
     pause: canPauseSpeech() ? () => synthesis.pause() : undefined,
     resume: canPauseSpeech() ? () => synthesis.resume() : undefined,
-    stop: () => {
-      if (!current) return;
-      current = null;
-      try {
-        synthesis.cancel();
-        // Some browsers keep the shared queue paused after cancellation.
-        if (synthesis.paused) synthesis.resume?.();
-      } catch {
-        // The inactive utterance cannot schedule any further chunks.
-      }
-    },
+    stop,
   };
 }

@@ -6,10 +6,12 @@ export function LessonStepContent({
   step,
   headingLevel = 2,
   showObjective = true,
+  showSummary = true,
 }: {
   step: LessonStep;
   headingLevel?: 2 | 3 | 4;
   showObjective?: boolean;
+  showSummary?: boolean;
 }) {
   const Heading = `h${headingLevel}` as const;
 
@@ -42,7 +44,7 @@ export function LessonStepContent({
           {step.example.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         </div>
       )}
-      {step.summary && (
+      {showSummary && step.summary && (
         <div className="summary-panel">
           <Heading>Resumo da etapa</Heading>
           <p>{step.summary}</p>

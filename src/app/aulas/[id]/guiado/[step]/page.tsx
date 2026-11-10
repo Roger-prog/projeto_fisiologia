@@ -6,6 +6,7 @@ import { AudioPlayer } from "@/components/study/audio-player";
 import { GuidedStepProgress } from "@/components/study/guided-step-progress";
 import { LessonModeNav } from "@/components/study/lesson-mode-nav";
 import { LessonDiagram, LessonSimulationLink, LessonStepContent } from "@/components/study/lesson-step-content";
+import { StudyOrientation } from "@/components/study/study-orientation";
 import { TrackLessonVisit } from "@/components/study/track-lesson-visit";
 import { getLesson, lessons } from "@/data";
 import { getStepSpeechText } from "@/lib/lesson-speech";
@@ -51,6 +52,19 @@ export default async function GuidedLessonPage({ params }: PageProps) {
         </header>
 
         <div className="lesson-content">
+          <StudyOrientation
+            lessonTitle={lesson.title}
+            stageTitle={`Etapa ${index + 1} de ${steps.length}. ${step.title}`}
+            actions={[
+              "Ouvir a etapa",
+              "Marcar etapa como concluída",
+              ...(previous ? ["Etapa anterior"] : []),
+              next ? "Próxima etapa" : "Fazer exercícios",
+            ]}
+            continuation={`Depois de iniciar o áudio, use Repetir explicação para ouvir de novo ou Parar leitura para interromper. ${next
+              ? "Use Próxima etapa para avançar."
+              : "Use Fazer exercícios para praticar o conteúdo desta aula."}`}
+          />
           <AudioPlayer key={`${lesson.id}/${step.id}`} scope="section" text={getStepSpeechText(lesson, step)} />
           <div className="lesson-section">
             <LessonStepContent step={step} />
@@ -79,7 +93,7 @@ export default async function GuidedLessonPage({ params }: PageProps) {
             </Link>
           ) : (
             <Link className="button button-primary" href={`/aulas/${lesson.id}/#exercicios`}>
-              Fazer exercícios da aula
+              Fazer exercícios
               <ArrowRight size={19} aria-hidden="true" />
             </Link>
           )}

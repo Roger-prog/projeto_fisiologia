@@ -37,6 +37,9 @@ export default function HomePage() {
             <Link className="button button-primary" href="/modulos/">
               Começar a estudar <ArrowRight size={19} aria-hidden="true" />
             </Link>
+            <Link className="button button-secondary" href="/autonomia/">
+              Estudar com acessibilidade por voz <AudioLines size={19} aria-hidden="true" />
+            </Link>
           </div>
           <ResumeStudy />
           <p className="hero-note">Para estudantes de graduação · Engenharia Biomédica</p>

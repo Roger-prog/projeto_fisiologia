@@ -1,10 +1,12 @@
 "use client";
 
-import { type FormEvent, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { ReviewItem } from "@/data/review-items";
 import type { ReviewGrade, ReviewRecord } from "@/lib/review-schedule";
+import { stopActiveSpeech } from "@/lib/speech-playback";
 import { recordReview } from "@/lib/study-storage";
-import { QuestionFeedback, QuestionOptions } from "./question-parts";
+import { QuestionNarration } from "./question-narration";
+import { QuestionConfirmation, QuestionFeedback, QuestionOptions } from "./question-parts";
 import { ReviewGradeControls } from "./review-grades";
 
 export function ReviewSession({ queue, onClose }: {
@@ -20,6 +22,7 @@ export function ReviewSession({ queue, onClose }: {
   }, [index]);
 
   function gradeItem(grade: ReviewGrade) {
+    stopActiveSpeech();
     recordReview(current.item.id, grade, current.record);
     setIndex(index + 1);
   }
@@ -55,9 +58,10 @@ function ReviewStep({ item, onGrade }: { item: ReviewItem; onGrade: (grade: Revi
     if (revealed) response.current?.focus();
   }, [revealed]);
 
-  function answerQuestion(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (selected) setRevealed(true);
+  function answerQuestion() {
+    if (!selected) return;
+    stopActiveSpeech();
+    setRevealed(true);
   }
 
   return (
@@ -74,7 +78,8 @@ function ReviewStep({ item, onGrade }: { item: ReviewItem; onGrade: (grade: Revi
           )}
         </>
       ) : (
-        <form className="review-session-body" onSubmit={answerQuestion}>
+        <form className="review-session-body" onSubmit={(event) => event.preventDefault()}>
+          <QuestionNarration key={`${item.question.id}-${revealed}`} question={item.question} />
           <QuestionOptions
             question={item.question}
             groupName={groupName}
@@ -85,7 +90,7 @@ function ReviewStep({ item, onGrade }: { item: ReviewItem; onGrade: (grade: Revi
           {revealed && selected ? (
             <QuestionFeedback question={item.question} lessonId={item.lessonId} optionId={selected} feedbackRef={response} />
           ) : (
-            <button type="submit" className="button button-primary">Conferir resposta</button>
+            <QuestionConfirmation onConfirm={answerQuestion} />
           )}
         </form>
       )}

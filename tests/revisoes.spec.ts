@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { lessons } from "../src/data";
+import { getQuestionOptionLabel } from "../src/lib/question-option-label";
 import { isReviewDue, scheduleReview } from "../src/lib/review-schedule";
 
 function dia(numero: number) {
@@ -69,7 +70,7 @@ test("refaz uma questão e combina exercícios anteriores com cartões na sessã
 
   for (const [indice, pergunta] of aula.questions.entries()) {
     const opcao = indice === 0 ? incorreta : pergunta.options.find((item) => item.id === pergunta.correctOptionId)!;
-    await exercicios.getByRole("radio", { name: opcao.text, exact: true }).check();
+    await exercicios.getByRole("radio", { name: getQuestionOptionLabel(pergunta.options.indexOf(opcao)), exact: true }).check();
     await conferir.click();
     if (indice === 0) {
       await expect(exercicios.getByText(primeira.supplement)).toBeVisible();
@@ -86,7 +87,7 @@ test("refaz uma questão e combina exercícios anteriores com cartões na sessã
   await refazer.press("Enter");
   await expect(exercicios.getByRole("heading", { name: "Pergunta 1 de 5", exact: true })).toBeFocused();
   await expect(exercicios.getByRole("radio", { checked: true })).toHaveCount(0);
-  await exercicios.getByRole("radio", { name: incorreta.text, exact: true }).check();
+  await exercicios.getByRole("radio", { name: getQuestionOptionLabel(primeira.options.indexOf(incorreta)), exact: true }).check();
   await conferir.click();
 
   await page.setViewportSize({ width: 320, height: 720 });
@@ -96,7 +97,7 @@ test("refaz uma questão e combina exercícios anteriores com cartões na sessã
   const sessao = page.getByRole("region", { name: "Sessão curta de estudo" });
   await expect(sessao.getByRole("heading", { name: "Conceito 1 de 5" })).toBeFocused();
   await expect(sessao.getByText(primeira.prompt, { exact: true })).toBeVisible();
-  await sessao.getByRole("radio", { name: correta.text, exact: true }).press("Space");
+  await sessao.getByRole("radio", { name: getQuestionOptionLabel(primeira.options.indexOf(correta)), exact: true }).press("Space");
   await sessao.getByRole("button", { name: "Conferir resposta", exact: true }).press("Enter");
   await expect(sessao.locator(".quiz-feedback")).toBeFocused();
   await expect(sessao.locator(".quiz-feedback")).toContainText("Resposta correta.");

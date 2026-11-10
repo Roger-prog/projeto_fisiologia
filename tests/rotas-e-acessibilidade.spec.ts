@@ -6,6 +6,8 @@ const respiratoria = "/aulas/mecanica-respiratoria/";
 const rotas = [
   "/",
   "/modulos/",
+  "/autonomia/",
+  "/autonomia/aulas/mecanica-respiratoria/exercicios/",
   cardiovascular,
   respiratoria,
   "/revisao/",
