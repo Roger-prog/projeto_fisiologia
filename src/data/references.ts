@@ -22,9 +22,31 @@ export const references: readonly Reference[] = [
   },
   {
     ...book,
+    id: "openstax-vasos-fluxo",
+    title: "20.2 Blood Flow, Blood Pressure, and Resistance",
+    url: `${bookUrl}/20-2-blood-flow-blood-pressure-and-resistance`,
+  },
+  {
+    ...book,
     id: "openstax-vasos",
     title: "20.1 Structure and Function of Blood Vessels",
     url: `${bookUrl}/20-1-structure-and-function-of-blood-vessels`,
+  },
+  {
+    id: "blanco-doppler-debito",
+    authors: "Pablo Blanco",
+    title: "Rationale for using the velocity–time integral and the minute distance for assessing the stroke volume and cardiac output in point-of-care settings",
+    publication: "The Ultrasound Journal, 12:21",
+    year: 2020,
+    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC7174466/",
+  },
+  {
+    id: "basnet-rout-fick",
+    authors: "Arjun Basnet; Preeti Rout",
+    title: "Calculating FICK Cardiac Output and Input",
+    publication: "StatPearls, NCBI Bookshelf",
+    year: 2024,
+    url: "https://www.ncbi.nlm.nih.gov/books/NBK606091/",
   },
   {
     ...book,
