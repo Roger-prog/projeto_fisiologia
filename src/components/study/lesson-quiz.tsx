@@ -3,10 +3,10 @@
 import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import { useVoiceActions } from "@/components/voice/voice-provider";
+import { useVoiceQuestion } from "@/components/voice/use-voice-question";
 import type { Question } from "@/data";
-import { stopActiveSpeech } from "@/lib/speech-playback";
-import { resetLessonResponses, resetQuestionResponse, saveResponse } from "@/lib/study-storage";
-import { QuestionNarration } from "./question-narration";
+import { getClientStudyState, resetLessonResponses, resetQuestionResponse, saveResponse } from "@/lib/study-storage";
 import { QuestionConfirmation, QuestionFeedback, QuestionOptions } from "./question-parts";
 import { useStudy } from "./study-provider";
 
@@ -15,10 +15,9 @@ type LessonQuizProps = {
   lessonTitle: string;
   questions: readonly Question[];
   concepts: readonly string[];
-  compact?: boolean;
 };
 
-export function LessonQuiz({ lessonId, lessonTitle, questions, concepts, compact = false }: LessonQuizProps) {
+export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: LessonQuizProps) {
   const [requestedIndex, setRequestedIndex] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [retryIndex, setRetryIndex] = useState<number | null>(null);
@@ -27,6 +26,7 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts, compact
   const radioGroupName = useId();
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const feedbackRef = useRef<HTMLParagraphElement>(null);
+  const quizRef = useRef<HTMLElement>(null);
   const pendingFocus = useRef<"step" | "feedback" | null>(null);
 
   function answeredOption(question: Question) {
@@ -47,23 +47,52 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts, compact
     pendingFocus.current = null;
   });
 
-  if (!questions.length) return null;
+  function inQuiz() {
+    return window.location.hash === "#exercicios" || Boolean(quizRef.current?.contains(document.activeElement));
+  }
+
+  const clearVoiceChoice = useVoiceQuestion({
+    question,
+    isActive: inQuiz,
+    answered: Boolean(answer),
+    onSelect: setSelectedId,
+    onConfirm: (optionId) => checkAnswer(optionId, false),
+    confirmation: "Resposta registrada.",
+  });
+
+  useVoiceActions((command) => {
+    if (!inQuiz() || !questions.length) return;
+    if (command.kind === "next-question" || command.kind === "next-step") {
+      if (!question) return { message: "Você chegou ao resultado dos exercícios." };
+      if (!answer) return { message: "Confirme a alternativa antes de avançar." };
+      showStep(showResult ? questions.length : currentIndex + 1);
+      return { message: showResult ? `Exercícios concluídos. ${correctCount} de ${questions.length} respostas corretas.` : `Pergunta ${currentIndex + 2}. Diga ler pergunta para ouvir.` };
+    }
+    if (command.kind === "previous-question" || command.kind === "previous-step") {
+      if (currentIndex === 0) return { message: "Você já está na primeira pergunta." };
+      showStep(currentIndex - 1);
+      return { message: `Pergunta ${currentIndex}. Diga ler pergunta para ouvir.` };
+    }
+  });
 
   function showStep(index: number) {
-    stopActiveSpeech();
+    clearVoiceChoice();
     pendingFocus.current = "step";
     setRequestedIndex(index);
     setSelectedId(null);
     setRetryIndex(null);
   }
 
-  function checkAnswer() {
-    if (!question || !selectedId || answer) return;
+  function checkAnswer(optionId: string | null, moveFocus = true) {
+    if (!question || !optionId || answer) return false;
+    const saved = getClientStudyState().progress.lessons[lessonId]?.responses[question.id];
+    if (saved && question.options.some((option) => option.id === saved.optionId)) return false;
 
-    stopActiveSpeech();
-    pendingFocus.current = "feedback";
+    clearVoiceChoice();
+    if (moveFocus) pendingFocus.current = "feedback";
     setRequestedIndex(currentIndex);
-    saveResponse(lessonId, question.id, selectedId);
+    saveResponse(lessonId, question.id, optionId);
+    return true;
   }
 
   function retryQuestion(index: number) {
@@ -73,30 +102,29 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts, compact
   }
 
   const correctCount = questions.filter((item) => answeredOption(item)?.id === item.correctOptionId).length;
+  if (!questions.length) return null;
 
   return (
-    <section id="exercicios" className="study-panel lesson-quiz" aria-labelledby={titleId} tabIndex={-1}>
+    <section id="exercicios" ref={quizRef} className="study-panel lesson-quiz" aria-labelledby={titleId} tabIndex={-1}>
       <div className="quiz-heading">
         <ClipboardList aria-hidden="true" size={22} />
         <h2 id={titleId}>Exercícios de fixação</h2>
       </div>
-      <p className="muted">
-        {compact
-          ? "Escolha uma alternativa e use Conferir resposta."
-          : "Responda uma pergunta por vez. Você pode voltar e repetir a atividade no seu ritmo."}
-      </p>
+      <p className="muted">Responda uma pergunta por vez. Você pode voltar e repetir a atividade no seu ritmo.</p>
 
       {question ? (
         <form className="quiz-body" onSubmit={(event) => event.preventDefault()}>
           <h3 className="quiz-step" ref={stepHeadingRef} tabIndex={-1}>
             Pergunta {currentIndex + 1} de {questions.length}
           </h3>
-          <QuestionNarration key={`${question.id}-${Boolean(answer)}`} question={question} />
           <QuestionOptions
             question={question}
             groupName={radioGroupName}
             selectedId={answer?.id ?? selectedId}
-            onSelect={setSelectedId}
+            onSelect={(optionId) => {
+              clearVoiceChoice();
+              setSelectedId(optionId);
+            }}
             disabled={Boolean(answer)}
           />
 
@@ -122,7 +150,7 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts, compact
                 </button>
               </>
             ) : (
-              <QuestionConfirmation onConfirm={checkAnswer} />
+              <QuestionConfirmation onConfirm={() => checkAnswer(selectedId)} />
             )}
           </div>
         </form>
@@ -142,11 +170,7 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts, compact
           <div className="quiz-concepts">
             <h4>Conceitos para revisar</h4>
             <ul>{concepts.map((concept) => <li key={concept}>{concept}</li>)}</ul>
-            {compact ? (
-              <Link className="text-link" href="/minhas-revisoes/">Minhas Revisões</Link>
-            ) : (
-              <Link href={`/revisao/#revisao-${lessonId}`}>Ir para a revisão rápida</Link>
-            )}
+            <Link href={`/revisao/#revisao-${lessonId}`}>Ir para a revisão rápida</Link>
           </div>
           <div className="control-row quiz-actions">
             <button type="button" className="button button-secondary" onClick={() => showStep(questions.length - 1)}>

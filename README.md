@@ -24,11 +24,11 @@ A prévia serve o diretório `out/` em [127.0.0.1:4173](http://127.0.0.1:4173).
 
 ## Usar os recursos de estudo
 
-- Na página inicial, **Estudar com acessibilidade por voz** abre o **Modo de Autonomia**, com controles essenciais para retomar uma etapa, ouvir, avançar e fazer exercícios. O modo usa as mesmas aulas, etapas, questões e progresso da navegação convencional.
 - Em **Modo completo**, consulte a aula integral, os exemplos, as descrições sequenciais dos diagramas e os exercícios.
 - Em **Modo guiado**, leia ou ouça uma etapa por vez. Use os links de navegação para voltar ou avançar e marque as etapas concluídas quando quiser. **Continuar estudando**, na página inicial, volta à última aula ou à seção registrada. No modo completo, a seção é registrada quando você segue um link para ela.
-- A **Leitura em voz alta** usa a síntese do navegador sob demanda. **Ouvir minhas opções** descreve a aula, a etapa e como continuar. No modo guiado e no Modo de Autonomia, **Repetir explicação** reinicia o trecho e **Parar leitura** encerra a narração. Disponibilidade e pronúncia dependem da voz e do dispositivo. A orientação e o conteúdo também estão em texto.
-- Em **Exercícios de fixação**, selecione **Alternativa A**, **Alternativa B**, **Alternativa C** ou **Alternativa D**, conforme a questão. **Ouvir pergunta e alternativas** e **Repetir pergunta** preservam a seleção. **Conferir resposta** registra a escolha e exibe a explicação. Ao concluir, veja o desempenho por conceito e refaça uma questão ou a atividade inteira.
+- Em **Interação por voz**, ative o microfone para abrir uma aula, retomar uma etapa, navegar, ouvir um trecho ou responder a exercícios em português brasileiro. **Ajuda** apresenta os comandos da tela atual. A seleção por voz só é registrada após um comando separado de confirmação.
+- A **Leitura em voz alta** usa a síntese do navegador sob demanda. Escolha a velocidade antes de começar. No modo guiado, **Repetir explicação** reinicia a leitura da etapa. Disponibilidade, pausa e pronúncia de termos científicos dependem da voz e do dispositivo. Caso a síntese se sobreponha ao leitor de tela, use **Interromper**. O conteúdo textual fica disponível na página.
+- Em **Exercícios de fixação**, confira a resposta, leia a explicação e consulte o trecho da aula relacionado. Ao concluir, veja o desempenho por conceito e refaça uma questão ou a atividade inteira.
 - Em **Modo revisão**, consulte os resumos e tente recuperar as respostas antes de abrir os cartões. **Minhas Revisões** reúne a agenda, os itens que precisam de prática, o histórico e sessões curtas com cartões e questões que você já respondeu.
 - Em **Simulações**, compare duas frequências cardíacas com valores numéricos e batimentos sintéticos opcionais. Na simulação respiratória, percorra quatro fases da respiração tranquila e acompanhe a explicação sobre diafragma, volume, pressão e fluxo de ar.
 - No menu **Acessibilidade**, ajuste o tamanho do texto ou ative o alto contraste. A simulação respiratória respeita a preferência de movimento reduzido. Os controles podem ser operados por teclado.
@@ -39,9 +39,9 @@ A configuração inicial de `src/lib/review-schedule.ts` usa **1, 3 e 7 dias do 
 
 O site usa a chave `fisioacessivel:study:v1` no `localStorage` da origem atual. A leitura dos dados antigos mantém preferências, última aula, conclusões e respostas. A primeira gravação no formato estendido acrescenta etapas concluídas, última etapa guiada, registros de prática, agenda e histórico de até 100 avaliações. **Apagar progresso** em **Minhas Revisões** ou **Revisão rápida** apaga os dados de estudo e mantém as preferências de acessibilidade. Se o armazenamento estiver bloqueado, o estado fica em memória durante a sessão da página.
 
-### Voice Access e TalkBack no Android
+### Comandos de voz
 
-O site usa os rótulos visíveis dos controles como referência para o Voice Access do Android. O Voice Access é configurado no sistema. A plataforma usa síntese de fala sob demanda e não solicita permissão de microfone. As preferências e o progresso usam a mesma chave de armazenamento em ambos os modos. [Comandos do Voice Access](https://support.google.com/accessibility/android/answer/6151854?hl=pt-BR) · [WCAG 2.5.3](https://www.w3.org/WAI/WCAG22/Understanding/label-in-name)
+O reconhecimento usa a Web Speech API quando disponível. A permissão é solicitada pelo navegador após a ativação explícita. O processamento pode depender do serviço de voz do navegador e o site não guarda gravações ou transcrições. A sessão pausa a escuta enquanto o site fala. Os controles convencionais ficam disponíveis. [Comandos, privacidade e roteiro de testes](docs/interacao-por-voz.md)
 
 ## Testar
 
@@ -52,17 +52,16 @@ npm run build
 npm run test:e2e
 ```
 
-O Playwright inicia e encerra a prévia estática na porta 4173. Encerre uma prévia iniciada manualmente antes de rodar a suíte. Os testes verificam rotas antigas e novas, leitura integral com JavaScript e imagens indisponíveis, migração e exclusão de progresso, retomada após fechar o navegador, exercícios por teclado, síntese simulada e simulações operadas sem som. As análises de axe usam as regras disponíveis de nível A e AA até WCAG 2.2 e incluem tela de 320 px com alto contraste e texto ampliado.
+O Playwright inicia e encerra a prévia estática na porta 4173. Encerre uma prévia iniciada manualmente antes de rodar a suíte. Os testes verificam as rotas, a leitura integral com JavaScript e imagens indisponíveis, a persistência de progresso, a revisão espaçada, os exercícios, os comandos de voz com APIs simuladas e as simulações sem som. As análises de axe usam as regras disponíveis de nível A e AA até WCAG 2.2 e incluem tela de 320 px com alto contraste e texto ampliado.
 
 ### Validação manual pendente
 
 WCAG 2.2 AA é a meta de desenvolvimento. Os testes automatizados cobrem critérios verificáveis no navegador. [WCAG 2.2 — W3C](https://www.w3.org/TR/WCAG22/)
 
 - **NVDA no Windows, com Chrome ou Firefox.** Percorrer títulos e regiões, verificar a mudança de foco entre etapas e entre perguntas, conferir os anúncios de feedback, conclusão e exclusão. Ler as fórmulas, as descrições sequenciais e os estados das simulações.
-- **Chrome no Android.** Avaliar Voice Access em português, TalkBack e o uso combinado em retrato, inclusive ao fechar e reabrir o Chrome. [Roteiro para aparelho real](docs/testes-android.md)
-- **VoiceOver no iOS.** Percorrer uma aula guiada, agendar uma revisão e avançar pelas simulações com os ajustes de texto do dispositivo.
+- **VoiceOver no iOS e TalkBack no Android.** Percorrer uma aula guiada, agendar uma revisão, comparar frequências e avançar pelas fases da respiração com os gestos e ajustes de texto do dispositivo.
 - **Acionadores e controles alternativos.** Percorrer os controles na ordem de foco, iniciar e parar áudio e repetir uma etapa ou questão com o dispositivo usado pelo estudante.
-- **Voz real em português brasileiro.** Ouvir uma aula e uma etapa inteira, conferir pronúncia, pausa, repetição e interrupção ao mudar de página. Repetir com o leitor de tela ativo e avaliar se as vozes se sobrepõem.
+- **Microfone e voz real em português brasileiro.** Testar permissão, comandos, alternância entre escuta e narração e reativação em Chrome e Safari com microfones reais. Repetir com o leitor de tela ativo. [Roteiro de interação por voz](docs/interacao-por-voz.md)
 - **Uso com estudantes.** Observar a retomada de uma etapa, a compreensão dos exemplos e a revisão com pessoas cegas ou com baixa visão, pessoas com mobilidade reduzida e pessoas com dificuldades de memória. Verificar legibilidade com ampliação e visibilidade do foco.
 
 ## Publicar a atualização
@@ -80,10 +79,10 @@ Use `npm run build` ao gerar a exportação no Windows. O pós-build corrige os 
 | Local | Responsabilidade |
 | --- | --- |
 | `src/app/aulas/` | Rotas integrais e etapas guiadas exportadas estaticamente |
-| `src/app/autonomia/` e `src/components/autonomy/` | Entrada e fluxo simplificado de estudo por voz |
 | `src/app/revisao/` e `src/app/minhas-revisoes/` | Revisão rápida e agenda de prática |
 | `src/app/simulacoes/` e `src/components/simulations/` | Páginas e controles das duas simulações |
 | `src/components/study/` | Seletor de modo, player, exercícios, progresso e revisão |
+| `src/components/voice/` e `src/lib/voice-*.ts` | Painel, interpretação, reconhecimento e sessão de voz |
 | `src/data/types.ts` | Tipos de módulo, aula, questões, cartões e créditos |
 | `src/data/modules.ts` | Catálogo, títulos e ordem dos tópicos |
 | `src/data/lessons/` e `src/data/questions/` | Texto das aulas, cartões e exercícios |

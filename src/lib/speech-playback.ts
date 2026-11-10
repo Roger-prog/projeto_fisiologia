@@ -1,10 +1,8 @@
+import { beginAudioActivity, stopActiveAudio } from "./audio-activity";
+
 const speechLanguage = "pt-BR";
 const maxChunkLength = 220;
-let interruptActiveSpeech: (() => void) | undefined;
-
-export function stopActiveSpeech() {
-  interruptActiveSpeech?.();
-}
+const utteranceTimeoutMs = 45_000;
 
 export type AudioPlayback = {
   start: () => void;
@@ -24,13 +22,13 @@ export function canPauseSpeech() {
     && typeof window.speechSynthesis?.resume === "function";
 }
 
-function getSpeechChunks(text: string) {
+export function getSpeechChunks(text: string, limit = maxChunkLength) {
   const chunks: string[] = [];
 
   for (const paragraph of text.split("\n")) {
     let chunk = "";
     for (const word of paragraph.trim().split(/\s+/u)) {
-      if (chunk && chunk.length + word.length + 1 > maxChunkLength) {
+      if (chunk && chunk.length + word.length + 1 > limit) {
         chunks.push(chunk);
         chunk = word;
       } else {
@@ -54,45 +52,52 @@ export function createSpeechPlayback({
   rate: number;
   onComplete: () => void;
   onError: () => void;
-  onInterrupt: () => void;
+  onInterrupt?: () => void;
 }): AudioPlayback {
   const synthesis = window.speechSynthesis;
   const chunks = getSpeechChunks(text);
   const voices = synthesis.getVoices?.() ?? [];
   const voice = voices.find((item) => item.localService && item.lang.toLowerCase() === "pt-br");
   let current: SpeechSynthesisUtterance | null = null;
+  let releaseActivity: (() => void) | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
   function release() {
-    if (interruptActiveSpeech === interrupt) interruptActiveSpeech = undefined;
+    clearTimeout(timer);
     window.removeEventListener("pagehide", interrupt);
-    document.removeEventListener("visibilitychange", interruptWhenHidden);
+    document.removeEventListener("visibilitychange", stopWhenHidden);
+    releaseActivity?.();
+    releaseActivity = undefined;
   }
 
-  function stop() {
-    release();
+  function cancelCurrent() {
     if (!current) return;
     current = null;
     try {
       synthesis.cancel();
-      // Some browsers keep the shared queue paused after cancellation.
+      // Some browsers keep their synthesis queue paused after cancellation.
       if (synthesis.paused) synthesis.resume?.();
     } catch {
-      // The inactive utterance cannot schedule any further chunks.
+      // The cancelled utterance cannot schedule any further chunks.
     }
+  }
+
+  function stop() {
+    cancelCurrent();
+    release();
   }
 
   function interrupt() {
     stop();
-    onInterrupt();
+    onInterrupt?.();
   }
 
-  function interruptWhenHidden() {
+  function stopWhenHidden() {
     if (document.hidden) interrupt();
   }
 
   function fail() {
-    current = null;
-    release();
+    stop();
     onError();
   }
 
@@ -110,12 +115,16 @@ export function createSpeechPlayback({
       utterance.rate = rate;
       if (voice) utterance.voice = voice;
       utterance.onend = () => {
-        if (current === utterance) speakChunk(index + 1);
+        if (current !== utterance) return;
+        clearTimeout(timer);
+        speakChunk(index + 1);
       };
       utterance.onerror = () => {
-        if (current === utterance) fail();
+        if (current !== utterance) return;
+        fail();
       };
       current = utterance;
+      timer = setTimeout(fail, utteranceTimeoutMs);
       synthesis.speak(utterance);
     } catch {
       fail();
@@ -124,14 +133,34 @@ export function createSpeechPlayback({
 
   return {
     start: () => {
-      stopActiveSpeech();
-      interruptActiveSpeech = interrupt;
+      releaseActivity = beginAudioActivity(interrupt);
       window.addEventListener("pagehide", interrupt);
-      document.addEventListener("visibilitychange", interruptWhenHidden);
+      document.addEventListener("visibilitychange", stopWhenHidden);
       speakChunk(0);
     },
-    pause: canPauseSpeech() ? () => synthesis.pause() : undefined,
-    resume: canPauseSpeech() ? () => synthesis.resume() : undefined,
+    pause: canPauseSpeech() ? () => {
+      synthesis.pause();
+      clearTimeout(timer);
+    } : undefined,
+    resume: canPauseSpeech() ? () => {
+      timer = setTimeout(fail, utteranceTimeoutMs);
+      synthesis.resume();
+    } : undefined,
     stop,
   };
+}
+
+export function stopActiveSpeech() {
+  stopActiveAudio();
+}
+
+export function speakVoiceFeedback(text: string) {
+  if (!isSpeechAvailable() || !text.trim()) return false;
+
+  try {
+    createSpeechPlayback({ text, rate: 1, onComplete: () => {}, onError: () => {} }).start();
+    return true;
+  } catch {
+    return false;
+  }
 }

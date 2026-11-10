@@ -5,6 +5,8 @@ import "@fontsource-variable/inter";
 import "./globals.css";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { StudyProvider } from "@/components/study/study-provider";
+import { VoiceControls } from "@/components/voice/voice-controls";
+import { VoiceProvider } from "@/components/voice/voice-provider";
 
 export const metadata: Metadata = {
   title: { default: "FisioAcessível", template: "%s | FisioAcessível" },
@@ -16,9 +18,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="pt-BR">
       <body>
         <StudyProvider>
-          <SiteHeader />
-          <main id="conteudo" tabIndex={-1}>{children}</main>
-          <SiteFooter />
+          <VoiceProvider>
+            <SiteHeader />
+            <VoiceControls />
+            <main id="conteudo" tabIndex={-1}>{children}</main>
+            <SiteFooter />
+          </VoiceProvider>
         </StudyProvider>
       </body>
     </html>

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { lessons } from "../src/data";
-import { getQuestionOptionLabel } from "../src/lib/question-option-label";
+import { optionLetter } from "../src/lib/voice-question";
 
 test("recupera preferências, conclusão e respostas salvas pela versão anterior", async ({ page }) => {
   const [lesson] = lessons;
@@ -31,9 +31,8 @@ test("recupera preferências, conclusão e respostas salvas pela versão anterio
   await expect(page.getByRole("button", { name: "Marcar aula como concluída" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText(nextQuestion.prompt, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Pergunta anterior", exact: true }).click();
-  const savedOption = page.getByRole("radio", { name: getQuestionOptionLabel(question.options.indexOf(correct)), exact: true });
-  await expect(savedOption).toHaveAccessibleDescription(correct.text);
-  await expect(savedOption).toBeChecked();
+  const optionName = `${optionLetter(question.options.indexOf(correct))}. ${correct.text}`;
+  await expect(page.getByRole("radio", { name: optionName, exact: true })).toBeChecked();
 
   await page.getByRole("banner").getByText("Acessibilidade", { exact: true }).click();
   await page.getByLabel("Tamanho do texto", { exact: true }).selectOption("extra-large");

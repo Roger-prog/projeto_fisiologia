@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { lessons } from "../src/data";
-import { getQuestionOptionLabel } from "../src/lib/question-option-label";
+import { optionLetter } from "../src/lib/voice-question";
 
 for (const aula of lessons) {
   const rota = `/aulas/${aula.id}/`;
@@ -21,7 +21,7 @@ for (const aula of lessons) {
     const primeira = aula.questions[0];
     const incorreta = primeira.options.find((opcao) => opcao.id !== primeira.correctOptionId)!;
     const opcaoIncorreta = page.getByRole("radio", {
-      name: getQuestionOptionLabel(primeira.options.indexOf(incorreta)),
+      name: `${optionLetter(primeira.options.indexOf(incorreta))}. ${incorreta.text}`,
       exact: true,
     });
     const feedback = page.locator(".quiz-feedback");
@@ -52,7 +52,7 @@ for (const aula of lessons) {
     for (const [indice, pergunta] of aula.questions.slice(1).entries()) {
       await expect(page.getByText(pergunta.prompt, { exact: true })).toBeVisible();
       const correta = pergunta.options.find((opcao) => opcao.id === pergunta.correctOptionId)!;
-      await page.getByRole("radio", { name: getQuestionOptionLabel(pergunta.options.indexOf(correta)), exact: true }).check();
+      await page.getByRole("radio", { name: `${optionLetter(pergunta.options.indexOf(correta))}. ${correta.text}`, exact: true }).check();
       await conferir.click();
       await expect(feedback).toContainText("Resposta correta.");
       await expect(feedback).toContainText(pergunta.explanation);
@@ -70,7 +70,7 @@ for (const aula of lessons) {
 
     await page.getByRole("button", { name: "Refazer pergunta 1", exact: true }).click();
     const correta = primeira.options.find((opcao) => opcao.id === primeira.correctOptionId)!;
-    await page.getByRole("radio", { name: getQuestionOptionLabel(primeira.options.indexOf(correta)), exact: true }).check();
+    await page.getByRole("radio", { name: `${optionLetter(primeira.options.indexOf(correta))}. ${correta.text}`, exact: true }).check();
     await conferir.click();
     await page.getByRole("button", { name: "Ver resultado", exact: true }).click();
     await expect(page.getByText(`Você acertou ${total} de ${total} questões.`, { exact: true })).toBeVisible();
@@ -215,7 +215,7 @@ test("controla a leitura em voz alta sem iniciar automaticamente", async ({ page
   await ler.press("Enter");
   await page.getByRole("button", { name: "Pausar", exact: true }).press("Enter");
   await page.getByRole("button", { name: "Continuar", exact: true }).press("Enter");
-  await page.getByRole("button", { name: "Parar leitura", exact: true }).press("Enter");
+  await page.getByRole("button", { name: "Interromper", exact: true }).press("Enter");
   await expect(ler).toBeEnabled();
   expect((await chamadas()).slice(-4)).toEqual(["speak pt-BR 1.25", "pause", "resume", "cancel"]);
 });

@@ -22,7 +22,7 @@ test("retoma a etapa correta e só conclui quando o estudante marca", async ({ p
   await expect(page).toHaveURL(stepPath(ventilation.id));
 
   await expect(page.getByRole("heading", { name: ventilation.title, level: 1 })).toBeFocused();
-  await expect(page.getByText("Etapa 2 de 7", { exact: true })).toBeVisible();
+  await expect(page.getByText("Etapa 2 de 7")).toBeVisible();
   await expect(page.getByText(ventilation.objective, { exact: true })).toBeVisible();
   await expect(page.getByText(ventilation.summary!, { exact: true })).toBeVisible();
   await expect(page.getByText(pressures.paragraphs[0], { exact: true })).toHaveCount(0);
@@ -81,7 +81,7 @@ test("a leitura guiada repete a etapa e para ao navegar", async ({ page }) => {
   await expect(page.getByRole("heading", { name: pressures.title, level: 1 })).toBeFocused();
   await expect.poll(calls).toEqual([`${ventilation.title}.`, "cancel", `${ventilation.title}.`, "cancel"]);
   await expect(listen).toBeEnabled();
-  await expect(page.getByRole("button", { name: "Parar leitura", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Interromper", exact: true })).toBeDisabled();
 });
 
 test("mantém a retomada ao abrir âncoras auxiliares e acompanha o histórico de etapas", async ({ page, context }) => {

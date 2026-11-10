@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useVoiceQuestion } from "@/components/voice/use-voice-question";
 import type { ReviewItem } from "@/data/review-items";
 import type { ReviewGrade, ReviewRecord } from "@/lib/review-schedule";
-import { stopActiveSpeech } from "@/lib/speech-playback";
 import { recordReview } from "@/lib/study-storage";
-import { QuestionNarration } from "./question-narration";
 import { QuestionConfirmation, QuestionFeedback, QuestionOptions } from "./question-parts";
 import { ReviewGradeControls } from "./review-grades";
 
@@ -22,7 +21,6 @@ export function ReviewSession({ queue, onClose }: {
   }, [index]);
 
   function gradeItem(grade: ReviewGrade) {
-    stopActiveSpeech();
     recordReview(current.item.id, grade, current.record);
     setIndex(index + 1);
   }
@@ -52,17 +50,30 @@ function ReviewStep({ item, onGrade }: { item: ReviewItem; onGrade: (grade: Revi
   const [revealed, setRevealed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const response = useRef<HTMLParagraphElement>(null);
+  const focusResponse = useRef(false);
   const groupName = useId();
 
   useEffect(() => {
-    if (revealed) response.current?.focus();
+    if (revealed && focusResponse.current) response.current?.focus();
   }, [revealed]);
 
-  function answerQuestion() {
-    if (!selected) return;
-    stopActiveSpeech();
+  function answerQuestion(optionId: string | null, moveFocus = true) {
+    if (!optionId || revealed) return false;
+    clearVoiceChoice();
+    focusResponse.current = moveFocus;
+    setSelected(optionId);
     setRevealed(true);
+    return true;
   }
+
+  const clearVoiceChoice = useVoiceQuestion({
+    question: item.kind === "question" ? item.question : undefined,
+    isActive: () => true,
+    answered: revealed,
+    onSelect: setSelected,
+    onConfirm: (optionId) => answerQuestion(optionId, false),
+    confirmation: "Resposta conferida.",
+  });
 
   return (
     <div className="review-session-body">
@@ -72,25 +83,30 @@ function ReviewStep({ item, onGrade }: { item: ReviewItem; onGrade: (grade: Revi
           {revealed ? (
             <p ref={response} tabIndex={-1}>{item.card.answer}</p>
           ) : (
-            <button type="button" className="button button-primary" onClick={() => setRevealed(true)}>
+            <button type="button" className="button button-primary" onClick={() => {
+              focusResponse.current = true;
+              setRevealed(true);
+            }}>
               Revelar resposta
             </button>
           )}
         </>
       ) : (
         <form className="review-session-body" onSubmit={(event) => event.preventDefault()}>
-          <QuestionNarration key={`${item.question.id}-${revealed}`} question={item.question} />
           <QuestionOptions
             question={item.question}
             groupName={groupName}
             selectedId={selected}
-            onSelect={setSelected}
+            onSelect={(optionId) => {
+              clearVoiceChoice();
+              setSelected(optionId);
+            }}
             disabled={revealed}
           />
           {revealed && selected ? (
             <QuestionFeedback question={item.question} lessonId={item.lessonId} optionId={selected} feedbackRef={response} />
           ) : (
-            <QuestionConfirmation onConfirm={answerQuestion} />
+            <QuestionConfirmation onConfirm={() => answerQuestion(selected)} />
           )}
         </form>
       )}

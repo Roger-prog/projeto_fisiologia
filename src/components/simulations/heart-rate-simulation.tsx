@@ -3,6 +3,7 @@
 import { Square, Volume2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type HeartRate, heartRateQuestions, heartRates, secondsPerBeat } from "@/data/simulations";
+import { beginAudioActivity } from "@/lib/audio-activity";
 import { createHeartbeatAudio } from "./heartbeat-audio";
 import styles from "./simulations.module.css";
 
@@ -33,12 +34,15 @@ export function HeartRateSimulation() {
   const [rates, setRates] = useState<Record<Rhythm, HeartRate>>({ A: 60, B: 120 });
   const [sound, setSound] = useState<SoundState>({ kind: "idle" });
   const audio = useRef<ReturnType<typeof createHeartbeatAudio> | null>(null);
+  const releaseActivity = useRef<(() => void) | null>(null);
   const activeRhythm = sound.kind === "preparing" || sound.kind === "playing" ? sound.rhythm : null;
 
   const releaseAudio = useCallback(() => {
     const playing = audio.current;
     audio.current = null;
     playing?.stop();
+    releaseActivity.current?.();
+    releaseActivity.current = null;
     return Boolean(playing);
   }, []);
 
@@ -71,6 +75,9 @@ export function HeartRateSimulation() {
     try {
       playback = createHeartbeatAudio(rate);
       audio.current = playback;
+      releaseActivity.current = beginAudioActivity(() => {
+        if (releaseAudio()) setSound({ kind: "stopped" });
+      });
       setSound({ kind: "preparing", rhythm, rate });
       await playback.start();
       if (audio.current === playback) setSound({ kind: "playing", rhythm, rate });
