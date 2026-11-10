@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PageIntro } from "@/components/page-intro";
 import { QuickReview } from "@/components/study/quick-review";
 import { ClearProgress } from "@/components/study/study-provider";
@@ -12,6 +13,9 @@ export default function ReviewPage() {
       <PageIntro category="Prática" title="Revisão rápida">
         Tente responder de memória antes de revelar a resposta. Você pode revisar as perguntas quantas vezes quiser.
       </PageIntro>
+      <Link className="button button-primary review-dashboard-link" href="/minhas-revisoes/">
+        Abrir Minhas Revisões
+      </Link>
 
       <div className="review-grid">
         {lessons.map((lesson) => (
@@ -19,6 +23,8 @@ export default function ReviewPage() {
             key={lesson.id}
             id={`revisao-${lesson.id}`}
             title={lesson.title}
+            lessonId={lesson.id}
+            summary={lesson.summary}
             items={lesson.quickReview}
           />
         ))}
@@ -26,7 +32,7 @@ export default function ReviewPage() {
 
       <section className="study-panel progress-panel" aria-labelledby="seu-progresso">
         <h2 id="seu-progresso">Seu progresso</h2>
-        <p>As aulas concluídas e as respostas ficam salvas neste navegador. Você pode apagar esse histórico a qualquer momento.</p>
+        <p>As etapas concluídas, as respostas e as revisões ficam salvas neste navegador. Você pode apagar esse histórico a qualquer momento.</p>
         <ClearProgress />
       </section>
     </div>

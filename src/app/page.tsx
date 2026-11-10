@@ -37,8 +37,8 @@ export default function HomePage() {
             <Link className="button button-primary" href="/modulos/">
               Começar a estudar <ArrowRight size={19} aria-hidden="true" />
             </Link>
-            <ResumeStudy />
           </div>
+          <ResumeStudy />
           <p className="hero-note">Para estudantes de graduação · Engenharia Biomédica</p>
         </div>
         <div className="hero-art" aria-hidden="true">
@@ -95,8 +95,8 @@ export default function HomePage() {
               <h2 id="acessibilidade-inicio">Escolha como estudar</h2>
               <p>Leia, ouça ou pratique. Os recursos podem ser usados juntos ou separadamente.</p>
             </div>
-            <Link className="text-link" href="/revisao/">
-              Experimentar a revisão rápida <ArrowUpRight size={17} aria-hidden="true" />
+            <Link className="text-link" href="/minhas-revisoes/">
+              Abrir Minhas Revisões <ArrowUpRight size={17} aria-hidden="true" />
             </Link>
           </div>
           <ul className="feature-grid" role="list">

@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/normalize-static-export.mjs",
     "preview": "serve out --listen tcp://127.0.0.1:4173 --no-port-switching",
     "typecheck": "next typegen && tsc --noEmit",
     "test:e2e": "playwright test"

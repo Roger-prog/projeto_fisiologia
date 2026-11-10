@@ -4,10 +4,14 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, ChevronRight } from "lucide-react";
 import { ReferenceList } from "@/components/reference-list";
 import { AudioPlayer } from "@/components/study/audio-player";
+import { LessonModeNav } from "@/components/study/lesson-mode-nav";
 import { LessonQuiz } from "@/components/study/lesson-quiz";
+import { LessonDiagram, LessonSimulationLink, LessonStepContent } from "@/components/study/lesson-step-content";
 import { LessonProgress } from "@/components/study/study-provider";
-import { figureCredits, getLesson, getLessonReferences, getModule, lessons } from "@/data";
+import { TrackLessonVisit } from "@/components/study/track-lesson-visit";
+import { getLesson, getLessonReferences, getModule, lessons } from "@/data";
 import { getLessonSpeechText } from "@/lib/lesson-speech";
+import { getLessonSteps, guidedLessonHref } from "@/lib/lesson-steps";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -40,10 +44,13 @@ export default async function LessonPage({ params }: PageProps) {
   const index = lessons.indexOf(lesson);
   const previous = lessons[index - 1];
   const next = lessons[index + 1];
-  const credit = figureCredits.find(({ id }) => id === lesson.figure.creditId);
+  const steps = getLessonSteps(lesson);
+  const [introduction] = steps;
+  const explanationSteps = steps.filter((step) => step.kind === "section");
 
   return (
     <div className="site-shell inner-page lesson-page">
+      <TrackLessonVisit lessonId={lesson.id} lessonTitle={lesson.title} steps={steps.map(({ id, title }) => ({ id, title }))} />
       <nav aria-label="Localização" className="breadcrumb">
         <ol>
           <li><Link href="/modulos/">Módulos</Link></li>
@@ -60,49 +67,62 @@ export default async function LessonPage({ params }: PageProps) {
             <h2>Objetivo de aprendizagem</h2>
             <p>{lesson.objective}</p>
           </div>
+          <LessonModeNav lessonId={lesson.id} stepIds={steps.map(({ id }) => id)} current="complete" />
         </header>
 
         <div className="lesson-layout">
           <nav className="lesson-outline" aria-labelledby="nesta-aula">
             <h2 id="nesta-aula">Nesta aula</h2>
-            <ul>
-              {outline.map(({ id, label }) => <li key={id}><a href={`#${id}`}>{label}</a></li>)}
+            <ul role="list">
+              {outline.map(({ id, label }) => (
+                <li key={id}>
+                  <a href={`#${id}`}>{label}</a>
+                  {id === "explicacao" && (
+                    <details className="lesson-outline-steps">
+                      <summary>Seções da explicação</summary>
+                      <ul role="list">
+                        {explanationSteps.map((step) => (
+                          <li key={step.id}><a href={`#${step.id}`}>{step.title}</a></li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </li>
+              ))}
             </ul>
           </nav>
 
           <div className="lesson-content">
-            <div id="leitura" tabIndex={-1}><AudioPlayer text={getLessonSpeechText(lesson)} /></div>
+            <div id="leitura" tabIndex={-1}><AudioPlayer key={lesson.id} text={getLessonSpeechText(lesson)} /></div>
 
             <section className="lesson-section" aria-labelledby="introducao">
               <h2 id="introducao" tabIndex={-1}>Introdução</h2>
-              <p>{lesson.introduction}</p>
+              <LessonStepContent step={introduction} headingLevel={3} showObjective={false} />
             </section>
 
             <section className="lesson-section" aria-labelledby="explicacao">
               <h2 id="explicacao" tabIndex={-1}>Entenda o tema</h2>
-              {lesson.sections.map((section) => (
-                <div key={section.id}>
-                  <h3 id={section.id}>{section.title}</h3>
-                  {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+              {explanationSteps.map((step) => (
+                <div key={step.id} className="mb-8">
+                  <h3 id={step.id} tabIndex={-1}>{step.title}</h3>
+                  <LessonStepContent step={step} headingLevel={4} />
+                  <div className="control-row mt-4">
+                    <Link
+                      className="button button-secondary"
+                      href={guidedLessonHref(lesson.id, step.id)}
+                      aria-label={`Estudar esta etapa. ${step.title}`}
+                    >
+                      Estudar esta etapa
+                    </Link>
+                  </div>
+                  {lesson.simulation?.sectionId === step.id && <LessonSimulationLink simulation={lesson.simulation} />}
                 </div>
               ))}
             </section>
 
             <section className="lesson-section" aria-labelledby="diagrama">
               <h2 id="diagrama" tabIndex={-1}>Diagrama</h2>
-              <figure className="lesson-figure">
-                {/* SVGs are served locally and retain their original vector format. */}
-                <img src={lesson.figure.src} alt={lesson.figure.alt} loading="lazy" />
-                <figcaption>
-                  <p className="figure-title">{lesson.figure.title}</p>
-                  <p>{lesson.figure.description}</p>
-                  {credit && (
-                    <p className="figure-credit">
-                      {credit.author}. <Link href={`/referencias/#${credit.id}`}>Crédito e licença da imagem</Link>.
-                    </p>
-                  )}
-                </figcaption>
-              </figure>
+              <LessonDiagram figure={lesson.figure} />
             </section>
 
             <section className="lesson-section" aria-labelledby="termos">
@@ -117,7 +137,7 @@ export default async function LessonPage({ params }: PageProps) {
             <section className="lesson-section summary-panel" aria-labelledby="resumo">
               <h2 id="resumo" tabIndex={-1}>Resumo</h2>
               <ul>{lesson.summary.map((point) => <li key={point}>{point}</li>)}</ul>
-              <LessonProgress lessonId={lesson.id} lessonTitle={lesson.title} />
+              <LessonProgress lessonId={lesson.id} />
             </section>
 
             <LessonQuiz

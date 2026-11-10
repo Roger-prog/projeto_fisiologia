@@ -20,7 +20,6 @@ import {
   subscribeToStudyState,
   type TextSize,
   toggleLessonCompletion,
-  visitLesson,
 } from "@/lib/study-storage";
 
 const StudyContext = createContext(getServerStudyState());
@@ -93,22 +92,31 @@ export function AccessibilityControls() {
 
 export function ResumeStudy() {
   const { lastLesson } = useStudy().progress;
+  const descriptionId = useId();
   if (!lastLesson) return null;
 
+  const lessonHref = `/aulas/${lastLesson.id}/`;
+  const { section } = lastLesson;
+  const href = section?.mode === "guided"
+    ? `${lessonHref}guiado/${section.id}/`
+    : section ? `${lessonHref}#${section.id}` : lessonHref;
+
   return (
-    <Link className="button button-secondary" href={`/aulas/${lastLesson.id}/`}>
-      Continuar de onde parei
-      <ArrowRight aria-hidden="true" size={18} />
-    </Link>
+    <div className="resume-study">
+      <p id={descriptionId}>
+        Você estava estudando <strong>{lastLesson.title}</strong>
+        {section && <> · {section.title}</>}
+      </p>
+      <Link className="button button-secondary" href={href} aria-describedby={descriptionId}>
+        Continuar estudando
+        <ArrowRight aria-hidden="true" size={18} />
+      </Link>
+    </div>
   );
 }
 
-export function LessonProgress({ lessonId, lessonTitle }: { lessonId: string; lessonTitle: string }) {
+export function LessonProgress({ lessonId }: { lessonId: string }) {
   const completed = Boolean(useStudy().progress.lessons[lessonId]?.completedAt);
-
-  useEffect(() => {
-    visitLesson({ id: lessonId, title: lessonTitle });
-  }, [lessonId, lessonTitle]);
 
   return (
     <div className="control-row lesson-completion">
@@ -158,7 +166,7 @@ export function ClearProgress() {
         Apagar progresso
       </button>
       <div id={confirmationId} hidden={!confirming} className="clear-progress-confirmation">
-        <p>Esta ação apaga as respostas, as conclusões e a última aula aberta neste navegador.</p>
+        <p>Esta ação apaga as respostas, as etapas concluídas, a última aula aberta e as revisões salvas neste navegador.</p>
         <div className="control-row">
           <button
             ref={confirmRef}

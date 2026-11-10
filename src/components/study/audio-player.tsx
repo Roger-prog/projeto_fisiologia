@@ -1,6 +1,6 @@
 "use client";
 
-import { Pause, Play, Square, Volume2 } from "lucide-react";
+import { Pause, Play, RotateCcw, Square, Volume2 } from "lucide-react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import {
   type AudioPlayback,
@@ -33,32 +33,75 @@ function getServerSpeechSupport() {
   return "pending";
 }
 
-export function AudioPlayer({ text }: { text: string }) {
+export function AudioPlayer({
+  text,
+  scope = "lesson",
+  headingLevel = 2,
+}: {
+  text: string;
+  scope?: "lesson" | "section";
+  headingLevel?: 2 | 3;
+}) {
   const support = useSyncExternalStore(subscribeToSupport, getSpeechSupport, getServerSpeechSupport);
   const [state, setState] = useState<PlaybackState>("idle");
   const [rate, setRate] = useState("1");
   const playback = useRef<AudioPlayback | null>(null);
   const primaryButton = useRef<HTMLButtonElement>(null);
   const stopButton = useRef<HTMLButtonElement>(null);
+  const repeatButton = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const speedId = useId();
   const speedHintId = useId();
   const active = state === "playing" || state === "paused";
+  const section = scope === "section";
+  const replay = section && (state === "finished" || state === "stopped");
+  const Heading = headingLevel === 2 ? "h2" : "h3";
 
-  useEffect(() => () => {
-    playback.current?.stop();
-    playback.current = null;
+  useEffect(() => {
+    function stop() {
+      playback.current?.stop();
+      playback.current = null;
+    }
+
+    function onPageHide() {
+      if (!playback.current) return;
+      stop();
+      setState("stopped");
+    }
+
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      window.removeEventListener("pagehide", onPageHide);
+      stop();
+    };
   }, []);
 
   function finish(nextState: PlaybackState) {
-    if (document.activeElement === stopButton.current) primaryButton.current?.focus();
+    if (document.activeElement === stopButton.current || document.activeElement === repeatButton.current) {
+      primaryButton.current?.focus();
+    }
     playback.current = null;
     setState(nextState);
   }
 
-  function togglePlayback() {
+  function beginPlayback() {
+    if (!isSpeechAvailable()) return;
+    playback.current?.stop();
+    playback.current = createSpeechPlayback({
+      text,
+      rate: Number(rate),
+      onComplete: () => finish("finished"),
+      onError: () => finish("error"),
+    });
+    setState("playing");
+    playback.current.start();
+  }
+
+  function togglePlayback(restart = false) {
     try {
-      if (state === "playing") {
+      if (restart) {
+        beginPlayback();
+      } else if (state === "playing") {
         if (playback.current?.pause) {
           setState("paused");
           playback.current.pause();
@@ -66,15 +109,8 @@ export function AudioPlayer({ text }: { text: string }) {
       } else if (state === "paused") {
         setState("playing");
         playback.current?.resume?.();
-      } else if (isSpeechAvailable()) {
-        playback.current = createSpeechPlayback({
-          text,
-          rate: Number(rate),
-          onComplete: () => finish("finished"),
-          onError: () => finish("error"),
-        });
-        setState("playing");
-        playback.current.start();
+      } else {
+        beginPlayback();
       }
     } catch {
       playback.current?.stop();
@@ -86,7 +122,7 @@ export function AudioPlayer({ text }: { text: string }) {
     <section className="study-panel audio-player" aria-labelledby={titleId}>
       <div className="audio-heading">
         <Volume2 size={22} aria-hidden="true" />
-        <h2 id={titleId}>Leitura em voz alta</h2>
+        <Heading id={titleId}>{section ? "Leitura da etapa em voz alta" : "Leitura em voz alta"}</Heading>
       </div>
       {support === "unavailable" ? (
         <p>A leitura em voz alta não está disponível neste navegador. O texto completo está nesta página.</p>
@@ -101,11 +137,14 @@ export function AudioPlayer({ text }: { text: string }) {
               className="button button-primary"
               ref={primaryButton}
               aria-disabled={state === "playing" && support !== "can-pause"}
-              onClick={togglePlayback}
+              onClick={() => togglePlayback()}
             >
               {state === "playing" && support === "can-pause"
                 ? <><Pause size={18} aria-hidden="true" />Pausar</>
-                : <><Play size={18} aria-hidden="true" />{state === "paused" ? "Continuar" : "Ouvir a aula"}</>}
+                : <>
+                  {replay ? <RotateCcw size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}
+                  {state === "paused" ? "Continuar" : replay ? "Repetir explicação" : section ? "Ouvir a etapa" : "Ouvir a aula"}
+                </>}
             </button>
             <button
               type="button"
@@ -120,6 +159,17 @@ export function AudioPlayer({ text }: { text: string }) {
               <Square size={16} aria-hidden="true" />
               Interromper
             </button>
+            {section && active && (
+              <button
+                type="button"
+                className="button button-secondary"
+                ref={repeatButton}
+                onClick={() => togglePlayback(true)}
+              >
+                <RotateCcw size={18} aria-hidden="true" />
+                Repetir explicação
+              </button>
+            )}
             <div className="audio-speed">
               <label className="field-label" htmlFor={speedId}>Velocidade da leitura</label>
               <select
@@ -137,7 +187,9 @@ export function AudioPlayer({ text }: { text: string }) {
               </select>
             </div>
           </div>
-          <p role="status" className="audio-status">{messages[state]}</p>
+          {/* Reserve the live region for failures to avoid narrating over playback. */}
+          <p className="audio-status">{state !== "error" ? messages[state] : ""}</p>
+          <p role="status" className="audio-status">{state === "error" ? messages.error : ""}</p>
         </>
       )}
     </section>

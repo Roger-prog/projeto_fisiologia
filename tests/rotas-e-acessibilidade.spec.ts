@@ -9,6 +9,10 @@ const rotas = [
   cardiovascular,
   respiratoria,
   "/revisao/",
+  "/minhas-revisoes/",
+  "/simulacoes/",
+  "/simulacoes/frequencia-cardiaca/",
+  "/simulacoes/mecanica-respiratoria/",
   "/referencias/",
 ];
 
@@ -51,6 +55,16 @@ test("uma aula inexistente retorna 404 e oferece acesso aos módulos", async ({ 
   await expect(page.getByRole("heading", { level: 1, name: "Página não encontrada" })).toBeVisible();
   await page.getByRole("link", { name: "Ver módulos", exact: true }).click();
   await expect(page).toHaveURL(/\/modulos\/$/);
+});
+
+test("a exportação estática serve os arquivos de navegação do Next.js", async ({ page }) => {
+  const arquivo = page.waitForResponse((response) => (
+    new URL(response.url()).pathname === "/modulos/__next.modulos.__PAGE__.txt"
+  ));
+  await page.goto("/");
+  expect((await arquivo).status()).toBe(200);
+  await page.getByRole("navigation", { name: "Navegação principal" }).getByRole("link", { name: "Módulos", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Módulos de estudo", level: 1 })).toBeVisible();
 });
 
 test("os módulos oferecem links apenas para as aulas disponíveis", async ({ page }) => {

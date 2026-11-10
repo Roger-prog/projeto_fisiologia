@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 const items = [
   { href: "/", label: "Início" },
   { href: "/modulos/", label: "Módulos" },
-  { href: "/revisao/", label: "Revisão rápida" },
+  { href: "/minhas-revisoes/", label: "Minhas Revisões" },
+  { href: "/simulacoes/", label: "Simulações" },
   { href: "/referencias/", label: "Referências" },
 ] as const;
 
@@ -17,14 +18,17 @@ export function SiteNav() {
     <nav className="site-nav" aria-label="Navegação principal">
       {items.map(({ href, label }) => {
         const current = pathname === href;
-        const withinModules = href === "/modulos/" && pathname.startsWith("/aulas/");
+        const related =
+          (href === "/modulos/" && pathname.startsWith("/aulas/")) ||
+          (href === "/minhas-revisoes/" && pathname === "/revisao/") ||
+          (href === "/simulacoes/" && pathname.startsWith("/simulacoes/"));
 
         return (
           <Link
             key={href}
             href={href}
-            aria-current={current ? "page" : undefined}
-            data-active={current || withinModules ? "" : undefined}
+            aria-current={current ? "page" : related ? "location" : undefined}
+            data-active={current || related ? "" : undefined}
           >
             {label}
           </Link>

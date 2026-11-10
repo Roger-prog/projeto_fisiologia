@@ -14,7 +14,14 @@ export interface PhysiologyModule {
 export interface LessonSection {
   id: string;
   title: string;
+  objective: string;
   paragraphs: readonly string[];
+  summary: string;
+  example?: {
+    title: string;
+    paragraphs: readonly string[];
+    formula?: { visual: string; spoken: string };
+  };
 }
 
 export interface LessonTerm {
@@ -24,10 +31,14 @@ export interface LessonTerm {
 
 export interface LessonFigure {
   src: string;
+  width: number;
+  height: number;
   alt: string;
   title: string;
   description: string;
+  descriptionSteps: readonly string[];
   creditId: string;
+  sectionId: string;
 }
 
 export interface Question {
@@ -36,6 +47,9 @@ export interface Question {
   options: readonly { id: string; text: string }[];
   correctOptionId: string;
   explanation: string;
+  concept: string;
+  sectionId: string;
+  supplement: string;
 }
 
 export interface ReviewCard {
@@ -50,9 +64,11 @@ export interface Lesson {
   title: string;
   objective: string;
   introduction: string;
+  introductionSummary: string;
   sections: readonly LessonSection[];
   terms: readonly LessonTerm[];
   figure: LessonFigure;
+  simulation?: { sectionId: string; href: string; label: string };
   summary: readonly string[];
   questions: readonly Question[];
   quickReview: readonly ReviewCard[];

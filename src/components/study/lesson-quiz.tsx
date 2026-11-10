@@ -4,7 +4,8 @@ import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardList, RotateCcw } from "l
 import Link from "next/link";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import type { Question } from "@/data";
-import { resetLessonResponses, saveResponse } from "@/lib/study-storage";
+import { resetLessonResponses, resetQuestionResponse, saveResponse } from "@/lib/study-storage";
+import { QuestionFeedback, QuestionOptions } from "./question-parts";
 import { useStudy } from "./study-provider";
 
 type LessonQuizProps = {
@@ -17,6 +18,7 @@ type LessonQuizProps = {
 export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: LessonQuizProps) {
   const [requestedIndex, setRequestedIndex] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [retryIndex, setRetryIndex] = useState<number | null>(null);
   const responses = useStudy().progress.lessons[lessonId]?.responses;
   const titleId = useId();
   const radioGroupName = useId();
@@ -34,7 +36,7 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
   const currentIndex = requestedIndex === null || requestedIndex >= questions.length ? initialIndex : requestedIndex;
   const question = questions[currentIndex];
   const answer = question && answeredOption(question);
-  const correctOption = question?.options.find((option) => option.id === question.correctOptionId);
+  const showResult = currentIndex === questions.length - 1 || (currentIndex === retryIndex && firstUnanswered < 0);
 
   useEffect(() => {
     if (pendingFocus.current === "step") stepHeadingRef.current?.focus();
@@ -48,6 +50,7 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
     pendingFocus.current = "step";
     setRequestedIndex(index);
     setSelectedId(null);
+    setRetryIndex(null);
   }
 
   function checkAnswer(event: FormEvent<HTMLFormElement>) {
@@ -57,6 +60,12 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
     pendingFocus.current = "feedback";
     setRequestedIndex(currentIndex);
     saveResponse(lessonId, question.id, selectedId);
+  }
+
+  function retryQuestion(index: number) {
+    showStep(index);
+    setRetryIndex(index);
+    resetQuestionResponse(lessonId, questions[index].id);
   }
 
   const correctCount = questions.filter((item) => answeredOption(item)?.id === item.correctOptionId).length;
@@ -74,34 +83,16 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
           <h3 className="quiz-step" ref={stepHeadingRef} tabIndex={-1}>
             Pergunta {currentIndex + 1} de {questions.length}
           </h3>
-          <fieldset className="quiz-question" disabled={Boolean(answer)}>
-            <legend>{question.prompt}</legend>
-            {question.options.map((option) => (
-              <label key={`${question.id}-${option.id}`} className="quiz-option" data-selected={(answer?.id ?? selectedId) === option.id}>
-                <input
-                  type="radio"
-                  name={radioGroupName}
-                  value={option.id}
-                  checked={(answer?.id ?? selectedId) === option.id}
-                  onChange={() => setSelectedId(option.id)}
-                  required
-                />
-                <span>{option.text}</span>
-              </label>
-            ))}
-          </fieldset>
+          <QuestionOptions
+            question={question}
+            groupName={radioGroupName}
+            selectedId={answer?.id ?? selectedId}
+            onSelect={setSelectedId}
+            disabled={Boolean(answer)}
+          />
 
           {answer && (
-            <p
-              className="quiz-feedback"
-              data-correct={answer.id === question.correctOptionId}
-              ref={feedbackRef}
-              tabIndex={-1}
-            >
-              <strong>{answer.id === question.correctOptionId ? "Resposta correta." : "Resposta incorreta."}</strong>
-              {answer.id !== question.correctOptionId && correctOption ? ` A alternativa correta é “${correctOption.text}”.` : ""}
-              {` ${question.explanation}`}
-            </p>
+            <QuestionFeedback question={question} lessonId={lessonId} optionId={answer.id} feedbackRef={feedbackRef} />
           )}
 
           <div className="control-row quiz-actions">
@@ -112,10 +103,15 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
               </button>
             )}
             {answer ? (
-              <button type="button" className="button button-primary" onClick={() => showStep(currentIndex + 1)}>
-                {currentIndex === questions.length - 1 ? "Ver resultado" : "Próxima pergunta"}
-                <ArrowRight size={18} aria-hidden="true" />
-              </button>
+              <>
+                <button type="button" className="button button-primary" onClick={() => showStep(showResult ? questions.length : currentIndex + 1)}>
+                  {showResult ? "Ver resultado" : "Próxima pergunta"}
+                  <ArrowRight size={18} aria-hidden="true" />
+                </button>
+                <button type="button" className="button button-secondary" onClick={() => retryQuestion(currentIndex)}>
+                  Refazer esta pergunta
+                </button>
+              </>
             ) : (
               <button type="submit" className="button button-primary">Conferir resposta</button>
             )}
@@ -128,6 +124,12 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
             Exercícios concluídos
           </h3>
           <p>Você acertou {correctCount} de {questions.length} questões.</p>
+          <QuizPerformance
+            questions={questions}
+            lessonId={lessonId}
+            isCorrect={(question) => answeredOption(question)?.id === question.correctOptionId}
+            onRetry={retryQuestion}
+          />
           <div className="quiz-concepts">
             <h4>Conceitos para revisar</h4>
             <ul>{concepts.map((concept) => <li key={concept}>{concept}</li>)}</ul>
@@ -154,5 +156,57 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
         </div>
       )}
     </section>
+  );
+}
+
+function QuizPerformance({ questions, lessonId, isCorrect, onRetry }: {
+  questions: readonly Question[];
+  lessonId: string;
+  isCorrect: (question: Question) => boolean;
+  onRetry: (index: number) => void;
+}) {
+  const topics = new Map<string, { correct: number; total: number }>();
+  const incorrect: { question: Question; index: number }[] = [];
+
+  questions.forEach((question, index) => {
+    const result = topics.get(question.concept) ?? { correct: 0, total: 0 };
+    result.total += 1;
+    if (isCorrect(question)) {
+      result.correct += 1;
+    } else {
+      incorrect.push({ question, index });
+    }
+    topics.set(question.concept, result);
+  });
+
+  return (
+    <div className="quiz-concepts">
+      <h4>Desempenho por conteúdo</h4>
+      <ul>
+        {[...topics].map(([topic, { correct, total }]) => (
+          <li key={topic}><strong>{topic}</strong> — {correct} de {total} {total === 1 ? "questão" : "questões"} com acerto</li>
+        ))}
+      </ul>
+      {incorrect.length > 0 && (
+        <>
+          <h4>Conceitos que vale praticar</h4>
+          <ul className="quiz-retry-list">
+            {incorrect.map(({ question, index }) => (
+              <li key={question.id}>
+                <p><strong>Pergunta {index + 1}.</strong> {question.concept}</p>
+                <div className="control-row">
+                  <Link className="text-link" href={`/aulas/${lessonId}/#${question.sectionId}`}>
+                    Rever trecho da pergunta {index + 1}
+                  </Link>
+                  <button type="button" className="button button-secondary" onClick={() => onRetry(index)}>
+                    Refazer pergunta {index + 1}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
   );
 }

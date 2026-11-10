@@ -16,6 +16,12 @@ export const references: readonly Reference[] = [
   },
   {
     ...book,
+    id: "openstax-fisiologia-cardiaca",
+    title: "19.4 Cardiac Physiology",
+    url: `${bookUrl}/19-4-cardiac-physiology`,
+  },
+  {
+    ...book,
     id: "openstax-vasos",
     title: "20.1 Structure and Function of Blood Vessels",
     url: `${bookUrl}/20-1-structure-and-function-of-blood-vessels`,

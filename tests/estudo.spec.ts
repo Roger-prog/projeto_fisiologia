@@ -63,12 +63,20 @@ for (const aula of lessons) {
     await expect(page.getByRole("heading", { name: "Exercícios concluídos", exact: true })).toBeFocused();
     await expect(page.getByText(`Você acertou ${total - 1} de ${total} questões.`, { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Conceitos para revisar", exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Refazer pergunta 1", exact: true }).click();
+    const correta = primeira.options.find((opcao) => opcao.id === primeira.correctOptionId)!;
+    await page.getByRole("radio", { name: correta.text, exact: true }).check();
+    await conferir.click();
+    await page.getByRole("button", { name: "Ver resultado", exact: true }).click();
+    await expect(page.getByText(`Você acertou ${total} de ${total} questões.`, { exact: true })).toBeVisible();
+
     await page.getByRole("link", { name: "Ir para a revisão rápida", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Revisão rápida", level: 1, exact: true })).toBeVisible();
     await expect(page.locator(`#revisao-${aula.id}`)).toBeInViewport();
 
     await page.goBack();
-    await expect(page.getByText(`Você acertou ${total - 1} de ${total} questões.`, { exact: true })).toBeVisible();
+    await expect(page.getByText(`Você acertou ${total} de ${total} questões.`, { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Refazer exercícios", exact: true }).click();
     await expect(opcaoIncorreta).toBeVisible();
     await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
@@ -107,7 +115,7 @@ test.describe("sem JavaScript e sem imagens", () => {
 test("retoma a aula salva e apaga o progresso por confirmação", async ({ page }) => {
   const aula = lessons[0];
   const rota = `/aulas/${aula.id}/`;
-  const retomar = page.getByRole("link", { name: "Continuar de onde parei", exact: true });
+  const retomar = page.getByRole("link", { name: "Continuar estudando", exact: true });
   const marcar = page.getByRole("button", { name: "Marcar aula como concluída", exact: true });
 
   await page.goto("/");
@@ -206,4 +214,26 @@ test("controla a leitura em voz alta sem iniciar automaticamente", async ({ page
   await page.getByRole("button", { name: "Interromper", exact: true }).press("Enter");
   await expect(ler).toBeEnabled();
   expect((await chamadas()).slice(-4)).toEqual(["speak pt-BR 1.25", "pause", "resume", "cancel"]);
+});
+
+test("avisa quando a síntese falha e mantém o texto da aula disponível", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "speechSynthesis", {
+      value: {
+        getVoices: () => [],
+        speak: (utterance: SpeechSynthesisUtterance) => {
+          queueMicrotask(() => utterance.dispatchEvent(new Event("error")));
+        },
+        cancel: () => {},
+      },
+    });
+  });
+
+  const [aula] = lessons;
+  await page.goto(`/aulas/${aula.id}/`);
+  const audio = page.getByRole("region", { name: "Leitura em voz alta", exact: true });
+  await audio.getByRole("button", { name: "Ouvir a aula", exact: true }).press("Enter");
+  await expect(audio.getByRole("status")).toContainText("Não foi possível reproduzir a leitura em voz alta.");
+  await expect(audio.getByRole("button", { name: "Ouvir a aula", exact: true })).toBeEnabled();
+  await expect(page.getByText(aula.introduction, { exact: true })).toBeVisible();
 });

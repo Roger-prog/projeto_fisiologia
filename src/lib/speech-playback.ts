@@ -90,9 +90,13 @@ export function createSpeechPlayback({
     stop: () => {
       if (!current) return;
       current = null;
-      synthesis.cancel();
-      // cancel() leaves the browser's shared synthesis queue paused.
-      if (synthesis.paused) synthesis.resume?.();
+      try {
+        synthesis.cancel();
+        // Some browsers keep the shared queue paused after cancellation.
+        if (synthesis.paused) synthesis.resume?.();
+      } catch {
+        // The inactive utterance cannot schedule any further chunks.
+      }
     },
   };
 }
