@@ -1,6 +1,17 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { lessons } from "../src/data";
+import {
+  arquivoDeTeste,
+  clipesDaEtapa,
+  concluirFaixaNativa,
+  lerReproducaoNativa,
+  monitorarReproducaoNativa,
+  rotaDaEtapa,
+  servirManifestoSemClipes,
+  servirNarracaoDeTeste,
+  vozPrincipal,
+} from "./fixtures/narracao";
 
 type ResultadoSimulado = { resultIndex: number; results: { isFinal: boolean; 0: { transcript: string } }[] };
 type EstadoSimulado = {
@@ -26,9 +37,11 @@ type OpcoesDeVoz = {
   atrasoDeFimAposAbortar?: number | null;
   recusarSegundoInicio?: boolean;
   bloquearInicioDeAudio?: boolean;
+  manterManifesto?: boolean;
 };
 
 async function simularAPIsDeVoz(page: Page, opcoes: OpcoesDeVoz = {}) {
+  if (!opcoes.manterManifesto) await servirManifestoSemClipes(page);
   await page.addInitScript(({ modo, atrasoDeFimAposAbortar = 0, recusarSegundoInicio, bloquearInicioDeAudio }) => {
     Object.defineProperty(window, "SpeechRecognition", { value: undefined, configurable: true });
     Object.defineProperty(window, "webkitSpeechRecognition", { value: undefined, configurable: true });
@@ -43,6 +56,10 @@ async function simularAPIsDeVoz(page: Page, opcoes: OpcoesDeVoz = {}) {
     const instantesDeInicio: number[] = [];
     const falas: EstadoSimulado["falas"] = [];
     const sobreposicoes: string[] = [];
+    function faixaEmReproducao() {
+      const midias = Reflect.get(window, "midiasDeTeste") as Set<HTMLMediaElement> | undefined;
+      return midias && [...midias].some((midia) => !midia.paused && !midia.ended);
+    }
     const permissao = Object.assign(new EventTarget(), {
       state: "granted" as PermissionState,
       onchange: null as ((evento: Event) => void) | null,
@@ -68,7 +85,7 @@ async function simularAPIsDeVoz(page: Page, opcoes: OpcoesDeVoz = {}) {
       start() {
         inicios.push({ idioma: this.lang, continua: this.continuous, parciais: this.interimResults, alternativas: this.maxAlternatives });
         instantesDeInicio.push(Date.now());
-        if (atual || liberando || falaAtual) {
+        if (atual || liberando || falaAtual || faixaEmReproducao()) {
           sobreposicoes.push("Escuta iniciada com outra operação de voz em andamento.");
           throw new DOMException("Operação de voz ainda em andamento.", "InvalidStateError");
         }
@@ -120,6 +137,7 @@ async function simularAPIsDeVoz(page: Page, opcoes: OpcoesDeVoz = {}) {
         get paused() { return narracaoPausada; },
         speak(fala: SpeechSynthesisUtterance) {
           if (atual) sobreposicoes.push("Narração iniciada durante escuta.");
+          if (faixaEmReproducao()) sobreposicoes.push("Síntese iniciada durante outra narração.");
           falaAtual = fala;
           falas.push({ idioma: fala.lang, texto: fala.text });
           if (!bloquearInicioDeAudio) {
@@ -513,6 +531,50 @@ test("mantém o microfone suspenso durante a leitura e durante uma pausa no play
   await concluirNarracao(page);
   await esperarEscuta(page);
   expect((await estado(page)).sobreposicoes).toEqual([]);
+});
+
+test("coordena arquivos da aula e da interface, síntese dinâmica e retomada do microfone", async ({ page }) => {
+  await simularAPIsDeVoz(page, { manterManifesto: true });
+  await servirNarracaoDeTeste(page, { incluirInterface: true });
+  await monitorarReproducaoNativa(page);
+  await page.goto(rotaDaEtapa);
+  await expect(page.getByLabel("Voz da narração", { exact: true })).toHaveValue(vozPrincipal);
+  await ativar(page).press("Enter");
+  await esperarEscuta(page);
+
+  async function faixaTocando(caminho: string) {
+    await expect.poll(async () => {
+      const faixa = (await lerReproducaoNativa(page)).find(({ tocando, duracao }) => tocando && duracao > 0);
+      return faixa?.caminho;
+    }).toBe(caminho);
+  }
+
+  await dizer(page, "Ouvir a etapa");
+  await faixaTocando(arquivoDeTeste(clipesDaEtapa[0].id));
+  await expect(painel(page)).toHaveAttribute("data-voice-state", "narrating");
+  expect(await estado(page)).toMatchObject({ escutando: false, narrando: false, falas: [] });
+
+  await page.getByRole("button", { name: "Ouvir minhas opções", exact: true }).press("Enter");
+  await expect.poll(async () => (await estado(page)).narrando).toBe(true);
+  expect((await lerReproducaoNativa(page)).some(({ tocando }) => tocando)).toBe(false);
+  expect((await estado(page)).escutando).toBe(false);
+  await concluirNarracao(page);
+  await esperarEscuta(page);
+
+  const falasAntes = (await estado(page)).falas.length;
+  await dizer(page, "frase sem correspondência no catálogo de comandos");
+  await faixaTocando(arquivoDeTeste("interface/comando-desconhecido"));
+  await expect(feedback(page)).toContainText("Comando não reconhecido");
+  expect((await estado(page)).escutando).toBe(false);
+  await concluirFaixaNativa(page);
+  await faixaTocando(arquivoDeTeste("interface/ajuda-comando"));
+  expect((await estado(page)).escutando).toBe(false);
+  await concluirFaixaNativa(page);
+  await esperarEscuta(page);
+
+  const final = await estado(page);
+  expect(final.falas).toHaveLength(falasAntes);
+  expect(final.sobreposicoes).toEqual([]);
 });
 
 test("retoma a escuta e preserva o feedback em texto quando a narração não inicia", async ({ page }) => {

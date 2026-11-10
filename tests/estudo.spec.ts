@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { lessons } from "../src/data";
 import { optionLetter } from "../src/lib/voice-question";
+import { servirManifestoSemClipes } from "./fixtures/narracao";
 
 for (const aula of lessons) {
   const rota = `/aulas/${aula.id}/`;
@@ -176,6 +177,7 @@ test("revela respostas da Revisão rápida pelo teclado", async ({ page }) => {
 
 test("mantém a aula disponível quando o navegador não oferece síntese de voz", async ({ page }) => {
   const aula = lessons[0];
+  await servirManifestoSemClipes(page);
   await page.addInitScript(() => {
     Reflect.deleteProperty(window, "speechSynthesis");
     Reflect.deleteProperty(window, "SpeechSynthesisUtterance");
@@ -188,6 +190,7 @@ test("mantém a aula disponível quando o navegador não oferece síntese de voz
 });
 
 test("controla a leitura em voz alta sem iniciar automaticamente", async ({ page }) => {
+  await servirManifestoSemClipes(page);
   await page.addInitScript(() => {
     const chamadas: string[] = [];
     Reflect.set(window, "chamadasDeSintese", chamadas);
@@ -221,6 +224,7 @@ test("controla a leitura em voz alta sem iniciar automaticamente", async ({ page
 });
 
 test("avisa quando a síntese falha e mantém o texto da aula disponível", async ({ page }) => {
+  await servirManifestoSemClipes(page);
   await page.addInitScript(() => {
     Object.defineProperty(window, "speechSynthesis", {
       value: {

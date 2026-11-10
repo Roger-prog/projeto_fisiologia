@@ -61,6 +61,7 @@ export function VoiceControls() {
           <p id={privacyId} className={styles.detail}>
             A ativação usa o microfone. O navegador pode enviar a fala ao serviço de reconhecimento que utiliza.
             O FisioAcessível não armazena o áudio nem o texto reconhecido.
+            {controls.hasNeuralNarration && " As gravações com voz neural são geradas por inteligência artificial."}
           </p>
         </div>
         <div className={styles.controls}>

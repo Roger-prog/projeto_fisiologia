@@ -1,5 +1,5 @@
 import type { Lesson } from "@/data";
-import { getLessonSteps, type LessonStep } from "@/lib/lesson-steps";
+import { getLessonSteps, type LessonStep } from "./lesson-steps";
 
 function getStepNarration(step: LessonStep, figure?: Lesson["figure"]) {
   return [

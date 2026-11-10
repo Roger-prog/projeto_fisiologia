@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 import type { Question } from "@/data";
-import { speakVoiceFeedback } from "@/lib/speech-playback";
 import { optionLetter, voiceQuestionText } from "@/lib/voice-question";
 import { useVoiceActions } from "./voice-provider";
 
@@ -29,10 +28,8 @@ export function useVoiceQuestion({ question, isActive, answered, onSelect, onCon
     if (!question || !isActive()) return;
 
     if (command.kind === "read-question" || command.kind === "start-reading" || command.kind === "repeat-reading") {
-      const spoken = speakVoiceFeedback(voiceQuestionText(question));
       return {
-        message: spoken ? "Lendo a pergunta e as alternativas." : "A leitura está indisponível. A pergunta e as alternativas estão em texto.",
-        speak: false,
+        message: voiceQuestionText(question),
       };
     }
     if (command.kind !== "select-option" && command.kind !== "confirm-answer") return;
@@ -57,7 +54,11 @@ export function useVoiceQuestion({ question, isActive, answered, onSelect, onCon
     if (!onConfirm(choice.optionId)) return { message: "A resposta já foi registrada." };
 
     const correct = choice.optionId === question.correctOptionId;
-    return { message: `${confirmation} ${correct ? "Resposta correta." : "Resposta incorreta."} ${question.explanation}` };
+    return {
+      message: `${confirmation} ${correct ? "Resposta correta." : "Resposta incorreta."} ${question.explanation}`,
+      clips: correct ? ["resposta-correta"] : ["revisar"],
+      speechText: correct ? `${confirmation} ${question.explanation}` : `${confirmation} Resposta incorreta. ${question.explanation}`,
+    };
   });
 
   return clearVoiceChoice;

@@ -8,6 +8,7 @@ import { LessonModeNav } from "@/components/study/lesson-mode-nav";
 import { LessonDiagram, LessonSimulationLink, LessonStepContent } from "@/components/study/lesson-step-content";
 import { TrackLessonVisit } from "@/components/study/track-lesson-visit";
 import { getLesson, lessons } from "@/data";
+import { getStepNarrationClips } from "@/lib/narration-catalog";
 import { getStepSpeechText } from "@/lib/lesson-speech";
 import { getLessonSteps, guidedLessonHref } from "@/lib/lesson-steps";
 
@@ -37,6 +38,7 @@ export default async function GuidedLessonPage({ params }: PageProps) {
   const previous = steps[index - 1];
   const next = steps[index + 1];
   const simulation = lesson.simulation?.sectionId === step.id ? lesson.simulation : undefined;
+  const narration = getStepNarrationClips(lesson, step);
 
   return (
     <div className="site-shell inner-page lesson-page">
@@ -51,7 +53,13 @@ export default async function GuidedLessonPage({ params }: PageProps) {
         </header>
 
         <div className="lesson-content">
-          <AudioPlayer key={`${lesson.id}/${step.id}`} scope="section" text={getStepSpeechText(lesson, step)} />
+          <AudioPlayer
+            key={`${lesson.id}/${step.id}`}
+            scope="section"
+            text={getStepSpeechText(lesson, step)}
+            clipIds={narration.map(({ id }) => id)}
+            voiceBlocks={narration.map(({ text }) => text)}
+          />
           <div className="lesson-section">
             <LessonStepContent step={step} />
             {simulation && <LessonSimulationLink simulation={simulation} />}

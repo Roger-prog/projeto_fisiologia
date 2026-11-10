@@ -4,6 +4,7 @@ const speechLanguage = "pt-BR";
 const maxChunkLength = 220;
 const utteranceStartupTimeoutMs = 8_000;
 const utteranceTimeoutMs = 45_000;
+let browserVoices: SpeechSynthesisVoice[] = [];
 
 export type AudioPlayback = {
   start: () => void;
@@ -21,6 +22,31 @@ export function isSpeechAvailable() {
 export function canPauseSpeech() {
   return typeof window.speechSynthesis?.pause === "function"
     && typeof window.speechSynthesis?.resume === "function";
+}
+
+function voiceRank(voice: SpeechSynthesisVoice) {
+  const exactLocale = voice.lang.toLowerCase().replace("_", "-") === "pt-br";
+  const natural = /natural|neural|premium|enhanced|aprimorad/i.test(voice.name);
+  return (exactLocale ? 8 : 0) + (natural ? 4 : 0) + (voice.default ? 2 : 0) + (voice.localService ? 1 : 0);
+}
+
+export function getBrowserNarrationVoices() {
+  const installed = window.speechSynthesis?.getVoices?.() ?? [];
+  const available = installed.filter((voice) => /^pt(?:[-_]|$)/i.test(voice.lang) && voice.voiceURI)
+    .sort((left, right) => voiceRank(right) - voiceRank(left) || left.name.localeCompare(right.name, speechLanguage));
+  const voices = Array.from(new Map(available.map((voice) => [voice.voiceURI, voice])).values());
+  if (voices.length !== browserVoices.length || voices.some((voice, index) =>
+    voice.voiceURI !== browserVoices[index].voiceURI || voice.name !== browserVoices[index].name ||
+    voice.lang !== browserVoices[index].lang || voice.localService !== browserVoices[index].localService ||
+    voice.default !== browserVoices[index].default,
+  )) browserVoices = voices;
+  return browserVoices;
+}
+
+export function subscribeSpeechVoices(listener: () => void) {
+  const synthesis = window.speechSynthesis;
+  synthesis?.addEventListener?.("voiceschanged", listener);
+  return () => synthesis?.removeEventListener?.("voiceschanged", listener);
 }
 
 export function getSpeechChunks(text: string, limit = maxChunkLength) {
@@ -45,20 +71,24 @@ export function getSpeechChunks(text: string, limit = maxChunkLength) {
 export function createSpeechPlayback({
   text,
   rate,
+  voiceURI,
   onComplete,
   onError,
   onInterrupt,
+  onProgress,
 }: {
   text: string;
   rate: number;
+  voiceURI?: string;
   onComplete: () => void;
   onError: () => void;
   onInterrupt?: () => void;
+  onProgress?: (fraction: number) => void;
 }): AudioPlayback {
   const synthesis = window.speechSynthesis;
   const chunks = getSpeechChunks(text);
-  const voices = synthesis.getVoices?.() ?? [];
-  const voice = voices.find((item) => item.localService && item.lang.toLowerCase() === "pt-br");
+  const voices = getBrowserNarrationVoices();
+  const voice = voiceURI ? voices.find((item) => item.voiceURI === voiceURI) : voices[0];
   let current: SpeechSynthesisUtterance | null = null;
   let releaseActivity: (() => void) | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -117,7 +147,7 @@ export function createSpeechPlayback({
 
     try {
       const utterance = new SpeechSynthesisUtterance(chunks[index]);
-      utterance.lang = speechLanguage;
+      utterance.lang = voice?.lang || speechLanguage;
       utterance.rate = rate;
       if (voice) utterance.voice = voice;
       utterance.onstart = () => {
@@ -126,7 +156,11 @@ export function createSpeechPlayback({
       utterance.onend = () => {
         if (current !== utterance) return;
         clearTimeout(timer);
+        onProgress?.((index + 1) / chunks.length);
         speakChunk(index + 1);
+      };
+      utterance.onboundary = ({ charIndex }) => {
+        if (current === utterance) onProgress?.((index + charIndex / chunks[index].length) / chunks.length);
       };
       utterance.onerror = () => {
         if (current !== utterance) return;
@@ -167,7 +201,7 @@ export function stopActiveSpeech() {
   stopActiveAudio();
 }
 
-export function speakVoiceFeedback(text: string, onError?: () => void) {
+export function speakVoiceFeedback(text: string, onError?: () => void, voiceURI?: string) {
   if (!isSpeechAvailable() || !text.trim()) return false;
 
   try {
@@ -175,6 +209,7 @@ export function speakVoiceFeedback(text: string, onError?: () => void) {
     createSpeechPlayback({
       text,
       rate: 1,
+      voiceURI,
       onComplete: () => {},
       onError: () => {
         failed = true;

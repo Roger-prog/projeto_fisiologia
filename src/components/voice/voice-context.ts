@@ -28,7 +28,7 @@ export function describeVoiceOptions(context: ReturnType<typeof getVoiceContext>
     return `${lesson.title}. Etapa ${stepIndex + 1}. ${step.title}. Diga Ouvir a etapa, Repetir ou ${forward}. Entre trechos, diga Continuar leitura ou Parar leitura.`;
   }
   if (lesson) {
-    return `${lesson.title}. Aula completa. Diga Ouvir a aula, Fazer exercícios ou Continuar de onde parei.`;
+    return `${lesson.title}. Aula completa. Diga Ouvir a aula, Fazer exercícios ou Continuar de onde parei. Entre trechos, diga Continuar leitura ou Parar leitura.`;
   }
   if (reviews) {
     return "Você está nas revisões. Abra uma sessão pelos controles da página. Se houver uma pergunta, diga Ouvir pergunta, escolha a letra e diga Confirmar resposta.";

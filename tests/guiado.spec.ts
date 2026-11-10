@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { lessons } from "../src/data";
 import { getLessonSteps, guidedLessonHref } from "../src/lib/lesson-steps";
+import { servirManifestoSemClipes } from "./fixtures/narracao";
 
 const lesson = lessons.find(({ id }) => id === "mecanica-respiratoria")!;
 const fullLesson = `/aulas/${lesson.id}/`;
@@ -54,6 +55,7 @@ test("retoma a etapa correta e só conclui quando o estudante marca", async ({ p
 });
 
 test("a leitura guiada repete a etapa e para ao navegar", async ({ page }) => {
+  await servirManifestoSemClipes(page);
   await page.addInitScript(() => {
     const calls: string[] = [];
     Reflect.set(window, "sectionSpeechCalls", calls);

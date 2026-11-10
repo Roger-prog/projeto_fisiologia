@@ -10,6 +10,7 @@ import { LessonDiagram, LessonSimulationLink, LessonStepContent } from "@/compon
 import { LessonProgress } from "@/components/study/study-provider";
 import { TrackLessonVisit } from "@/components/study/track-lesson-visit";
 import { getLesson, getLessonReferences, getModule, lessons } from "@/data";
+import { getLessonNarrationClips } from "@/lib/narration-catalog";
 import { getLessonSpeechText } from "@/lib/lesson-speech";
 import { getLessonSteps, guidedLessonHref } from "@/lib/lesson-steps";
 
@@ -47,6 +48,7 @@ export default async function LessonPage({ params }: PageProps) {
   const steps = getLessonSteps(lesson);
   const [introduction] = steps;
   const explanationSteps = steps.filter((step) => step.kind === "section");
+  const narration = getLessonNarrationClips(lesson);
 
   return (
     <div className="site-shell inner-page lesson-page">
@@ -93,7 +95,14 @@ export default async function LessonPage({ params }: PageProps) {
           </nav>
 
           <div className="lesson-content">
-            <div id="leitura" tabIndex={-1}><AudioPlayer key={lesson.id} text={getLessonSpeechText(lesson)} /></div>
+            <div id="leitura" tabIndex={-1}>
+              <AudioPlayer
+                key={lesson.id}
+                text={getLessonSpeechText(lesson)}
+                clipIds={narration.map(({ id }) => id)}
+                voiceBlocks={narration.map(({ text }) => text)}
+              />
+            </div>
 
             <section className="lesson-section" aria-labelledby="introducao">
               <h2 id="introducao" tabIndex={-1}>Introdução</h2>

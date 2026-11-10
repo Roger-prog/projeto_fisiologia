@@ -1,0 +1,373 @@
+{
+  "version": 1,
+  "voices": [
+    {
+      "id": "piper-pt-br-cadu-medium",
+      "label": "Cadu (Piper)",
+      "language": "pt-BR",
+      "kind": "neural"
+    }
+  ],
+  "clips": {
+    "lesson/mecanica-respiratoria/titulo/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/titulo-01-piper-pt-br-cadu-medium-8bba1bd580a59b6f.mp3",
+        "revision": "5681262dc70705fc940fc8cb7ff6507d01e2464acb35098ba822189dff49a147"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/titulo/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/titulo-01-piper-pt-br-cadu-medium-695e791c60245694.mp3",
+        "revision": "09e82cd3ad9bfb6675641b358bd4ac5241b26c3a61e2cf6324f920fab61bb4e7"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/introducao/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/introducao-01-piper-pt-br-cadu-medium-43b927e45b486f70.mp3",
+        "revision": "d5d8ed1465e33a9759e286c01aad1a8a09184b5a2c73caf2255f449684c7c3b6"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/introducao/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/introducao-02-piper-pt-br-cadu-medium-1e282d2db151195d.mp3",
+        "revision": "79052f7f49229750fff1ca4150992ecbd21f5bca7d4b20b3a8ca297e72a6d442"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/bomba-e-rede/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-01-piper-pt-br-cadu-medium-1b183ba120f505d0.mp3",
+        "revision": "5ef5499b5e74d0206cc687243b8de4568d46487a22781b2b27fc20f82fe01ea1"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/bomba-e-rede/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-02-piper-pt-br-cadu-medium-b2438ae48ee94765.mp3",
+        "revision": "9e308cd3d8fadde6fccfc2f0f97f896ce22338721dca12fce983621f457defe3"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/bomba-e-rede/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-03-piper-pt-br-cadu-medium-60fc491abad3f25f.mp3",
+        "revision": "9a24393092f5ab955019434c6153b2489e37ad9d1fb7a1d97dc682a6b3f3b697"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/bomba-e-rede/4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-04-piper-pt-br-cadu-medium-3250a0e3c93a49a6.mp3",
+        "revision": "54d56a09a2ec0ee5e2347b27e9cf8186023846adfafdca8e47fc169eb2c57518"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/vasos-sanguineos/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-01-piper-pt-br-cadu-medium-67f9c269e037a0e7.mp3",
+        "revision": "0b20a803bd40ed2d43643dc5129a82b71bf199816daea376f48bc1883148ec10"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/vasos-sanguineos/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-02-piper-pt-br-cadu-medium-704a9607dde33dd3.mp3",
+        "revision": "da588a38ea074b854a965a7d99d4efa3e3f7a8283e5b030c3a1a021d1fe0bc1d"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/vasos-sanguineos/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-03-piper-pt-br-cadu-medium-db353bbcc35c3be9.mp3",
+        "revision": "d6ef484188db07790ae643353def066c402c5870d04d1b8d4d8af2b563bf0c1c"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/vasos-sanguineos/4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-04-piper-pt-br-cadu-medium-bbe3dbbf974c9117.mp3",
+        "revision": "6b7458825e671bd1b45bd051ddbd3f68c6917de20578e7c644e951c90f05e410"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-01-piper-pt-br-cadu-medium-285f63925340db54.mp3",
+        "revision": "757914db8a450a5d8d0b213309d5e5e974c2d6c1b8b153888c53c4229bb90bbb"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-02-piper-pt-br-cadu-medium-39ab800f8d27ef02.mp3",
+        "revision": "f9126435abeaf84b73b5c2427486cb1dd0ac6ee553012756ceb514009642d6c2"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-03-piper-pt-br-cadu-medium-8a5d9f5037da6890.mp3",
+        "revision": "86b2f849142b81cc1f63471f1debce5ddfd072e02758e477c6c0576b96f12f7d"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-04-piper-pt-br-cadu-medium-6002712634f629e8.mp3",
+        "revision": "072b9b4e5f132c471f00c2d76d77f483f3a7f02c685bf37d41505dbc5c71dadb"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/5": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-05-piper-pt-br-cadu-medium-7ca7be96ceedf520.mp3",
+        "revision": "366a24da4905eea4bd50cf8ffc80625e3d5004e673084965d1142bdb93f31881"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/6": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-06-piper-pt-br-cadu-medium-04dd945ae9b4a6f2.mp3",
+        "revision": "516954e7c9f92f4759da7ec2b1d5b207df8ae16ca766fdf29ca67590c05619d8"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-sistemico/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-sistemico-01-piper-pt-br-cadu-medium-fd93b6bb97e6ef46.mp3",
+        "revision": "04363132fa91ad5c954e8db67c7d21a4612c2acddf5568d42154d6ed9bd793b4"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-sistemico/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-sistemico-02-piper-pt-br-cadu-medium-2866ad67fff93d00.mp3",
+        "revision": "6bce5e25fc07230147cad69e2d270ddac2db0ad231df1a2ae8a7bc9e0f98eb95"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/circuito-sistemico/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-sistemico-03-piper-pt-br-cadu-medium-3699850f57a3cd31.mp3",
+        "revision": "1aac2d4bdc874a2180f6791ecd5c2425a6f8f5c664a448617da913700e797e8a"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-01-piper-pt-br-cadu-medium-296376b4fee22a50.mp3",
+        "revision": "75319c1a8912942b783bb787d7cbf9a33973429f7e9f7a4887f005f03aa4a728"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-02-piper-pt-br-cadu-medium-59837c1669b63191.mp3",
+        "revision": "53e802fe63b6a39f8246f73924f8cd5a5f136a1038f7fd8407c1c2604b01b855"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-03-piper-pt-br-cadu-medium-fcd2898a1d7c1ce2.mp3",
+        "revision": "0d158242e353d31226940b7c592fd8e6f912b42939256de1db2d60fc41b3eb4d"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/termos/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/termos-01-piper-pt-br-cadu-medium-25558d0baf751386.mp3",
+        "revision": "700bdf23b9e1963aeeb2730c93ae1e72fde3d4e2e1eab3f8dc5683df02ce1536"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/termos/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/termos-02-piper-pt-br-cadu-medium-5130b6e38f7ca546.mp3",
+        "revision": "8b9907a1e4e4e4b61a28915197de6fde6f0b4854ed7ef86e35faece27afe7487"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/resumo/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/resumo-01-piper-pt-br-cadu-medium-b445dd1588fdd764.mp3",
+        "revision": "54076673bd5ffb59a998e1ce44f8e8df5e86fd5fa8905494edd76e9a99c3e961"
+      }
+    },
+    "lesson/introducao-ao-sistema-cardiovascular/resumo/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/resumo-02-piper-pt-br-cadu-medium-ed3f7b98ede71c7e.mp3",
+        "revision": "0f340228b449b557acdda7a656375cd37c0e61fd3947ff7a7b7ee30adff745de"
+      }
+    },
+    "lesson/mecanica-respiratoria/introducao/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/introducao-01-piper-pt-br-cadu-medium-b194d37e8f91e539.mp3",
+        "revision": "bb2a1761909e08cec4ab9d17fdba6d7e55287870d98c94621701b3dcd54ebf4e"
+      }
+    },
+    "lesson/mecanica-respiratoria/introducao/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/introducao-02-piper-pt-br-cadu-medium-22b3795f8471b8a3.mp3",
+        "revision": "d5f143c39c11833f2ba1ae4bb55731c530d262dab9ce75a0725bfd3f3d3e167f"
+      }
+    },
+    "lesson/mecanica-respiratoria/ventilacao/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/ventilacao-01-piper-pt-br-cadu-medium-034ba2fd0118dcb3.mp3",
+        "revision": "e7865d9ef54952cead672661a7683cd41143c64e2065fdbe78d820e42b4c92b7"
+      }
+    },
+    "lesson/mecanica-respiratoria/ventilacao/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/ventilacao-02-piper-pt-br-cadu-medium-42dc5a177b25ccbc.mp3",
+        "revision": "03e49c56939021ae09f64d78b834163aef6e08dfd2dfa955956c1e03ec072000"
+      }
+    },
+    "lesson/mecanica-respiratoria/ventilacao/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/ventilacao-03-piper-pt-br-cadu-medium-206f50a31dbaf9a8.mp3",
+        "revision": "54c65d3f57046a9175211f00424e268ab1f610698fc2cb2bce2c7f4d2b81ab4f"
+      }
+    },
+    "lesson/mecanica-respiratoria/pressoes/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-01-piper-pt-br-cadu-medium-864960dccab50320.mp3",
+        "revision": "c1010ef0db699cf158abf7d08737ffb87acd686b3e5af144661e50b1acfb447d"
+      }
+    },
+    "lesson/mecanica-respiratoria/pressoes/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-02-piper-pt-br-cadu-medium-da64cd382b4f2d71.mp3",
+        "revision": "d26e574d73203aa1a9eb15f5ee7fbb944f11cfecdc008afa85c7de6be99b3471"
+      }
+    },
+    "lesson/mecanica-respiratoria/pressoes/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-03-piper-pt-br-cadu-medium-f2198a09e6bec4b7.mp3",
+        "revision": "33c14d5b54a929b03963d20c864b88bcc643b8bfe3fc24112f467b5e1e6c7aa5"
+      }
+    },
+    "lesson/mecanica-respiratoria/pressoes/4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-04-piper-pt-br-cadu-medium-94b89b28a6a436b1.mp3",
+        "revision": "a57905f8ebdbaea9f5d916e5d6f5c42ea5153e37805c9315b86ea2f8c1a1bbc6"
+      }
+    },
+    "lesson/mecanica-respiratoria/pressoes/5": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-05-piper-pt-br-cadu-medium-9f7aac11494350f7.mp3",
+        "revision": "53330eb6698ec976eb0fc645f005523ad900236c46797c57b136d5bec675ce6c"
+      }
+    },
+    "lesson/mecanica-respiratoria/inspiracao/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-01-piper-pt-br-cadu-medium-9511a33d05670cf6.mp3",
+        "revision": "8946c06448590f74033d75ae2fbd601969fffd56f92a43570c8bb006204d7815"
+      }
+    },
+    "lesson/mecanica-respiratoria/inspiracao/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-02-piper-pt-br-cadu-medium-dc12a997a868aacb.mp3",
+        "revision": "be5b1d169936ee7960465c04c991eb4f89122e4cdc0e312ca9cfe9475270e5e0"
+      }
+    },
+    "lesson/mecanica-respiratoria/inspiracao/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-03-piper-pt-br-cadu-medium-1e07cad9e3512ee9.mp3",
+        "revision": "b63712809ab4b7f9bb5f16f83808feaf6932ed2a348323c9674703edd31d090e"
+      }
+    },
+    "lesson/mecanica-respiratoria/inspiracao/4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-04-piper-pt-br-cadu-medium-5856878d0f255b6a.mp3",
+        "revision": "7cf5f8848d126ef70dd43465df81e1d9cd842b219cf27ce91424a1401b4e816a"
+      }
+    },
+    "lesson/mecanica-respiratoria/inspiracao/5": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-05-piper-pt-br-cadu-medium-00b690aaad8f6609.mp3",
+        "revision": "0ac4a6e89ef2df5426883cbe88e7dbac16e33988c677ac65726a582f55e0a370"
+      }
+    },
+    "lesson/mecanica-respiratoria/expiracao/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/expiracao-01-piper-pt-br-cadu-medium-f77643f2afe30d70.mp3",
+        "revision": "b8fc968f0601423a14638214a406dafe20f8d4f44289388ff355eae83238da03"
+      }
+    },
+    "lesson/mecanica-respiratoria/expiracao/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/expiracao-02-piper-pt-br-cadu-medium-cbf0ba16c27e16d2.mp3",
+        "revision": "211978ecb7bfdde83c9f05d47565329178fedd321c0e1400cff978f42fbca60a"
+      }
+    },
+    "lesson/mecanica-respiratoria/expiracao/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/expiracao-03-piper-pt-br-cadu-medium-f5dfa3bd35b92825.mp3",
+        "revision": "bde7b81b06f11354332c4ceceba0534f357aaf98cd6872c0bbd48f24e65ba48e"
+      }
+    },
+    "lesson/mecanica-respiratoria/fluxo-e-resistencia/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/fluxo-e-resistencia-01-piper-pt-br-cadu-medium-288a651b53a6c88e.mp3",
+        "revision": "5cb8babc85b7fba3b4dc4b00e3e2d85343a4b00d6cc8f9dbead3474c5d5dac81"
+      }
+    },
+    "lesson/mecanica-respiratoria/fluxo-e-resistencia/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/fluxo-e-resistencia-02-piper-pt-br-cadu-medium-3f71ff9da26a571e.mp3",
+        "revision": "c9ac1f1a5f65ebb1b4e1168b20a6c24f21ade840d72e0503595d3935923a4843"
+      }
+    },
+    "lesson/mecanica-respiratoria/fluxo-e-resistencia/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/fluxo-e-resistencia-03-piper-pt-br-cadu-medium-59fa916133811943.mp3",
+        "revision": "fcd79c73e786a3bc749075bd4a54fc1c9adf1363431b887b9b8358990148d4a1"
+      }
+    },
+    "lesson/mecanica-respiratoria/termos/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/termos-01-piper-pt-br-cadu-medium-724f1afd9dfaeef2.mp3",
+        "revision": "cbd54c3cfe9ecb0b949b9cf75ce59269e94aa69f345a697d90799a93a5b9cf3e"
+      }
+    },
+    "lesson/mecanica-respiratoria/termos/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/termos-02-piper-pt-br-cadu-medium-f9fc682d176fceab.mp3",
+        "revision": "322e63f3e9edf970358f6f6c09353990824b1155fad22b5f400deef0adaa63b0"
+      }
+    },
+    "lesson/mecanica-respiratoria/resumo/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/resumo-01-piper-pt-br-cadu-medium-78b03312f502c257.mp3",
+        "revision": "9e9f5c18bd42fc47cc3dd4f0a1287cdf207b6ad55475dfaf97ad18ee17aa45d7"
+      }
+    },
+    "lesson/mecanica-respiratoria/resumo/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/respiratorio/mecanica-respiratoria/resumo-02-piper-pt-br-cadu-medium-3d84d01456bc209a.mp3",
+        "revision": "437a6e85c5901b6746ea41917b6aa65e794fc694e3af13ca8e9745999985bb42"
+      }
+    },
+    "interface/boas-vindas": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/boas-vindas-piper-pt-br-cadu-medium-da6a5c4f0b91bfeb.mp3",
+        "revision": "47526167b4b442cb9c2d2e271cd629c0724269d2ac32da95acc20a4a25308f4c"
+      }
+    },
+    "interface/retomar": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/retomar-piper-pt-br-cadu-medium-f91cfbdceaad55d5.mp3",
+        "revision": "f328e03ae72d08bfad8010bf27130e5ebefc3ba0701c1cde558a7f3c28fa8310"
+      }
+    },
+    "interface/resposta-correta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resposta-correta-piper-pt-br-cadu-medium-c106a339c270f92c.mp3",
+        "revision": "84ad8f5e3259a8b57979b102d915681ddd7bce536ab99171db90cd43858d3d01"
+      }
+    },
+    "interface/revisar": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/revisar-piper-pt-br-cadu-medium-a4ee173d349ef9f1.mp3",
+        "revision": "0f9e2422275c6aa7af8c1cb5b5701d6257f167d7710b78f27882a6e7570009ba"
+      }
+    },
+    "interface/proxima-etapa": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/proxima-etapa-piper-pt-br-cadu-medium-644e50dafa6b6a14.mp3",
+        "revision": "f5b54824f67f607ff5fa18f0fea591146b2e8ec7cebecf0f8d556b6d2ffbaf3b"
+      }
+    },
+    "interface/comando-desconhecido": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/comando-desconhecido-piper-pt-br-cadu-medium-e0511ae875dae2fc.mp3",
+        "revision": "d7302e9540d43b1c0029acd51d229840ebca7068d2723817f6eb20f69bd5aed1"
+      }
+    },
+    "interface/ajuda-comando": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-comando-piper-pt-br-cadu-medium-569d2e8825b04639.mp3",
+        "revision": "cbf5a51eb86400f47b7cc7d295b8f4c368dc78b68d97313c58a2ce580e4579e0"
+      }
+    }
+  }
+}

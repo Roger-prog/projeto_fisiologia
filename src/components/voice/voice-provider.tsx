@@ -11,7 +11,11 @@ import {
   useState,
 } from "react";
 import { getLesson, lessons } from "@/data";
+import { createFilePlayback } from "@/lib/file-playback";
 import { getLessonSteps, guidedLessonHref } from "@/lib/lesson-steps";
+import { getNarrationPreference, getNarrationSources, useNarrationManifest } from "@/lib/narration-manifest";
+import type { NarrationMessage } from "@/lib/narration-messages";
+import { prepareNarrationText } from "@/lib/narration-pronunciation";
 import { speakVoiceFeedback, stopActiveSpeech } from "@/lib/speech-playback";
 import { getClientStudyState } from "@/lib/study-storage";
 import { parseVoiceCommand, type VoiceCommand } from "@/lib/voice-commands";
@@ -20,7 +24,12 @@ import { useVoiceSession } from "./use-voice-session";
 import { describeVoiceOptions, getVoiceContext } from "./voice-context";
 
 export type VoiceAction = VoiceCommand | { kind: "session-ended" };
-export type VoiceActionResult = { message: string; speak?: boolean };
+export type VoiceActionResult = {
+  message: string;
+  speak?: boolean;
+  clips?: readonly NarrationMessage[];
+  speechText?: string;
+};
 type ActionHandler = (command: VoiceAction) => VoiceActionResult | undefined;
 type RegisterAction = (handler: ActionHandler) => () => void;
 type Feedback = { message: string; announce: boolean };
@@ -29,6 +38,7 @@ type VoiceInterface = {
   session: ReturnType<typeof useVoiceSession>;
   feedback: Feedback | null;
   diagnostics: readonly DiagnosticEntry[] | null;
+  hasNeuralNarration: boolean;
   activate: () => void;
   end: () => void;
   hearOptions: () => void;
@@ -58,6 +68,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   const pending = useRef<{ href: string; until: number } | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [diagnostics, setDiagnostics] = useState<readonly DiagnosticEntry[] | null>(null);
+  const narration = useNarrationManifest();
 
   const register = useCallback<RegisterAction>((handler) => {
     handlers.current.add(handler);
@@ -85,7 +96,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     ]);
   }, []);
 
-  function publish({ message, speak = true }: VoiceActionResult) {
+  function publish({ message, speak = true, clips = [], speechText }: VoiceActionResult) {
     const entry = { message, announce: false };
     setFeedback(entry);
     if (!speak) return;
@@ -93,7 +104,24 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     function announceFallback() {
       setFeedback((current) => current === entry ? { ...entry, announce: true } : current);
     }
-    if (!speakVoiceFeedback(message, announceFallback)) announceFallback();
+    const preferred = getNarrationPreference();
+    const browserVoice = preferred?.startsWith("browser:") ? preferred.slice("browser:".length) : undefined;
+    function speakText(text: string) {
+      if (!speakVoiceFeedback(prepareNarrationText(text), announceFallback, browserVoice)) announceFallback();
+    }
+
+    const voiceId = preferred ?? narration?.voices[0]?.id;
+    const sources = voiceId && getNarrationSources(narration, clips.map((key) => `interface/${key}`), voiceId);
+    if (sources && typeof Audio === "function") {
+      createFilePlayback({
+        sources,
+        rate: 1,
+        onComplete: () => { if (speechText) speakText(speechText); },
+        onError: () => speakText(message),
+      }).start();
+    } else {
+      speakText(clips.length ? message : speechText ?? message);
+    }
   }
 
   function endActions() {
@@ -124,7 +152,10 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   function handleTranscript(transcript: string) {
     const command = parseVoiceCommand(transcript, lessons);
     if (!command) {
-      publish({ message: "Comando não reconhecido. Diga Ajuda para ouvir as opções." });
+      publish({
+        message: "Comando não reconhecido. Diga Ajuda para ouvir as opções.",
+        clips: ["comando-desconhecido", "ajuda-comando"],
+      });
       return;
     }
     if (command.kind === "end-session") {
@@ -134,7 +165,12 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
     const context = getVoiceContext(pathname, window.location.hash);
     if (command.kind === "help" || command.kind === "options") {
-      publish({ message: describeVoiceOptions(context) });
+      const message = describeVoiceOptions(context);
+      publish(context.route ? { message } : {
+        message: `Bem-vindo ao FisioAcessível. ${message}`,
+        clips: ["boas-vindas"],
+        speechText: message,
+      });
       return;
     }
     if (pending.current) {
@@ -169,7 +205,12 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
         const step = targetSteps.find(({ id }) => id === lastSectionId)
           ?? targetSteps.find(({ id }) => id === progress.lessons[target.id]?.lastGuidedStep)
           ?? targetSteps[0];
-        return navigate(guidedLessonHref(target.id, step.id), `${target.title}. ${step.title}.`);
+        const speechText = `${target.title}. ${step.title}.`;
+        return savedLesson ? {
+          ...navigate(guidedLessonHref(target.id, step.id), `Vamos continuar sua última aula. ${speechText}`),
+          clips: ["retomar"],
+          speechText,
+        } : navigate(guidedLessonHref(target.id, step.id), speechText);
       }
       case "open-lesson": {
         const target = getLesson(command.lessonId);
@@ -189,7 +230,12 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
         if (!target) {
           return { message: forward ? "Esta é a última etapa. Diga Fazer exercícios para praticar." : "Esta é a primeira etapa." };
         }
-        return navigate(guidedLessonHref(lesson.id, target.id), `Etapa ${index + 1}. ${target.title}.`);
+        const speechText = `Etapa ${index + 1}. ${target.title}.`;
+        return forward ? {
+          ...navigate(guidedLessonHref(lesson.id, target.id), `Próxima etapa. ${speechText}`),
+          clips: ["proxima-etapa"],
+          speechText,
+        } : navigate(guidedLessonHref(lesson.id, target.id), speechText);
       }
       default:
         return dispatch(command);
@@ -207,6 +253,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     session,
     feedback,
     diagnostics,
+    hasNeuralNarration: Boolean(narration?.voices.length),
     activate() {
       setFeedback(null);
       stopActiveSpeech();
