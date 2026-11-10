@@ -2,7 +2,9 @@
 
 import { useRef } from "react";
 import type { Question } from "@/data";
-import { optionLetter, voiceQuestionText } from "@/lib/voice-question";
+import {
+  explanationNarration, fixedNarration, narratedMessage, questionNarration, selectedOptionNarration,
+} from "@/lib/narration-messages";
 import { useVoiceActions } from "./voice-provider";
 
 type QuestionVoiceOptions = {
@@ -11,7 +13,7 @@ type QuestionVoiceOptions = {
   answered: boolean;
   onSelect: (optionId: string) => void;
   onConfirm: (optionId: string) => boolean;
-  confirmation: string;
+  confirmation: "resposta-registrada" | "resposta-conferida";
 };
 
 export function useVoiceQuestion({ question, isActive, answered, onSelect, onConfirm, confirmation }: QuestionVoiceOptions) {
@@ -28,37 +30,35 @@ export function useVoiceQuestion({ question, isActive, answered, onSelect, onCon
     if (!question || !isActive()) return;
 
     if (command.kind === "read-question" || command.kind === "start-reading" || command.kind === "repeat-reading") {
-      return {
-        message: voiceQuestionText(question),
-      };
+      return narratedMessage(questionNarration(question));
     }
     if (command.kind !== "select-option" && command.kind !== "confirm-answer") return;
-    if (answered) return { message: "Esta pergunta já foi conferida." };
+    if (answered) return narratedMessage(fixedNarration("pergunta-conferida"));
 
     if (command.kind === "select-option") {
       const option = question.options[command.index];
-      if (!option) return { message: "Essa alternativa não está disponível nesta pergunta." };
+      if (!option) return narratedMessage(fixedNarration("alternativa-indisponivel"));
 
       pending.current = { questionId: question.id, optionId: option.id };
       onSelect(option.id);
-      return {
-        message: `Alternativa ${optionLetter(command.index)} selecionada. ${option.text} Diga confirmar resposta para registrar.`,
-      };
+      return narratedMessage(selectedOptionNarration(question, command.index), fixedNarration("confirmar-alternativa"));
     }
 
     const choice = pending.current;
     clearVoiceChoice();
     if (choice?.questionId !== question.id) {
-      return { message: "Escolha uma alternativa por voz antes de confirmar a resposta." };
+      return narratedMessage(fixedNarration("escolher-alternativa"));
     }
-    if (!onConfirm(choice.optionId)) return { message: "A resposta já foi registrada." };
+    if (!onConfirm(choice.optionId)) return narratedMessage(fixedNarration("ja-registrada"));
 
     const correct = choice.optionId === question.correctOptionId;
-    return {
-      message: `${confirmation} ${correct ? "Resposta correta." : "Resposta incorreta."} ${question.explanation}`,
-      clips: correct ? ["resposta-correta"] : ["revisar"],
-      speechText: correct ? `${confirmation} ${question.explanation}` : `${confirmation} Resposta incorreta. ${question.explanation}`,
-    };
+    const verdict = fixedNarration(correct ? "resposta-correta" : "resposta-incorreta");
+    return narratedMessage(
+      fixedNarration(confirmation),
+      verdict,
+      ...(correct ? [] : [fixedNarration("revisar")]),
+      explanationNarration(question),
+    );
   });
 
   return clearVoiceChoice;

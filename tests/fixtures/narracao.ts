@@ -1,10 +1,10 @@
-import type { Page, Route } from "@playwright/test";
+import { expect, type Page, type Route } from "@playwright/test";
 import { lessons } from "../../src/data";
 import { getLessonSteps, guidedLessonHref } from "../../src/lib/lesson-steps";
-import { getStepNarrationClips } from "../../src/lib/narration-catalog";
+import { getNarrationCatalog, getStepNarrationClips } from "../../src/lib/narration-catalog";
 
 const aula = lessons.find(({ id }) => id === "mecanica-respiratoria")!;
-export const etapaDeTeste = getLessonSteps(aula)[0];
+export const etapaDeTeste = getLessonSteps(aula).find(({ id }) => id === "pressoes")!;
 export const rotaDaEtapa = guidedLessonHref(aula.id, etapaDeTeste.id);
 export const clipesDaEtapa = getStepNarrationClips(aula, etapaDeTeste);
 export const vozPrincipal = "voz-teste-principal";
@@ -30,6 +30,9 @@ const mp3DaInterface = gerarMp3Silencioso(64);
 
 function entregarMp3(route: Route, body: Buffer) {
   const headers = { "accept-ranges": "bytes", "content-type": "audio/mpeg" };
+  if (route.request().method() === "HEAD") {
+    return route.fulfill({ status: 200, headers: { ...headers, "content-length": String(body.length) } });
+  }
   const faixa = /^bytes=(\d+)-(\d*)$/u.exec(route.request().headers().range ?? "");
   if (!faixa) return route.fulfill({ status: 200, headers, body });
   const inicio = Number(faixa[1]);
@@ -44,18 +47,32 @@ function entregarMp3(route: Route, body: Buffer) {
   });
 }
 
-export async function servirNarracaoDeTeste(page: Page, { falharArquivo = false, incluirInterface = false } = {}) {
-  const ids = clipesDaEtapa.map(({ id }) => id);
-  if (incluirInterface) ids.push("interface/comando-desconhecido", "interface/ajuda-comando");
+type RequisicaoDeAudio = { caminho: string; metodo: string };
+type OpcoesDeNarracao = {
+  catalogoCompleto?: boolean;
+  faixasCurtas?: boolean;
+  falha?: (requisicao: RequisicaoDeAudio) => number | undefined;
+};
+
+export async function servirNarracaoDeTeste(page: Page, {
+  catalogoCompleto = false, faixasCurtas = false, falha,
+}: OpcoesDeNarracao = {}) {
+  const catalogo = catalogoCompleto ? getNarrationCatalog() : clipesDaEtapa;
+  const ids = catalogo.map(({ id }) => id);
   const clips = Object.fromEntries(ids.map((id) => [id, Object.fromEntries(vozes.map(({ id: voz }) => [
     voz, { src: arquivoDeTeste(id, voz) },
   ]))]));
+  const requisicoes: (RequisicaoDeAudio & { status: number })[] = [];
 
   await page.route("**/audio/manifest.json", (route) => route.fulfill({ json: { version: 1, voices: vozes, clips } }));
   await page.route(/\/audio\/teste-narracao\/.+\.mp3$/u, (route) => {
-    if (falharArquivo) return route.fulfill({ status: 404 });
-    return entregarMp3(route, route.request().url().includes("/interface/") ? mp3DaInterface : mp3DaEtapa);
+    const requisicao = { caminho: new URL(route.request().url()).pathname, metodo: route.request().method() };
+    const status = falha?.(requisicao);
+    requisicoes.push({ ...requisicao, status: status ?? 200 });
+    if (status) return route.fulfill({ status });
+    return entregarMp3(route, faixasCurtas || requisicao.caminho.includes("/interface/") ? mp3DaInterface : mp3DaEtapa);
   });
+  return requisicoes;
 }
 
 export function servirManifestoSemClipes(page: Page) {
@@ -93,5 +110,52 @@ export function concluirFaixaNativa(page: Page) {
     const ativa = [...midias].find((midia) => !midia.paused && Number.isFinite(midia.duration));
     if (!ativa) throw new Error("Nenhuma faixa nativa em reprodução.");
     ativa.currentTime = Math.max(0, ativa.duration - 0.03);
+  });
+}
+
+export async function aguardarFaixaNativa(page: Page, caminho: string) {
+  await expect.poll(async () => {
+    const faixa = (await lerReproducaoNativa(page)).find(({ tocando, duracao }) => tocando && duracao > 0);
+    return faixa?.caminho;
+  }).toBe(caminho);
+}
+
+export async function monitorarSinteseDoNavegador(page: Page) {
+  await page.addInitScript(() => {
+    const chamadas: { idioma: string; velocidade: number; texto: string }[] = [];
+    let falaAtual: SpeechSynthesisUtterance | null = null;
+    Reflect.set(window, "sinteseDoNavegador", chamadas);
+    Reflect.set(window, "concluirTrechoDeSintese", () => {
+      if (!falaAtual) return false;
+      const fala = falaAtual;
+      falaAtual = null;
+      fala.dispatchEvent(new Event("end"));
+      return true;
+    });
+    Object.defineProperty(window, "speechSynthesis", {
+      value: {
+        getVoices: () => [],
+        speak(fala: SpeechSynthesisUtterance) {
+          falaAtual = fala;
+          chamadas.push({ idioma: fala.lang, velocidade: fala.rate, texto: fala.text });
+          queueMicrotask(() => { if (falaAtual === fala) fala.dispatchEvent(new Event("start")); });
+        },
+        cancel() { falaAtual = null; },
+      },
+    });
+  });
+}
+
+export function lerSinteseDoNavegador(page: Page) {
+  return page.evaluate(() => Reflect.get(window, "sinteseDoNavegador") as {
+    idioma: string; velocidade: number; texto: string;
+  }[]);
+}
+
+export function concluirSinteseDoNavegador(page: Page) {
+  return page.evaluate(() => {
+    const concluir = Reflect.get(window, "concluirTrechoDeSintese") as () => boolean;
+    let trechos = 0;
+    while (trechos < 100 && concluir()) trechos += 1;
   });
 }

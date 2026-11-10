@@ -5,6 +5,7 @@ const commandPhrases = {
   "start-reading": ["ouvir", "ler", "ouvir etapa", "ouvir a etapa", "ler a etapa", "ouvir a aula", "iniciar leitura", "iniciar a leitura", "começar a leitura"],
   "continue-reading": ["continuar leitura", "continuar a leitura", "retomar leitura", "retomar a leitura"],
   "stop-reading": ["parar", "interromper", "parar leitura", "parar a leitura", "interromper leitura", "interromper a leitura", "parar áudio"],
+  "use-browser-voice": ["usar voz do navegador", "usar a voz do navegador", "ouvir com voz do navegador"],
   "start-quiz": ["exercícios", "fazer exercício", "fazer exercícios", "fazer os exercícios", "abrir exercícios", "começar os exercícios"],
   "resume-study": ["continuar estudando", "continuar estudo", "continuar o estudo", "continuar de onde parei", "continuar de onde parou", "retomar estudo", "retomar o estudo"],
   reviews: ["revisões", "minhas revisões", "abrir revisões", "abrir minhas revisões", "acessar revisões", "ir para minhas revisões"],

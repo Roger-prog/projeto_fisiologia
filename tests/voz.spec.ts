@@ -1,7 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { lessons } from "../src/data";
+import { guidedLessonHref } from "../src/lib/lesson-steps";
 import {
+  aguardarFaixaNativa,
   arquivoDeTeste,
   clipesDaEtapa,
   concluirFaixaNativa,
@@ -10,6 +12,7 @@ import {
   rotaDaEtapa,
   servirManifestoSemClipes,
   servirNarracaoDeTeste,
+  vozAlternativa,
   vozPrincipal,
 } from "./fixtures/narracao";
 
@@ -242,6 +245,29 @@ async function executarComando(page: Page, frase: string) {
   }).toBe(true);
   await concluirNarracao(page);
   await esperarEscuta(page);
+}
+
+async function concluirMensagemNeural(page: Page, clipes: readonly string[], voz: string, falasAnteriores: EstadoSimulado["falas"]) {
+  for (const clipe of clipes) {
+    await aguardarFaixaNativa(page, arquivoDeTeste(clipe, voz));
+    await expect(painel(page)).toHaveAttribute("data-voice-state", "narrating");
+    const atual = await estado(page);
+    expect(atual.escutando).toBe(false);
+    expect(atual.falas).toEqual(falasAnteriores);
+    expect((await lerReproducaoNativa(page)).filter(({ tocando }) => tocando)).toHaveLength(1);
+    await concluirFaixaNativa(page);
+  }
+  await esperarEscuta(page);
+  const final = await estado(page);
+  expect(final.falas).toEqual(falasAnteriores);
+  expect(final.sobreposicoes).toEqual([]);
+}
+
+async function executarComandoNeural(page: Page, frase: string, clipes: readonly string[], voz = vozAlternativa) {
+  await esperarEscuta(page);
+  const falasAnteriores = (await estado(page)).falas;
+  await dizer(page, frase);
+  await concluirMensagemNeural(page, clipes, voz, falasAnteriores);
 }
 
 function respostaSalva(page: Page, aulaId: string, perguntaId: string) {
@@ -533,48 +559,144 @@ test("mantém o microfone suspenso durante a leitura e durante uma pausa no play
   expect((await estado(page)).sobreposicoes).toEqual([]);
 });
 
-test("coordena arquivos da aula e da interface, síntese dinâmica e retomada do microfone", async ({ page }) => {
+test("mantém a voz neural em cada mensagem ao narrar, avançar e retomar uma etapa", async ({ page }) => {
   await simularAPIsDeVoz(page, { manterManifesto: true });
-  await servirNarracaoDeTeste(page, { incluirInterface: true });
+  await servirNarracaoDeTeste(page, { catalogoCompleto: true, faixasCurtas: true });
   await monitorarReproducaoNativa(page);
   await page.goto(rotaDaEtapa);
-  await expect(page.getByLabel("Voz da narração", { exact: true })).toHaveValue(vozPrincipal);
+  const voz = page.getByLabel("Voz da narração", { exact: true });
+  await voz.selectOption(vozAlternativa);
   await ativar(page).press("Enter");
   await esperarEscuta(page);
 
-  async function faixaTocando(caminho: string) {
-    await expect.poll(async () => {
-      const faixa = (await lerReproducaoNativa(page)).find(({ tocando, duracao }) => tocando && duracao > 0);
-      return faixa?.caminho;
-    }).toBe(caminho);
-  }
-
+  const aulaId = "mecanica-respiratoria";
   await dizer(page, "Ouvir a etapa");
-  await faixaTocando(arquivoDeTeste(clipesDaEtapa[0].id));
-  await expect(painel(page)).toHaveAttribute("data-voice-state", "narrating");
-  expect(await estado(page)).toMatchObject({ escutando: false, narrando: false, falas: [] });
-
+  await aguardarFaixaNativa(page, arquivoDeTeste(clipesDaEtapa[0].id, vozAlternativa));
   await page.getByRole("button", { name: "Ouvir minhas opções", exact: true }).press("Enter");
-  await expect.poll(async () => (await estado(page)).narrando).toBe(true);
-  expect((await lerReproducaoNativa(page)).some(({ tocando }) => tocando)).toBe(false);
-  expect((await estado(page)).escutando).toBe(false);
-  await concluirNarracao(page);
-  await esperarEscuta(page);
+  await concluirMensagemNeural(page, [
+    `lesson/${aulaId}/titulo/1`, `interface/etapa/${aulaId}/pressoes`, "interface/ajuda-etapa",
+  ], vozAlternativa, []);
+  await executarComandoNeural(page, "Repetir", [clipesDaEtapa[0].id]);
+  await executarComandoNeural(page, "Próxima etapa", ["interface/proxima-etapa", `interface/etapa/${aulaId}/inspiracao`]);
+  await expect(page).toHaveURL(guidedLessonHref(aulaId, "inspiracao"));
+  await expect(voz).toHaveValue(vozAlternativa);
+  await executarComandoNeural(page, "Etapa anterior", ["interface/etapa-anterior", `interface/etapa/${aulaId}/pressoes`]);
+  await expect(page).toHaveURL(rotaDaEtapa);
 
-  const falasAntes = (await estado(page)).falas.length;
-  await dizer(page, "frase sem correspondência no catálogo de comandos");
-  await faixaTocando(arquivoDeTeste("interface/comando-desconhecido"));
+  await executarComandoNeural(page, "Voltar ao início", ["interface/pagina-inicial"]);
+  await expect(page).toHaveURL("/");
+  await executarComandoNeural(page, "Ajuda", ["interface/boas-vindas", "interface/ajuda-inicio"]);
+  await expect(feedback(page)).toContainText("Bem-vindo ao FisioAcessível");
+  await expect(feedback(page)).toContainText("Continuar de onde parei");
+  await executarComandoNeural(page, "Continuar de onde parei", [
+    "interface/retomar", `lesson/${aulaId}/titulo/1`, `interface/etapa/${aulaId}/pressoes`,
+  ]);
+  await expect(page).toHaveURL(rotaDaEtapa);
+  await expect(voz).toHaveValue(vozAlternativa);
+  await executarComandoNeural(page, "frase sem correspondência no catálogo de comandos", [
+    "interface/comando-desconhecido", "interface/ajuda-comando",
+  ]);
   await expect(feedback(page)).toContainText("Comando não reconhecido");
-  expect((await estado(page)).escutando).toBe(false);
-  await concluirFaixaNativa(page);
-  await faixaTocando(arquivoDeTeste("interface/ajuda-comando"));
-  expect((await estado(page)).escutando).toBe(false);
-  await concluirFaixaNativa(page);
+  expect((await estado(page)).falas).toEqual([]);
+});
+
+test("lê questões, alternativas, acertos, erros e revisão sem trocar para síntese do navegador", async ({ page }) => {
+  const aula = lessons[0];
+  const [primeira, segunda] = aula.questions;
+  const indexCorreta = primeira.options.findIndex(({ id }) => id === primeira.correctOptionId);
+  const indexIncorreta = segunda.options.findIndex(({ id }) => id !== segunda.correctOptionId);
+  await simularAPIsDeVoz(page, { manterManifesto: true });
+  await servirNarracaoDeTeste(page, { catalogoCompleto: true, faixasCurtas: true });
+  await monitorarReproducaoNativa(page);
+  await page.goto(guidedLessonHref(aula.id, "introducao"));
+  await page.getByLabel("Voz da narração", { exact: true }).selectOption(vozAlternativa);
+  await ativar(page).press("Enter");
+
+  await executarComandoNeural(page, "Fazer exercícios", [`interface/exercicios/${aula.id}`]);
+  await expect(page).toHaveURL(`/aulas/${aula.id}/#exercicios`);
+  const exercicios = page.getByRole("region", { name: "Exercícios de fixação" });
+  await executarComandoNeural(page, "Ouvir pergunta", [`interface/pergunta/${primeira.id}/leitura`]);
+  await executarComandoNeural(page, `Letra ${"ABCD"[indexCorreta]}`, [
+    `interface/pergunta/${primeira.id}/alternativa-${indexCorreta + 1}`, "interface/confirmar-alternativa",
+  ]);
+  expect(await respostaSalva(page, aula.id, primeira.id)).toBeNull();
+  await executarComandoNeural(page, "Confirmar resposta", [
+    "interface/resposta-registrada", "interface/resposta-correta", `interface/pergunta/${primeira.id}/explicacao`,
+  ]);
+  await expect(exercicios.locator(".quiz-feedback")).toContainText("Resposta correta.");
+  expect(await respostaSalva(page, aula.id, primeira.id)).toBe(primeira.correctOptionId);
+
+  await executarComandoNeural(page, "Próxima pergunta", ["interface/numero-pergunta/2"]);
+  await executarComandoNeural(page, `Letra ${"ABCD"[indexIncorreta]}`, [
+    `interface/pergunta/${segunda.id}/alternativa-${indexIncorreta + 1}`, "interface/confirmar-alternativa",
+  ]);
+  await executarComandoNeural(page, "Confirmar resposta", [
+    "interface/resposta-registrada", "interface/resposta-incorreta", "interface/revisar", `interface/pergunta/${segunda.id}/explicacao`,
+  ]);
+  await expect(exercicios.locator(".quiz-feedback")).toContainText("Resposta incorreta.");
+
+  await executarComandoNeural(page, "Minhas Revisões", ["interface/minhas-revisoes"]);
+  await expect(page).toHaveURL("/minhas-revisoes/");
+  await page.getByRole("button", { name: "Iniciar sessão curta", exact: true }).press("Enter");
+  const sessao = page.getByRole("region", { name: "Sessão curta de estudo" });
+  await expect(sessao.getByText(segunda.prompt, { exact: true })).toBeVisible();
+  await executarComandoNeural(page, "Ouvir pergunta", [`interface/pergunta/${segunda.id}/leitura`]);
+  const indexCorretaNaRevisao = segunda.options.findIndex(({ id }) => id === segunda.correctOptionId);
+  await executarComandoNeural(page, `Letra ${"ABCD"[indexCorretaNaRevisao]}`, [
+    `interface/pergunta/${segunda.id}/alternativa-${indexCorretaNaRevisao + 1}`, "interface/confirmar-alternativa",
+  ]);
+  await executarComandoNeural(page, "Confirmar resposta", [
+    "interface/resposta-conferida", "interface/resposta-correta", `interface/pergunta/${segunda.id}/explicacao`,
+  ]);
+  await expect(sessao.locator(".quiz-feedback")).toContainText("Resposta correta.");
+  expect(await respostaSalva(page, aula.id, segunda.id)).toBe(segunda.options[indexIncorreta].id);
+
+  const cartao = aula.quickReview[0];
+  await sessao.getByRole("button", { name: "Lembrei com facilidade", exact: true }).press("Enter");
+  await expect(sessao.getByText(cartao.prompt, { exact: true })).toBeVisible();
+  await executarComandoNeural(page, "Ouvir pergunta", [`interface/cartao/${cartao.id}/pergunta`]);
+  await sessao.getByRole("button", { name: "Revelar resposta", exact: true }).press("Enter");
+  await executarComandoNeural(page, "Ouvir pergunta", [`interface/cartao/${cartao.id}/resposta`]);
+  expect((await estado(page)).falas).toEqual([]);
+});
+
+test("aguarda escolha explícita antes de narrar uma mensagem indisponível com a voz do navegador", async ({ page }) => {
+  let arquivoIndisponivel = true;
+  const arquivoAusente = arquivoDeTeste("interface/ajuda-inicio", vozPrincipal);
+  await simularAPIsDeVoz(page, { manterManifesto: true });
+  const requisicoes = await servirNarracaoDeTeste(page, {
+    catalogoCompleto: true,
+    falha: ({ caminho }) => arquivoIndisponivel && caminho === arquivoAusente ? 404 : undefined,
+  });
+  await monitorarReproducaoNativa(page);
+  await page.goto("/?diagnostico-voz=1");
+  await expect(painel(page)).toContainText("As gravações com voz neural são geradas por inteligência artificial");
+  await ativar(page).press("Enter");
   await esperarEscuta(page);
 
-  const final = await estado(page);
-  expect(final.falas).toHaveLength(falasAntes);
-  expect(final.sobreposicoes).toEqual([]);
+  await dizer(page, "Ajuda");
+  const fallback = page.getByRole("button", { name: "Usar voz do navegador nesta mensagem", exact: true });
+  await expect(fallback).toBeVisible();
+  await expect(page.getByRole("button", { name: "Tentar narração novamente", exact: true })).toBeVisible();
+  await esperarEscuta(page);
+  await expect(feedback(page)).toContainText("Bem-vindo ao FisioAcessível");
+  await expect(feedback(page)).toContainText("Continuar de onde parei");
+  await expect(painel(page).getByRole("status")).toContainText("Diga Usar voz do navegador para ouvir esta mensagem");
+  expect(requisicoes).toContainEqual({ caminho: arquivoAusente, metodo: "HEAD", status: 404 });
+  expect(await lerReproducaoNativa(page)).toEqual([]);
+  expect((await estado(page)).falas).toEqual([]);
+  const diagnostico = page.locator("[data-voice-diagnostics]");
+  await diagnostico.locator("summary").press("Enter");
+  await expect(diagnostico.locator('[data-voice-event="narration-error"]')).toContainText("audio-missing-file");
+
+  await executarComando(page, "Usar voz do navegador");
+  const falaTemporaria = (await estado(page)).falas.map(({ texto }) => texto).join(" ");
+  expect(falaTemporaria).toMatch(/voz do navegador usada temporariamente/i);
+  expect(falaTemporaria).toMatch(/Bem-vindo ao F[ií]sio\s*Acessível/i);
+  expect(falaTemporaria).toContain("Continuar de onde parei");
+
+  arquivoIndisponivel = false;
+  await executarComandoNeural(page, "Ajuda", ["interface/boas-vindas", "interface/ajuda-inicio"], vozPrincipal);
 });
 
 test("retoma a escuta e preserva o feedback em texto quando a narração não inicia", async ({ page }) => {

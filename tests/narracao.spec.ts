@@ -1,21 +1,44 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { lessons } from "../src/data";
+import { getStepSpeechText } from "../src/lib/lesson-speech";
 import { getLessonSteps, guidedLessonHref } from "../src/lib/lesson-steps";
-import { getStepNarrationClips } from "../src/lib/narration-catalog";
+import { getLessonNarrationClips, getNarrationCatalog, getStepNarrationClips } from "../src/lib/narration-catalog";
 import {
+  aguardarFaixaNativa,
   arquivoDeTeste,
   clipesDaEtapa,
   concluirFaixaNativa,
+  concluirSinteseDoNavegador,
   etapaDeTeste,
   lerReproducaoNativa,
+  lerSinteseDoNavegador,
   monitorarReproducaoNativa,
+  monitorarSinteseDoNavegador,
   rotaDaEtapa,
   servirManifestoSemClipes,
   servirNarracaoDeTeste,
   vozAlternativa,
   vozPrincipal,
 } from "./fixtures/narracao";
+
+test("o catálogo preserva parágrafos inteiros e inclui todas as alternativas e explicações", () => {
+  const catalogo = new Map(getNarrationCatalog().map(({ id, text }) => [id, text]));
+  for (const aula of lessons) {
+    for (const etapa of getLessonSteps(aula)) {
+      const paragrafos = getStepSpeechText(aula, etapa).split("\n").map((linha) => linha.trim()).filter(Boolean);
+      expect(getStepNarrationClips(aula, etapa).flatMap(({ text }) => text.split("\n")), etapa.id).toEqual(paragrafos);
+    }
+    for (const pergunta of aula.questions) {
+      const leitura = catalogo.get(`interface/pergunta/${pergunta.id}/leitura`);
+      expect(leitura).toContain(pergunta.prompt);
+      for (const [index, alternativa] of pergunta.options.entries()) {
+        expect(leitura).toContain(`Alternativa ${"ABCD"[index]}. ${alternativa.text}`);
+      }
+      expect(catalogo.get(`interface/pergunta/${pergunta.id}/explicacao`)).toBe(pergunta.explanation);
+    }
+  }
+});
 
 test("decodifica MP3 da etapa no celular e oferece controles acessíveis sem síntese nativa", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
@@ -77,41 +100,97 @@ test("decodifica MP3 da etapa no celular e oferece controles acessíveis sem sí
   await expect(page.getByText(etapaDeTeste.paragraphs[0], { exact: true })).toBeVisible();
 });
 
-test("oferece voz do navegador quando a gravação falha e conserva a leitura em texto", async ({ page }) => {
-  await servirNarracaoDeTeste(page, { falharArquivo: true });
-  await page.addInitScript(() => {
-    const chamadas: { idioma: string; velocidade: number; texto: string }[] = [];
-    Reflect.set(window, "sinteseDepoisDoErro", chamadas);
-    Object.defineProperty(window, "speechSynthesis", {
-      value: {
-        getVoices: () => [],
-        speak(fala: SpeechSynthesisUtterance) {
-          chamadas.push({ idioma: fala.lang, velocidade: fala.rate, texto: fala.text });
-        },
-        cancel() {},
-      },
-    });
+test("uma faixa ausente impede a leitura parcial e a voz do navegador é uma escolha temporária", async ({ page }) => {
+  let arquivoIndisponivel = true;
+  const arquivoAusente = arquivoDeTeste(clipesDaEtapa[1].id, vozAlternativa);
+  const requisicoes = await servirNarracaoDeTeste(page, {
+    falha: ({ caminho }) => arquivoIndisponivel && caminho === arquivoAusente ? 404 : undefined,
   });
-  const chamadas = () => page.evaluate(() => Reflect.get(window, "sinteseDepoisDoErro") as {
-    idioma: string; velocidade: number; texto: string;
-  }[]);
+  await monitorarReproducaoNativa(page);
+  await monitorarSinteseDoNavegador(page);
   await page.goto(rotaDaEtapa);
 
   const player = page.getByRole("region", { name: "Leitura da etapa em voz alta" });
   const voz = player.getByLabel("Voz da narração", { exact: true });
-  await expect(voz).toHaveValue(vozPrincipal);
+  const ouvir = player.getByRole("button", { name: "Ouvir a etapa", exact: true });
+  await voz.selectOption(vozAlternativa);
   await player.getByLabel("Velocidade da leitura", { exact: true }).selectOption("1.25");
-  await player.getByRole("button", { name: "Ouvir a etapa", exact: true }).press("Enter");
+  await ouvir.press("Enter");
   await expect(player.getByRole("status")).toContainText("O áudio neural está indisponível.");
   await expect(page.getByText(etapaDeTeste.paragraphs[0], { exact: true })).toBeVisible();
-  expect(await chamadas()).toEqual([]);
+  expect(requisicoes).toContainEqual({ caminho: arquivoAusente, metodo: "HEAD", status: 404 });
+  expect(await lerReproducaoNativa(page)).toEqual([]);
+  expect(await lerSinteseDoNavegador(page)).toEqual([]);
+  await expect(voz).toHaveValue(vozAlternativa);
 
   await player.getByRole("button", { name: "Usar voz do navegador", exact: true }).press("Enter");
-  await expect.poll(chamadas).toEqual([{ idioma: "pt-BR", velocidade: 1.25, texto: `${etapaDeTeste.title}.` }]);
-  await expect(voz).toHaveValue("browser");
-  await expect(player.getByText("Leitura em andamento.", { exact: true })).toBeVisible();
-  await player.getByRole("button", { name: "Interromper", exact: true }).press("Enter");
-  await expect(player.getByText("Leitura interrompida.", { exact: true })).toBeVisible();
+  await expect.poll(async () => (await lerSinteseDoNavegador(page))[0]).toMatchObject({
+    idioma: "pt-BR", velocidade: 1.25, texto: expect.stringMatching(/voz do navegador usada temporariamente/i),
+  });
+  await concluirSinteseDoNavegador(page);
+  await expect(player.getByText("Leitura concluída.", { exact: true })).toBeVisible();
+  const chamadasTemporarias = await lerSinteseDoNavegador(page);
+  expect(chamadasTemporarias.some(({ texto }) => texto.includes(etapaDeTeste.title))).toBe(true);
+  await expect(voz).toHaveValue(vozAlternativa);
+
+  arquivoIndisponivel = false;
+  await player.getByRole("button", { name: "Repetir explicação", exact: true }).press("Enter");
+  await aguardarFaixaNativa(page, arquivoDeTeste(clipesDaEtapa[0].id, vozAlternativa));
+  expect(await lerSinteseDoNavegador(page)).toEqual(chamadasTemporarias);
+});
+
+test("repete a verificação após erro transitório e inicia a gravação da voz selecionada", async ({ page }) => {
+  const primeiroArquivo = arquivoDeTeste(clipesDaEtapa[0].id, vozAlternativa);
+  let falhou = false;
+  const requisicoes = await servirNarracaoDeTeste(page, {
+    falha: ({ caminho, metodo }) => {
+      if (falhou || caminho !== primeiroArquivo || metodo !== "HEAD") return;
+      falhou = true;
+      return 503;
+    },
+  });
+  await monitorarReproducaoNativa(page);
+  await monitorarSinteseDoNavegador(page);
+  await page.goto(rotaDaEtapa);
+
+  const player = page.getByRole("region", { name: "Leitura da etapa em voz alta" });
+  const voz = player.getByLabel("Voz da narração", { exact: true });
+  await voz.selectOption(vozAlternativa);
+  await player.getByRole("button", { name: "Ouvir a etapa", exact: true }).press("Enter");
+  await aguardarFaixaNativa(page, primeiroArquivo);
+  expect(requisicoes.filter(({ caminho, metodo }) => caminho === primeiroArquivo && metodo === "HEAD")
+    .map(({ status }) => status)).toEqual([503, 200]);
+  await expect(voz).toHaveValue(vozAlternativa);
+  expect(await lerSinteseDoNavegador(page)).toEqual([]);
+});
+
+test("mantém a voz ao abrir o modo completo e lê toda a aula sem síntese do navegador", async ({ page }) => {
+  const aula = lessons.find(({ id }) => id === "mecanica-respiratoria")!;
+  await servirNarracaoDeTeste(page, { catalogoCompleto: true, faixasCurtas: true });
+  await monitorarReproducaoNativa(page);
+  await monitorarSinteseDoNavegador(page);
+  await page.goto(rotaDaEtapa);
+
+  await page.getByLabel("Voz da narração", { exact: true }).selectOption(vozAlternativa);
+  await page.getByRole("link", { name: "Modo completo", exact: true }).press("Enter");
+  await expect(page).toHaveURL(`/aulas/${aula.id}/#${etapaDeTeste.id}`);
+  const player = page.getByRole("region", { name: "Leitura em voz alta", exact: true });
+  await expect(player.getByLabel("Voz da narração", { exact: true })).toHaveValue(vozAlternativa);
+  expect(await lerReproducaoNativa(page)).toEqual([]);
+
+  await player.getByRole("button", { name: "Ouvir a aula", exact: true }).press("Enter");
+  for (const { id } of getLessonNarrationClips(aula)) {
+    await aguardarFaixaNativa(page, arquivoDeTeste(id, vozAlternativa));
+    await concluirFaixaNativa(page);
+  }
+  await expect(player.getByText("Leitura concluída.", { exact: true })).toBeVisible();
+  await expect(player.getByRole("progressbar", { name: "Andamento da leitura" })).toHaveAttribute("aria-valuetext", "100% concluído");
+  expect(await lerSinteseDoNavegador(page)).toEqual([]);
+
+  await page.reload();
+  await expect(player.getByLabel("Voz da narração", { exact: true })).toHaveValue(vozAlternativa);
+  expect(await lerReproducaoNativa(page)).toEqual([]);
+  expect(await lerSinteseDoNavegador(page)).toEqual([]);
 });
 
 test("atualiza as vozes nativas instaladas e permite escolher uma delas", async ({ page }) => {

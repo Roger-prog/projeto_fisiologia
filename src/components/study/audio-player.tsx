@@ -3,18 +3,22 @@
 import { Pause, Play, RotateCcw, SkipBack, Square, Volume2 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useVoiceActions } from "@/components/voice/voice-provider";
-import { createFilePlayback } from "@/lib/file-playback";
+import { fixedNarration, narratedMessage } from "@/lib/narration-messages";
 import {
   getNarrationPreference,
-  getNarrationSources,
   setNarrationPreference,
   subscribeNarrationPreference,
   useNarrationManifest,
 } from "@/lib/narration-manifest";
-import { prepareNarrationText } from "@/lib/narration-pronunciation";
+import {
+  createNarrationPlayback,
+  isBrowserNarrationVoice,
+  type NarrationFailure,
+  resolveNarrationVoice,
+  temporaryBrowserNotice,
+} from "@/lib/narration-playback";
 import {
   type AudioPlayback,
-  createSpeechPlayback,
   getBrowserNarrationVoices,
   getSpeechChunks,
   isSpeechAvailable,
@@ -22,10 +26,8 @@ import {
 } from "@/lib/speech-playback";
 
 type PlaybackState = "idle" | "playing" | "paused" | "waiting" | "stopped" | "finished" | "error";
-type NarrationVoice = { id: string; label: string } & (
-  { kind: "neural"; sources: readonly string[] } | { kind: "browser"; voiceURI?: string }
-);
-type PlaybackRequest = { block: number | null; voice: NarrationVoice };
+type PlaybackRequest = { block: number | null; voiceId: string };
+type FailedRequest = { request: PlaybackRequest; failure: NarrationFailure };
 
 const messages: Record<PlaybackState, string> = {
   idle: "",
@@ -37,12 +39,23 @@ const messages: Record<PlaybackState, string> = {
   error: "Não foi possível reproduzir a leitura em voz alta. O texto completo está nesta página.",
 };
 
-const automaticBrowserVoice: NarrationVoice = { id: "browser", label: "Voz do navegador (automática)", kind: "browser" };
+const automaticBrowserVoice = { id: "browser", label: "Voz do navegador (automática)" };
 const emptyVoices: SpeechSynthesisVoice[] = [];
 
 function getServerVoices() { return emptyVoices; }
 function getServerSupport() { return null; }
 function getServerPreference() { return null; }
+
+function describeFailure({ code }: NarrationFailure) {
+  switch (code) {
+    case "missing-clips":
+    case "missing-file": return "A voz selecionada não tem todas as gravações para esta leitura.";
+    case "network": return "A gravação não pôde ser acessada pela rede.";
+    case "blocked": return "O navegador bloqueou a reprodução. Acione Tentar voz neural novamente.";
+    case "media-error": return "O navegador não conseguiu reproduzir a gravação.";
+    case "unavailable": return "A voz selecionada não está disponível neste dispositivo.";
+  }
+}
 
 export function AudioPlayer({
   text,
@@ -64,34 +77,29 @@ export function AudioPlayer({
   const [state, setState] = useState<PlaybackState>("idle");
   const [rate, setRate] = useState("1");
   const [progress, setProgress] = useState(0);
-  const [playingVoice, setPlayingVoice] = useState<{ id: string; canPause: boolean } | null>(null);
-  const [failedRequest, setFailedRequest] = useState<PlaybackRequest | null>(null);
+  const [canPause, setCanPause] = useState(false);
+  const [temporary, setTemporary] = useState(false);
+  const [recovering, setRecovering] = useState(false);
+  const [failedRequest, setFailedRequest] = useState<FailedRequest | null>(null);
   const playback = useRef<AudioPlayback | null>(null);
   const lastRequest = useRef<PlaybackRequest | null>(null);
   const nextBlock = useRef<number | null>(null);
   const blocks = useMemo(() => voiceBlocks ?? getSpeechChunks(text.replace(/\s+/gu, " "), 400), [text, voiceBlocks]);
-  const neuralVoices = useMemo(() => {
-    const voices: NarrationVoice[] = [];
-    if (!manifest || !clipIds?.length || clipIds.length !== blocks.length) return voices;
-    for (const { id, label } of manifest.voices) {
-      const sources = getNarrationSources(manifest, clipIds, id);
-      if (sources) voices.push({ id, label: `${label} (neural)`, kind: "neural", sources });
-    }
-    return voices;
-  }, [manifest, clipIds, blocks.length]);
+  const selectedVoice = resolveNarrationVoice(manifest, preference);
+  const selectedNeural = selectedVoice !== null && !isBrowserNarrationVoice(selectedVoice);
   const choices = useMemo(() => {
-    if (!support) return neuralVoices;
-    const namedBrowserVoices: NarrationVoice[] = browserVoices.map(({ name, lang, voiceURI }) => ({
+    const voices = (manifest?.voices ?? []).map(({ id, label }) => ({ id, label: `${label} (neural)` }));
+    if (support) voices.push(automaticBrowserVoice, ...browserVoices.map(({ name, lang, voiceURI }) => ({
       id: `browser:${voiceURI}`,
       label: `${name} (${lang}, navegador)`,
-      kind: "browser",
-      voiceURI,
-    }));
-    return [...neuralVoices, automaticBrowserVoice, ...namedBrowserVoices];
-  }, [browserVoices, neuralVoices, support]);
-  const preferredBrowser = preference === "browser" || preference?.startsWith("browser:");
-  const voice = choices.find(({ id }) => id === preference)
-    ?? (support && preferredBrowser ? automaticBrowserVoice : choices[0]);
+    })));
+    if (selectedVoice && !voices.some(({ id }) => id === selectedVoice)) {
+      voices.unshift({ id: selectedVoice, label: `Voz ${selectedNeural ? "neural " : ""}selecionada (indisponível)` });
+    }
+    return voices;
+  }, [browserVoices, manifest, selectedNeural, selectedVoice, support]);
+  const hasControls = selectedVoice !== null && (selectedNeural || support || choices.length > 1);
+  const hasNeuralVoices = selectedNeural || Boolean(manifest?.voices.length);
   const primaryButton = useRef<HTMLButtonElement>(null);
   const stopButton = useRef<HTMLButtonElement>(null);
   const repeatButton = useRef<HTMLButtonElement>(null);
@@ -103,7 +111,13 @@ export function AudioPlayer({
   const active = state === "playing" || state === "paused";
   const section = scope === "section";
   const replay = section && (state === "finished" || state === "stopped");
-  const neuralFailure = state === "error" && failedRequest?.voice.kind === "neural";
+  const neuralFailure = state === "error" && failedRequest !== null && !isBrowserNarrationVoice(failedRequest.request.voiceId);
+  const failureMessage = neuralFailure ? [
+    "O áudio neural está indisponível.",
+    describeFailure(failedRequest.failure),
+    support ? "Acione Usar voz do navegador ou diga esse comando para ouvir esta leitura." : "",
+    "O texto completo está nesta página.",
+  ].filter(Boolean).join(" ") : messages.error;
   const Heading = headingLevel === 2 ? "h2" : "h3";
 
   useEffect(() => () => {
@@ -117,68 +131,94 @@ export function AudioPlayer({
     }
     playback.current = null;
     if (nextState !== "waiting") nextBlock.current = null;
-    setPlayingVoice(null);
+    if (nextState !== "waiting") setTemporary(false);
+    setCanPause(false);
+    setRecovering(false);
     setState(nextState);
   }
 
-  function fail(request: PlaybackRequest) {
-    setFailedRequest(request);
+  function fail(request: PlaybackRequest, failure: NarrationFailure) {
+    setFailedRequest({ request, failure });
     finish("error");
   }
 
-  function beginPlayback(block: number | null = null, narrator = voice) {
-    if (!narrator || (block !== null && !blocks[block])) return false;
-    const request = { block, voice: narrator };
+  function beginPlayback({ block = null, voiceId = selectedVoice, temporary = false, announceTemporary = false }: {
+    block?: number | null;
+    voiceId?: string | null;
+    temporary?: boolean;
+    announceTemporary?: boolean;
+  } = {}) {
+    if (!voiceId || (block !== null && !blocks[block])) return false;
+    const request = { block, voiceId };
     const next = block !== null && block + 1 < blocks.length ? block + 1 : null;
     const prompt = next === null ? "" : "\nDiga continuar leitura para ouvir mais ou parar leitura para encerrar.";
+    const introduction = announceTemporary ? `${temporaryBrowserNotice}\n` : "";
+    const narrationText = introduction + (block === null ? text : blocks[block]) + prompt;
+    const requestedClips = clipIds?.length === blocks.length ? (block === null ? clipIds : [clipIds[block]]) : [];
     let failed = false;
     const onProgress = (fraction: number) => {
       if (!Number.isFinite(fraction)) return;
       const ratio = Math.min(1, Math.max(0, fraction));
       setProgress(Math.round((block === null ? ratio : (block + ratio) / blocks.length) * 100));
-    };
-    const callbacks = {
-      rate: Number(rate),
-      onComplete: () => {
-        onProgress(1);
-        finish(next === null ? "finished" : "waiting");
-      },
-      onError: () => {
-        failed = true;
-        fail(request);
-      },
-      onInterrupt: () => finish("stopped"),
-      onProgress,
+      if (ratio > 0) setRecovering(false);
     };
 
     playback.current?.stop();
     lastRequest.current = request;
     nextBlock.current = next;
     setFailedRequest(null);
+    setRecovering(false);
+    setTemporary(temporary);
     onProgress(0);
     try {
-      const player = narrator.kind === "neural"
-        ? createFilePlayback({ ...callbacks, sources: block === null ? narrator.sources : [narrator.sources[block]] })
-        : createSpeechPlayback({
-          ...callbacks,
-          text: prepareNarrationText(block === null ? text : blocks[block]) + prompt,
-          voiceURI: narrator.voiceURI,
-        });
+      const player = createNarrationPlayback({
+        manifest,
+        voiceId,
+        clipIds: requestedClips,
+        text: narrationText,
+        rate: Number(rate),
+        onComplete: () => {
+          onProgress(1);
+          finish(next === null ? "finished" : "waiting");
+        },
+        onError: (failure) => {
+          failed = true;
+          fail(request, failure);
+        },
+        onInterrupt: () => finish("stopped"),
+        onProgress,
+        onRetry: () => setRecovering(true),
+      });
       playback.current = player;
-      setPlayingVoice({ id: narrator.id, canPause: Boolean(player.pause && player.resume) });
+      setCanPause(Boolean(player.pause && player.resume));
       setState("playing");
       player.start();
       return !failed;
     } catch {
       playback.current?.stop();
-      fail(request);
+      fail(request, { code: "media-error" });
       return false;
     }
   }
 
   function stopReading(nextState: "idle" | "stopped" = "stopped") {
     playback.current?.stop();
+    setFailedRequest(null);
     finish(nextState);
+  }
+
+  function continuePlayback(block: number) {
+    return beginPlayback(temporary ? { block, voiceId: automaticBrowserVoice.id, temporary: true } : { block });
+  }
+
+  function useBrowserVoice() {
+    if (!neuralFailure || !support) return false;
+    return beginPlayback({
+      block: failedRequest.request.block,
+      voiceId: automaticBrowserVoice.id,
+      temporary: true,
+      announceTemporary: true,
+    });
   }
 
   useVoiceActions((command) => {
@@ -189,17 +229,22 @@ export function AudioPlayer({
     if (command.kind === "stop-reading") {
       if (nextBlock.current === null && !playback.current) return;
       stopReading();
-      return { message: "Leitura interrompida." };
+      return narratedMessage(fixedNarration("leitura-interrompida"));
     }
     if (scope === "lesson" && window.location.hash === "#exercicios") return;
+    if (command.kind === "use-browser-voice" && neuralFailure && support) {
+      return {
+        message: useBrowserVoice() ? temporaryBrowserNotice : messages.error,
+        speak: false,
+      };
+    }
     if (command.kind === "start-reading" || command.kind === "repeat-reading" || command.kind === "continue-reading") {
-      const retry = neuralFailure && support ? failedRequest : null;
       const block = command.kind === "continue-reading"
-        ? nextBlock.current ?? retry?.block ?? null
+        ? nextBlock.current ?? failedRequest?.request.block ?? null
         : command.kind === "repeat-reading" ? lastRequest.current?.block ?? 0 : 0;
-      if (block === null) return { message: "Diga ouvir para iniciar a leitura." };
-      if (retry) setNarrationPreference(automaticBrowserVoice.id);
-      if (!beginPlayback(block, retry ? automaticBrowserVoice : voice)) {
+      if (block === null) return narratedMessage(fixedNarration("iniciar-leitura"));
+      const started = command.kind === "start-reading" ? beginPlayback({ block }) : continuePlayback(block);
+      if (!started) {
         return { message: "A leitura em voz alta está indisponível. Consulte o texto da página.", speak: false };
       }
       return { message: block ? "Lendo o trecho seguinte." : "Lendo o primeiro trecho.", speak: false };
@@ -209,7 +254,7 @@ export function AudioPlayer({
   function togglePlayback() {
     try {
       if (state === "waiting" && nextBlock.current !== null) {
-        beginPlayback(nextBlock.current);
+        continuePlayback(nextBlock.current);
       } else if (state === "playing") {
         if (!playback.current?.pause) return;
         setState("paused");
@@ -222,7 +267,7 @@ export function AudioPlayer({
       }
     } catch {
       playback.current?.stop();
-      if (lastRequest.current) fail(lastRequest.current);
+      if (lastRequest.current) fail(lastRequest.current, { code: "media-error" });
     }
   }
 
@@ -233,37 +278,30 @@ export function AudioPlayer({
     setProgress(0);
   }
 
-  function useBrowserVoice() {
-    if (!failedRequest) return;
-    primaryButton.current?.focus();
-    setNarrationPreference(automaticBrowserVoice.id);
-    beginPlayback(failedRequest.block, automaticBrowserVoice);
-  }
-
   return (
     <section className="study-panel audio-player" aria-labelledby={titleId}>
       <div className="audio-heading">
         <Volume2 size={22} aria-hidden="true" />
         <Heading id={titleId}>{section ? "Leitura da etapa em voz alta" : "Leitura em voz alta"}</Heading>
       </div>
-      {!voice ? (
-        <p>{support === null
+      {!hasControls ? (
+        <p>{selectedVoice === null || support === null
           ? "Os controles de leitura em voz alta dependem dos recursos do navegador."
           : "A leitura em voz alta não está disponível neste navegador. O texto completo está nesta página."}</p>
       ) : (
         <>
-          {neuralVoices.length > 0 && <p id={disclosureId}>As gravações com voz neural são geradas por inteligência artificial.</p>}
+          {hasNeuralVoices && <p id={disclosureId}>As gravações com voz neural são geradas por inteligência artificial.</p>}
           <p id={speedHintId}>Escolha a velocidade antes de iniciar a leitura.</p>
           <div className="control-row audio-controls">
             <button
               type="button"
               className="button button-primary"
               ref={primaryButton}
-              aria-describedby={voice.kind === "neural" ? disclosureId : undefined}
-              aria-disabled={state === "playing" && !playingVoice?.canPause}
+              aria-describedby={selectedNeural ? disclosureId : undefined}
+              aria-disabled={state === "playing" && !canPause}
               onClick={togglePlayback}
             >
-              {state === "playing" && playingVoice?.canPause
+              {state === "playing" && canPause
                 ? <><Pause size={18} aria-hidden="true" />Pausar</>
                 : <>
                   {replay ? <RotateCcw size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}
@@ -285,7 +323,11 @@ export function AudioPlayer({
                 type="button"
                 className="button button-secondary"
                 ref={repeatButton}
-                onClick={() => beginPlayback(lastRequest.current?.block ?? null, active ? lastRequest.current?.voice : voice)}
+                onClick={() => beginPlayback({
+                  block: lastRequest.current?.block ?? null,
+                  voiceId: active ? lastRequest.current?.voiceId : temporary ? automaticBrowserVoice.id : selectedVoice,
+                  temporary,
+                })}
               >
                 <RotateCcw size={18} aria-hidden="true" />
                 Repetir explicação
@@ -297,8 +339,24 @@ export function AudioPlayer({
                 Voltar ao começo
               </button>
             )}
+            {neuralFailure && selectedNeural && (
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => {
+                  primaryButton.current?.focus();
+                  beginPlayback({ block: failedRequest.request.block });
+                }}
+              >
+                <RotateCcw size={18} aria-hidden="true" />
+                Tentar voz neural novamente
+              </button>
+            )}
             {neuralFailure && support && (
-              <button type="button" className="button button-secondary" onClick={useBrowserVoice}>
+              <button type="button" className="button button-secondary" onClick={() => {
+                primaryButton.current?.focus();
+                useBrowserVoice();
+              }}>
                 <Volume2 size={18} aria-hidden="true" />
                 Usar voz do navegador
               </button>
@@ -309,9 +367,12 @@ export function AudioPlayer({
                 <select
                   id={voiceId}
                   className="study-select min-w-0 max-w-full"
-                  aria-describedby={neuralVoices.length > 0 ? disclosureId : undefined}
-                  value={playingVoice?.id ?? voice.id}
-                  onChange={(event) => setNarrationPreference(event.currentTarget.value)}
+                  aria-describedby={hasNeuralVoices ? disclosureId : undefined}
+                  value={selectedVoice ?? undefined}
+                  onChange={(event) => {
+                    setTemporary(false);
+                    setNarrationPreference(event.currentTarget.value);
+                  }}
                   disabled={active}
                 >
                   {choices.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
@@ -347,11 +408,11 @@ export function AudioPlayer({
               <span aria-hidden="true">{progress}%</span>
             </div>
           )}
-          {/* A live region is reserved for failures to avoid competing with the narration. */}
-          <p className="audio-status">{state !== "error" ? messages[state] : ""}</p>
+          {/* Keep routine progress out of the live region to avoid competing with the narration. */}
+          <p className="audio-status">{state !== "error" && (state !== "playing" || !recovering) ? messages[state] : ""}</p>
+          {temporary && <p className="audio-status">{temporaryBrowserNotice}</p>}
           <p role="status" className="audio-status">
-            {neuralFailure ? `O áudio neural está indisponível. ${support ? "Você pode usar a voz do navegador. " : ""}O texto completo está nesta página.`
-              : state === "error" ? messages.error : ""}
+            {state === "error" ? failureMessage : recovering ? "Tentando recuperar o áudio neural." : ""}
           </p>
         </>
       )}

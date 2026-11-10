@@ -40,9 +40,14 @@ export function VoiceControls() {
 
   const { session, feedback, diagnostics } = controls;
   const { active, state, support, message } = session;
+  const announcedFeedback = feedback?.announce ? [
+    feedback.notice,
+    feedback.message,
+    active && feedback.canUseBrowser ? "Diga Usar voz do navegador para ouvir esta mensagem." : undefined,
+  ].filter(Boolean).join(" ") : "";
   const liveMessage = state === "error" || state === "requesting"
     ? message
-    : feedback ? (feedback.announce ? feedback.message : "") : state === "inactive" ? message : "";
+    : feedback ? announcedFeedback : state === "inactive" ? message : "";
   const Icon = active ? MicOff : Mic;
   const canStopAudio = audioActive && (active || feedback?.announce === false);
   const showMessage = Boolean(message && (state === "error" || message !== feedback?.message));
@@ -113,6 +118,23 @@ export function VoiceControls() {
               <p id={messageId}>{message}{state === "listening" && " Diga Ajuda para ouvir as opções."}</p>
             )}
             <p data-voice-feedback>{feedback?.message}</p>
+            {feedback?.notice && <p data-voice-narration-notice>{feedback.notice}</p>}
+            {(feedback?.canRetry || feedback?.canUseBrowser) && (
+              <div className="control-row">
+                {feedback.canRetry && (
+                  <button type="button" className="button button-secondary" onClick={() => {
+                    options.current?.focus();
+                    controls.retryFeedback();
+                  }}>Tentar narração novamente</button>
+                )}
+                {feedback.canUseBrowser && (
+                  <button type="button" className="button button-secondary" onClick={() => {
+                    options.current?.focus();
+                    controls.useBrowserForFeedback();
+                  }}>Usar voz do navegador nesta mensagem</button>
+                )}
+              </div>
+            )}
           </div>
         )}
         {diagnostics && (

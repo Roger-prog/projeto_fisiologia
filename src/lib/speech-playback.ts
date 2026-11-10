@@ -1,4 +1,4 @@
-import { beginAudioActivity, stopActiveAudio } from "./audio-activity";
+import { beginAudioActivity } from "./audio-activity";
 
 const speechLanguage = "pt-BR";
 const maxChunkLength = 220;
@@ -195,29 +195,4 @@ export function createSpeechPlayback({
     } : undefined,
     stop,
   };
-}
-
-export function stopActiveSpeech() {
-  stopActiveAudio();
-}
-
-export function speakVoiceFeedback(text: string, onError?: () => void, voiceURI?: string) {
-  if (!isSpeechAvailable() || !text.trim()) return false;
-
-  try {
-    let failed = false;
-    createSpeechPlayback({
-      text,
-      rate: 1,
-      voiceURI,
-      onComplete: () => {},
-      onError: () => {
-        failed = true;
-        onError?.();
-      },
-    }).start();
-    return !failed;
-  } catch {
-    return false;
-  }
 }

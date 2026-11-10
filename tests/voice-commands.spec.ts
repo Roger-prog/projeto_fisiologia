@@ -13,6 +13,7 @@ test("interpreta variações curtas de comandos em português brasileiro", () =>
     ["Ouvir a etapa", { kind: "start-reading" }],
     ["Continuar a leitura", { kind: "continue-reading" }],
     ["Parar leitura", { kind: "stop-reading" }],
+    ["Usar a voz do navegador", { kind: "use-browser-voice" }],
     ["Fazer exercícios", { kind: "start-quiz" }],
     ["Continuar de onde parei", { kind: "resume-study" }],
     ["Minhas Revisões", { kind: "reviews" }],
@@ -47,6 +48,7 @@ test("rejeita negativas, trechos soltos e comandos misturados", () => {
     "Não avance", "não, próxima etapa", "alternativa B não", "Letra E", "b",
     "alternativa B e confirmar resposta", "confirmar resposta, não", "confirmar resposta. próxima etapa",
     "se eu disser confirmar resposta", "não confirmar resposta", "sim", "confirmar", "confirma",
+    "Não usar voz do navegador", "usar voz do navegador e avançar",
     "abrir qualquer aula", "abrir aula de física", "um comentário sobre o assunto", "  ...  ",
   ]) {
     expect(parseVoiceCommand(frase, lessons), frase).toBeNull();

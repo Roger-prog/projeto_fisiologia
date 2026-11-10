@@ -5,7 +5,8 @@ export type VoiceSessionState = "inactive" | "requesting" | "listening" | "proce
 
 export type VoiceDiagnosticEvent = {
   type: "session-started" | "session-ended" | "recognition-started" | "recognition-result" | "recognition-ended"
-    | "narration-started" | "narration-ended" | "retry-scheduled" | "recognition-error" | "permission-denied" | "suspended";
+    | "narration-started" | "narration-ended" | "narration-error" | "narration-retry"
+    | "retry-scheduled" | "recognition-error" | "permission-denied" | "suspended";
   code?: string;
   attempt?: number;
   delayMs?: number;
@@ -27,6 +28,7 @@ const knownCodes = new Set([
   "no-speech", "no-match", "idle-end", "aborted", "bad-grammar", "phrases-not-supported",
   "language-not-supported", "NotSupportedError", "NotFoundError",
   "RecognitionBusyError", "release-timeout", "command-error",
+  "audio-missing-clips", "audio-missing-file", "audio-network", "audio-media-error", "audio-blocked", "audio-unavailable",
 ]);
 
 export function sanitizeVoiceDiagnosticCode(code: string) {

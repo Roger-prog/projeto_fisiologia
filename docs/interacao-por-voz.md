@@ -16,7 +16,7 @@ Diga a letra e aguarde o retorno da seleção antes de dizer **confirmar respost
 
 A narração iniciada por voz lê um trecho e devolve o turno ao microfone. Durante a fala, use **Parar áudio** no painel para interromper imediatamente. O comando **parar leitura** funciona quando a escuta é retomada entre trechos. O player convencional continua disponível com sua leitura integral. **Encerrar interação por voz** finaliza a sessão pelo teclado, toque ou acionador.
 
-As aulas piloto oferecem gravações neurais e voz do navegador. A escolha no reprodutor se aplica às mensagens de voz da aba quando houver gravações correspondentes. Alguns navegadores podem exigir tocar ou clicar em **Ouvir a etapa** para autorizar a reprodução de mídia. [Narração, alternativas e validação](narracao-neural.md)
+As aulas piloto oferecem gravações neurais e voz do navegador. A escolha do reprodutor vale para as aulas e as mensagens da aba. Se uma gravação estiver indisponível, a mensagem completa fica no painel. Diga **Usar voz do navegador** ou acione a opção no painel para ouvir só aquela solicitação com a alternativa anunciada. A preferência continua salva. Alguns navegadores podem exigir tocar ou clicar em **Ouvir a etapa** para autorizar a reprodução de mídia. [Narração, alternativas e validação](narracao-neural.md)
 
 ## Sessão e privacidade
 

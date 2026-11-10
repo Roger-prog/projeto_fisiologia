@@ -9,12 +9,6 @@
     }
   ],
   "clips": {
-    "lesson/mecanica-respiratoria/titulo/1": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/titulo-01-piper-pt-br-cadu-medium-8bba1bd580a59b6f.mp3",
-        "revision": "5681262dc70705fc940fc8cb7ff6507d01e2464acb35098ba822189dff49a147"
-      }
-    },
     "lesson/introducao-ao-sistema-cardiovascular/titulo/1": {
       "piper-pt-br-cadu-medium": {
         "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/titulo-01-piper-pt-br-cadu-medium-695e791c60245694.mp3",
@@ -23,14 +17,8 @@
     },
     "lesson/introducao-ao-sistema-cardiovascular/introducao/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/introducao-01-piper-pt-br-cadu-medium-43b927e45b486f70.mp3",
-        "revision": "d5d8ed1465e33a9759e286c01aad1a8a09184b5a2c73caf2255f449684c7c3b6"
-      }
-    },
-    "lesson/introducao-ao-sistema-cardiovascular/introducao/2": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/introducao-02-piper-pt-br-cadu-medium-1e282d2db151195d.mp3",
-        "revision": "79052f7f49229750fff1ca4150992ecbd21f5bca7d4b20b3a8ca297e72a6d442"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/introducao-01-piper-pt-br-cadu-medium-872b3aea1a3777ae.mp3",
+        "revision": "2e4c2f55d257adeaa352d13903528f59006c576dfa4f747e6727d9d2e4daeafc"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/bomba-e-rede/1": {
@@ -41,152 +29,104 @@
     },
     "lesson/introducao-ao-sistema-cardiovascular/bomba-e-rede/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-02-piper-pt-br-cadu-medium-b2438ae48ee94765.mp3",
-        "revision": "9e308cd3d8fadde6fccfc2f0f97f896ce22338721dca12fce983621f457defe3"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-02-piper-pt-br-cadu-medium-20731bc350544b3e.mp3",
+        "revision": "d4f1201682d6a8dfe5a3a0453b3f7d48b384b8300777c322061bdb6458b0a253"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/bomba-e-rede/3": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-03-piper-pt-br-cadu-medium-60fc491abad3f25f.mp3",
-        "revision": "9a24393092f5ab955019434c6153b2489e37ad9d1fb7a1d97dc682a6b3f3b697"
-      }
-    },
-    "lesson/introducao-ao-sistema-cardiovascular/bomba-e-rede/4": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-04-piper-pt-br-cadu-medium-3250a0e3c93a49a6.mp3",
-        "revision": "54d56a09a2ec0ee5e2347b27e9cf8186023846adfafdca8e47fc169eb2c57518"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/bomba-e-rede-03-piper-pt-br-cadu-medium-1f667636ca6cee57.mp3",
+        "revision": "9a0ba26710b8f49060b072b15fb3e3fef4c8784fabbc0c7c015e2413c42afaf0"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/vasos-sanguineos/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-01-piper-pt-br-cadu-medium-67f9c269e037a0e7.mp3",
-        "revision": "0b20a803bd40ed2d43643dc5129a82b71bf199816daea376f48bc1883148ec10"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-01-piper-pt-br-cadu-medium-d62b0c24b116c09c.mp3",
+        "revision": "5cb9e9f39e02058a78ca0f1b9d6831fc0acf515b9966580c08370bbdcf69e9c7"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/vasos-sanguineos/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-02-piper-pt-br-cadu-medium-704a9607dde33dd3.mp3",
-        "revision": "da588a38ea074b854a965a7d99d4efa3e3f7a8283e5b030c3a1a021d1fe0bc1d"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-02-piper-pt-br-cadu-medium-464e8e78579a96ee.mp3",
+        "revision": "178c624145be116138fc8df9eb687cfad4a42bcca5dc0dad69c2727a8e22c732"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/vasos-sanguineos/3": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-03-piper-pt-br-cadu-medium-db353bbcc35c3be9.mp3",
-        "revision": "d6ef484188db07790ae643353def066c402c5870d04d1b8d4d8af2b563bf0c1c"
-      }
-    },
-    "lesson/introducao-ao-sistema-cardiovascular/vasos-sanguineos/4": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-04-piper-pt-br-cadu-medium-bbe3dbbf974c9117.mp3",
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/vasos-sanguineos-03-piper-pt-br-cadu-medium-bbe3dbbf974c9117.mp3",
         "revision": "6b7458825e671bd1b45bd051ddbd3f68c6917de20578e7c644e951c90f05e410"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-01-piper-pt-br-cadu-medium-285f63925340db54.mp3",
-        "revision": "757914db8a450a5d8d0b213309d5e5e974c2d6c1b8b153888c53c4229bb90bbb"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-01-piper-pt-br-cadu-medium-ba227653f62f0357.mp3",
+        "revision": "55bc5c7d97c8347db3b9a689df50f98c1215a038c6de95356d501fde064b938d"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-02-piper-pt-br-cadu-medium-39ab800f8d27ef02.mp3",
-        "revision": "f9126435abeaf84b73b5c2427486cb1dd0ac6ee553012756ceb514009642d6c2"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-02-piper-pt-br-cadu-medium-b510e75beb112a4b.mp3",
+        "revision": "02084e52361d8832606d90dc4ac4df0225b13e5a15c5baf9a007961038ac35f4"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/3": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-03-piper-pt-br-cadu-medium-8a5d9f5037da6890.mp3",
-        "revision": "86b2f849142b81cc1f63471f1debce5ddfd072e02758e477c6c0576b96f12f7d"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-03-piper-pt-br-cadu-medium-a8f3c12476f864c1.mp3",
+        "revision": "a516c988936c4cc89b15d1298b38fa0ea9ec9d1850ac6b55ec2d8410055c989f"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/4": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-04-piper-pt-br-cadu-medium-6002712634f629e8.mp3",
-        "revision": "072b9b4e5f132c471f00c2d76d77f483f3a7f02c685bf37d41505dbc5c71dadb"
-      }
-    },
-    "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/5": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-05-piper-pt-br-cadu-medium-7ca7be96ceedf520.mp3",
-        "revision": "366a24da4905eea4bd50cf8ffc80625e3d5004e673084965d1142bdb93f31881"
-      }
-    },
-    "lesson/introducao-ao-sistema-cardiovascular/circuito-pulmonar/6": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-06-piper-pt-br-cadu-medium-04dd945ae9b4a6f2.mp3",
-        "revision": "516954e7c9f92f4759da7ec2b1d5b207df8ae16ca766fdf29ca67590c05619d8"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-pulmonar-04-piper-pt-br-cadu-medium-928e7f25aa66f1af.mp3",
+        "revision": "7e38ffaa4b963943a6df8cdc5928442b1626f9296ca4eef57fdb14fc7942f49c"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/circuito-sistemico/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-sistemico-01-piper-pt-br-cadu-medium-fd93b6bb97e6ef46.mp3",
-        "revision": "04363132fa91ad5c954e8db67c7d21a4612c2acddf5568d42154d6ed9bd793b4"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-sistemico-01-piper-pt-br-cadu-medium-73279dc126a14b2b.mp3",
+        "revision": "76575b5a96540fc63e509a360dc7d8d44f888a768b05f8bfaee806eb486d05c4"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/circuito-sistemico/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-sistemico-02-piper-pt-br-cadu-medium-2866ad67fff93d00.mp3",
-        "revision": "6bce5e25fc07230147cad69e2d270ddac2db0ad231df1a2ae8a7bc9e0f98eb95"
-      }
-    },
-    "lesson/introducao-ao-sistema-cardiovascular/circuito-sistemico/3": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-sistemico-03-piper-pt-br-cadu-medium-3699850f57a3cd31.mp3",
-        "revision": "1aac2d4bdc874a2180f6791ecd5c2425a6f8f5c664a448617da913700e797e8a"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/circuito-sistemico-02-piper-pt-br-cadu-medium-754b41b9ddeeab4c.mp3",
+        "revision": "7079deb37ea05bd88551467deeb80021990fa03a743f2d3fe645667c6ae8f474"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-01-piper-pt-br-cadu-medium-296376b4fee22a50.mp3",
-        "revision": "75319c1a8912942b783bb787d7cbf9a33973429f7e9f7a4887f005f03aa4a728"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-01-piper-pt-br-cadu-medium-c8c8314c0b569163.mp3",
+        "revision": "581e7fe253b801ff1fd5ecb8ccd8e06af3afdd83a176b687957e543e7b87da21"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-02-piper-pt-br-cadu-medium-59837c1669b63191.mp3",
-        "revision": "53e802fe63b6a39f8246f73924f8cd5a5f136a1038f7fd8407c1c2604b01b855"
-      }
-    },
-    "lesson/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos/3": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-03-piper-pt-br-cadu-medium-fcd2898a1d7c1ce2.mp3",
-        "revision": "0d158242e353d31226940b7c592fd8e6f912b42939256de1db2d60fc41b3eb4d"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-02-piper-pt-br-cadu-medium-0b78e9163b45b893.mp3",
+        "revision": "3d656d1543e53cd2dd70761030bca9a655245fcc9b68a266499f461267fde07a"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/termos/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/termos-01-piper-pt-br-cadu-medium-25558d0baf751386.mp3",
-        "revision": "700bdf23b9e1963aeeb2730c93ae1e72fde3d4e2e1eab3f8dc5683df02ce1536"
-      }
-    },
-    "lesson/introducao-ao-sistema-cardiovascular/termos/2": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/termos-02-piper-pt-br-cadu-medium-5130b6e38f7ca546.mp3",
-        "revision": "8b9907a1e4e4e4b61a28915197de6fde6f0b4854ed7ef86e35faece27afe7487"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/termos-01-piper-pt-br-cadu-medium-42dc8de40b6bf67e.mp3",
+        "revision": "65e09bf1702f1cf198638aaf5e65c9ef1725d839e8ef472e0b321ca5dd12eae4"
       }
     },
     "lesson/introducao-ao-sistema-cardiovascular/resumo/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/resumo-01-piper-pt-br-cadu-medium-b445dd1588fdd764.mp3",
-        "revision": "54076673bd5ffb59a998e1ce44f8e8df5e86fd5fa8905494edd76e9a99c3e961"
+        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/resumo-01-piper-pt-br-cadu-medium-3312d8a2772c6621.mp3",
+        "revision": "266eb3ee3c07cd100bd74a11c1ad8fbb50fd9971074cd76783c08791e1197982"
       }
     },
-    "lesson/introducao-ao-sistema-cardiovascular/resumo/2": {
+    "lesson/mecanica-respiratoria/titulo/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/cardiovascular/introducao-ao-sistema-cardiovascular/resumo-02-piper-pt-br-cadu-medium-ed3f7b98ede71c7e.mp3",
-        "revision": "0f340228b449b557acdda7a656375cd37c0e61fd3947ff7a7b7ee30adff745de"
+        "src": "/audio/respiratorio/mecanica-respiratoria/titulo-01-piper-pt-br-cadu-medium-8bba1bd580a59b6f.mp3",
+        "revision": "5681262dc70705fc940fc8cb7ff6507d01e2464acb35098ba822189dff49a147"
       }
     },
     "lesson/mecanica-respiratoria/introducao/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/introducao-01-piper-pt-br-cadu-medium-b194d37e8f91e539.mp3",
-        "revision": "bb2a1761909e08cec4ab9d17fdba6d7e55287870d98c94621701b3dcd54ebf4e"
-      }
-    },
-    "lesson/mecanica-respiratoria/introducao/2": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/introducao-02-piper-pt-br-cadu-medium-22b3795f8471b8a3.mp3",
-        "revision": "d5f143c39c11833f2ba1ae4bb55731c530d262dab9ce75a0725bfd3f3d3e167f"
+        "src": "/audio/respiratorio/mecanica-respiratoria/introducao-01-piper-pt-br-cadu-medium-3f76f08760ca0e2a.mp3",
+        "revision": "2c9e97a4e1bcd7c365881df207bacf554a633d1740b316b9f60bbe051744f3ac"
       }
     },
     "lesson/mecanica-respiratoria/ventilacao/1": {
@@ -197,14 +137,8 @@
     },
     "lesson/mecanica-respiratoria/ventilacao/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/ventilacao-02-piper-pt-br-cadu-medium-42dc5a177b25ccbc.mp3",
-        "revision": "03e49c56939021ae09f64d78b834163aef6e08dfd2dfa955956c1e03ec072000"
-      }
-    },
-    "lesson/mecanica-respiratoria/ventilacao/3": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/ventilacao-03-piper-pt-br-cadu-medium-206f50a31dbaf9a8.mp3",
-        "revision": "54c65d3f57046a9175211f00424e268ab1f610698fc2cb2bce2c7f4d2b81ab4f"
+        "src": "/audio/respiratorio/mecanica-respiratoria/ventilacao-02-piper-pt-br-cadu-medium-c52a08565c3c2715.mp3",
+        "revision": "4a5176676e9865cd1f60cc37051cf5498779cd682124f6611b29d4a4301b99ed"
       }
     },
     "lesson/mecanica-respiratoria/pressoes/1": {
@@ -215,116 +149,74 @@
     },
     "lesson/mecanica-respiratoria/pressoes/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-02-piper-pt-br-cadu-medium-da64cd382b4f2d71.mp3",
-        "revision": "d26e574d73203aa1a9eb15f5ee7fbb944f11cfecdc008afa85c7de6be99b3471"
+        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-02-piper-pt-br-cadu-medium-0754a3d7f218ea6f.mp3",
+        "revision": "3fab92b7e36d2edd6b4a1295c454fc0152a62be65384002947034910d4c8bc44"
       }
     },
     "lesson/mecanica-respiratoria/pressoes/3": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-03-piper-pt-br-cadu-medium-f2198a09e6bec4b7.mp3",
-        "revision": "33c14d5b54a929b03963d20c864b88bcc643b8bfe3fc24112f467b5e1e6c7aa5"
+        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-03-piper-pt-br-cadu-medium-96bfa3267c809724.mp3",
+        "revision": "de7d25d0d599b3971e1b18d4fa0b3f03c2cb63eec76b9614913793c50abbdd27"
       }
     },
     "lesson/mecanica-respiratoria/pressoes/4": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-04-piper-pt-br-cadu-medium-94b89b28a6a436b1.mp3",
-        "revision": "a57905f8ebdbaea9f5d916e5d6f5c42ea5153e37805c9315b86ea2f8c1a1bbc6"
-      }
-    },
-    "lesson/mecanica-respiratoria/pressoes/5": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-05-piper-pt-br-cadu-medium-9f7aac11494350f7.mp3",
-        "revision": "53330eb6698ec976eb0fc645f005523ad900236c46797c57b136d5bec675ce6c"
+        "src": "/audio/respiratorio/mecanica-respiratoria/pressoes-04-piper-pt-br-cadu-medium-2cfeb6f947b18ffe.mp3",
+        "revision": "49685f9e623a214873fe6184ca3c96c5dc04c167d24ddc71730758cac26bd0fe"
       }
     },
     "lesson/mecanica-respiratoria/inspiracao/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-01-piper-pt-br-cadu-medium-9511a33d05670cf6.mp3",
-        "revision": "8946c06448590f74033d75ae2fbd601969fffd56f92a43570c8bb006204d7815"
+        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-01-piper-pt-br-cadu-medium-c8e37eff43ff934f.mp3",
+        "revision": "76ea9a1ef6561d0228e1c0a74f9220370d29f1da654160596994f87ce8c04203"
       }
     },
     "lesson/mecanica-respiratoria/inspiracao/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-02-piper-pt-br-cadu-medium-dc12a997a868aacb.mp3",
-        "revision": "be5b1d169936ee7960465c04c991eb4f89122e4cdc0e312ca9cfe9475270e5e0"
+        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-02-piper-pt-br-cadu-medium-c35819429e93a934.mp3",
+        "revision": "43f2a1a1e4bab98d52b7b38bdbebb44aa9e7a797176a5fc58c682e755233a7ba"
       }
     },
     "lesson/mecanica-respiratoria/inspiracao/3": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-03-piper-pt-br-cadu-medium-1e07cad9e3512ee9.mp3",
-        "revision": "b63712809ab4b7f9bb5f16f83808feaf6932ed2a348323c9674703edd31d090e"
-      }
-    },
-    "lesson/mecanica-respiratoria/inspiracao/4": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-04-piper-pt-br-cadu-medium-5856878d0f255b6a.mp3",
-        "revision": "7cf5f8848d126ef70dd43465df81e1d9cd842b219cf27ce91424a1401b4e816a"
-      }
-    },
-    "lesson/mecanica-respiratoria/inspiracao/5": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-05-piper-pt-br-cadu-medium-00b690aaad8f6609.mp3",
-        "revision": "0ac4a6e89ef2df5426883cbe88e7dbac16e33988c677ac65726a582f55e0a370"
+        "src": "/audio/respiratorio/mecanica-respiratoria/inspiracao-03-piper-pt-br-cadu-medium-a26d48f33aaf8182.mp3",
+        "revision": "f6b2a02b9c8703f8dab0134367c0c0b4f93ad8bc4658eeba797403b4b39894e9"
       }
     },
     "lesson/mecanica-respiratoria/expiracao/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/expiracao-01-piper-pt-br-cadu-medium-f77643f2afe30d70.mp3",
-        "revision": "b8fc968f0601423a14638214a406dafe20f8d4f44289388ff355eae83238da03"
+        "src": "/audio/respiratorio/mecanica-respiratoria/expiracao-01-piper-pt-br-cadu-medium-b35a09813c538ac0.mp3",
+        "revision": "d9530b60d9b965483d73c76af97773e3ed0a03f5a03d3e949e658660f61ac9d4"
       }
     },
     "lesson/mecanica-respiratoria/expiracao/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/expiracao-02-piper-pt-br-cadu-medium-cbf0ba16c27e16d2.mp3",
-        "revision": "211978ecb7bfdde83c9f05d47565329178fedd321c0e1400cff978f42fbca60a"
-      }
-    },
-    "lesson/mecanica-respiratoria/expiracao/3": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/expiracao-03-piper-pt-br-cadu-medium-f5dfa3bd35b92825.mp3",
-        "revision": "bde7b81b06f11354332c4ceceba0534f357aaf98cd6872c0bbd48f24e65ba48e"
+        "src": "/audio/respiratorio/mecanica-respiratoria/expiracao-02-piper-pt-br-cadu-medium-7581f961c21ca359.mp3",
+        "revision": "34cc922cc71ea95ef4917ec6129bf25dd98fc337ccde46fbc07f9bef811840ff"
       }
     },
     "lesson/mecanica-respiratoria/fluxo-e-resistencia/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/fluxo-e-resistencia-01-piper-pt-br-cadu-medium-288a651b53a6c88e.mp3",
-        "revision": "5cb8babc85b7fba3b4dc4b00e3e2d85343a4b00d6cc8f9dbead3474c5d5dac81"
+        "src": "/audio/respiratorio/mecanica-respiratoria/fluxo-e-resistencia-01-piper-pt-br-cadu-medium-f5d7f1db2996c19c.mp3",
+        "revision": "c3e12af5081109b3e54d51f23454347ff1262f775ef33172608677329940e271"
       }
     },
     "lesson/mecanica-respiratoria/fluxo-e-resistencia/2": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/fluxo-e-resistencia-02-piper-pt-br-cadu-medium-3f71ff9da26a571e.mp3",
-        "revision": "c9ac1f1a5f65ebb1b4e1168b20a6c24f21ade840d72e0503595d3935923a4843"
-      }
-    },
-    "lesson/mecanica-respiratoria/fluxo-e-resistencia/3": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/fluxo-e-resistencia-03-piper-pt-br-cadu-medium-59fa916133811943.mp3",
-        "revision": "fcd79c73e786a3bc749075bd4a54fc1c9adf1363431b887b9b8358990148d4a1"
+        "src": "/audio/respiratorio/mecanica-respiratoria/fluxo-e-resistencia-02-piper-pt-br-cadu-medium-48b11c1edb445815.mp3",
+        "revision": "72ea6bb2f7cbfd02f5165002c0a60748ec27c5e2db7ea7f26932a71d4932e59b"
       }
     },
     "lesson/mecanica-respiratoria/termos/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/termos-01-piper-pt-br-cadu-medium-724f1afd9dfaeef2.mp3",
-        "revision": "cbd54c3cfe9ecb0b949b9cf75ce59269e94aa69f345a697d90799a93a5b9cf3e"
-      }
-    },
-    "lesson/mecanica-respiratoria/termos/2": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/termos-02-piper-pt-br-cadu-medium-f9fc682d176fceab.mp3",
-        "revision": "322e63f3e9edf970358f6f6c09353990824b1155fad22b5f400deef0adaa63b0"
+        "src": "/audio/respiratorio/mecanica-respiratoria/termos-01-piper-pt-br-cadu-medium-6c7f11288b632230.mp3",
+        "revision": "e6ffc1ef55ec8581e9f7822ccaaccfd4c42b0b3ece61ec6d11ca7f03bd65ebf6"
       }
     },
     "lesson/mecanica-respiratoria/resumo/1": {
       "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/resumo-01-piper-pt-br-cadu-medium-78b03312f502c257.mp3",
-        "revision": "9e9f5c18bd42fc47cc3dd4f0a1287cdf207b6ad55475dfaf97ad18ee17aa45d7"
-      }
-    },
-    "lesson/mecanica-respiratoria/resumo/2": {
-      "piper-pt-br-cadu-medium": {
-        "src": "/audio/respiratorio/mecanica-respiratoria/resumo-02-piper-pt-br-cadu-medium-3d84d01456bc209a.mp3",
-        "revision": "437a6e85c5901b6746ea41917b6aa65e794fc694e3af13ca8e9745999985bb42"
+        "src": "/audio/respiratorio/mecanica-respiratoria/resumo-01-piper-pt-br-cadu-medium-03f485dd8fec8755.mp3",
+        "revision": "62caca369b43369ed2543a25c74b769936a63e4a43651353828cb964bf9492fd"
       }
     },
     "interface/boas-vindas": {
@@ -367,6 +259,786 @@
       "piper-pt-br-cadu-medium": {
         "src": "/audio/interface/ajuda-comando-piper-pt-br-cadu-medium-569d2e8825b04639.mp3",
         "revision": "cbf5a51eb86400f47b7cc7d295b8f4c368dc78b68d97313c58a2ce580e4579e0"
+      }
+    },
+    "interface/etapa-anterior": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa-anterior-piper-pt-br-cadu-medium-9590904a70579b6b.mp3",
+        "revision": "6c65545858b4afbf622a63741afcb1b39e5d51b964341452219898c0f51411f8"
+      }
+    },
+    "interface/pagina-inicial": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pagina-inicial-piper-pt-br-cadu-medium-eb40025a96073182.mp3",
+        "revision": "fde7b2dda89c6a20854324c186098b67f30e3cf15c50c006192a9fd444cc32cc"
+      }
+    },
+    "interface/minhas-revisoes": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/minhas-revisoes-piper-pt-br-cadu-medium-513dd2eeaa224ce0.mp3",
+        "revision": "7715c492a65eb10e11245e9daa71cff3fbb604a6c30b71209fd8edbb3860949b"
+      }
+    },
+    "interface/aguarde-pagina": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/aguarde-pagina-piper-pt-br-cadu-medium-bc20e4e07709dc77.mp3",
+        "revision": "f1c30e2341ed6a9576896a4bcf52e473e80a09bbc2d8b81c19cb2bad130dc7ee"
+      }
+    },
+    "interface/comando-indisponivel": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/comando-indisponivel-piper-pt-br-cadu-medium-a9b49137e554824e.mp3",
+        "revision": "55fc37d1db355a185df9a4ef4911144bd40589773d174b7710dd99c816937962"
+      }
+    },
+    "interface/primeira-etapa": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/primeira-etapa-piper-pt-br-cadu-medium-3fa9b8cdde08e40d.mp3",
+        "revision": "c57cf5bf8a42930f987317bc7d7ac138ff269f4179b64892966d89daa9defe1d"
+      }
+    },
+    "interface/ultima-etapa": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ultima-etapa-piper-pt-br-cadu-medium-1729041a534d6b6a.mp3",
+        "revision": "ce027da392aa81bbf029120b69ebbe1d0360072b5864d496d6e82de3321dbfab"
+      }
+    },
+    "interface/leitura-interrompida": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/leitura-interrompida-piper-pt-br-cadu-medium-7af032c867c9e420.mp3",
+        "revision": "15aeb99b8ce731c8f047cf3a0409188b90511cbe28caa161c168ff16b66cc095"
+      }
+    },
+    "interface/iniciar-leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/iniciar-leitura-piper-pt-br-cadu-medium-ec1e903d9ab7f454.mp3",
+        "revision": "b78dd02cd5839cb39f3c55aa9264f64013709854d5deb45ac39a3fe1c47e50ce"
+      }
+    },
+    "interface/pergunta-conferida": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta-conferida-piper-pt-br-cadu-medium-bd28a4cd98200cce.mp3",
+        "revision": "e1436a03bc9877fc9926ab967a2cdba5892f6dedf03d2db0ffefa9db1fda3301"
+      }
+    },
+    "interface/alternativa-indisponivel": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/alternativa-indisponivel-piper-pt-br-cadu-medium-274f2bb486f89906.mp3",
+        "revision": "f5b43d78b8655ad0c16560aff7a7018dad7f59bbaf1b18fcb4929c3fad6ccfc6"
+      }
+    },
+    "interface/escolher-alternativa": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/escolher-alternativa-piper-pt-br-cadu-medium-748f4722549c6d34.mp3",
+        "revision": "23cdaffab47712eb79c325dac925557eeb5678e3ecbfadcea09c65d28f135819"
+      }
+    },
+    "interface/ja-registrada": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ja-registrada-piper-pt-br-cadu-medium-39d43817a16f9791.mp3",
+        "revision": "b3131b7b464f8e9ffee7ee82f5bc71d3192c102600038109814d3f180f470e7f"
+      }
+    },
+    "interface/resposta-incorreta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resposta-incorreta-piper-pt-br-cadu-medium-a8bdc297004a4ff7.mp3",
+        "revision": "a8c2ee4e127b24cb351a6381b92a86590fdd4bdf386c37a6877c7cfdd6cc0c03"
+      }
+    },
+    "interface/resposta-registrada": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resposta-registrada-piper-pt-br-cadu-medium-56370dbc2a63ce42.mp3",
+        "revision": "038f541cf1209371fb24eec8af7fd271b423ffcc4818ab18deda23c483493801"
+      }
+    },
+    "interface/resposta-conferida": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resposta-conferida-piper-pt-br-cadu-medium-4e38a669297e882b.mp3",
+        "revision": "2ec79aea6f5fb6094682fbe77b4921c147768b24820bbbc4ce6e9336973ba4cf"
+      }
+    },
+    "interface/confirmar-alternativa": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/confirmar-alternativa-piper-pt-br-cadu-medium-ced42590eeffc204.mp3",
+        "revision": "23843e4bd7e4e98fb5efc5467e20f68fa06e26e8c4df9342e4db2d6a237d87dd"
+      }
+    },
+    "interface/resultado-exercicios": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resultado-exercicios-piper-pt-br-cadu-medium-cff4e2ff94294e34.mp3",
+        "revision": "646a5b16bcd93a3a3616681770edc1739ac3f877b71827462cee88d75e4c6422"
+      }
+    },
+    "interface/confirmar-antes-avancar": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/confirmar-antes-avancar-piper-pt-br-cadu-medium-9a5a836633f20e9a.mp3",
+        "revision": "e43de7bc747231c6cde1f71adcd138369c70f9fb8f1e39d6622b19470b5c6d54"
+      }
+    },
+    "interface/primeira-pergunta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/primeira-pergunta-piper-pt-br-cadu-medium-96c11c3dbbb27f17.mp3",
+        "revision": "053b21b6e00240149111502c6f9a92e7c71d3f3e71c555400db5f07a8b8560e8"
+      }
+    },
+    "interface/sem-fallback": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/sem-fallback-piper-pt-br-cadu-medium-83caf5a5a740f64b.mp3",
+        "revision": "fa41b1c3d77b89104a3d37b46836f45c0dc9bf3c7efac5e529a69615e81b4e1c"
+      }
+    },
+    "interface/ajuda-exercicios": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-exercicios-piper-pt-br-cadu-medium-d9e8b847e8702591.mp3",
+        "revision": "3d21731b4b8c84da446e94a1d3ef14bdbe5987815ebbbad6f2739c0c8a719174"
+      }
+    },
+    "interface/ajuda-etapa": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-etapa-piper-pt-br-cadu-medium-db6261a6560034b4.mp3",
+        "revision": "fd46a1942e2daa8978fc36632e9efff1f747c568c412845837be8119c498eebd"
+      }
+    },
+    "interface/ajuda-etapa-final": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-etapa-final-piper-pt-br-cadu-medium-70c8d3708035efe3.mp3",
+        "revision": "d78cc5a625e05d23eede816c1b357c41ce9de9d52c9201857708dadc461c497d"
+      }
+    },
+    "interface/ajuda-aula": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-aula-piper-pt-br-cadu-medium-057b46baeaf5f6e9.mp3",
+        "revision": "06113dbe49b5c55da1e3aa20935394175b5d583f877df4284f20dc2033f74604"
+      }
+    },
+    "interface/ajuda-revisoes": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-revisoes-piper-pt-br-cadu-medium-c30e481aedde5538.mp3",
+        "revision": "5caed60e5898ee8ec3e6a2efc4eded4902a4c471d9eb78965fbb2e5e7dbe567e"
+      }
+    },
+    "interface/ajuda-inicio": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-inicio-piper-pt-br-cadu-medium-e2fb409993d66e1f.mp3",
+        "revision": "4d1449b61f4b46adf19c567f2d52e6c81f69f755a3c29ecf24ceb6f3683e39ce"
+      }
+    },
+    "interface/ajuda-modulos": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-modulos-piper-pt-br-cadu-medium-be09bb53510d21b1.mp3",
+        "revision": "4d2210f531a8440bc78f28157ccedf9d57662202a9cf70fe7b9bbc91e6940409"
+      }
+    },
+    "interface/ajuda-geral": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/ajuda-geral-piper-pt-br-cadu-medium-91f04768ea438226.mp3",
+        "revision": "22e60e498db48fa148425c2a63d784cda95489ca35acbbb90d371d704658899d"
+      }
+    },
+    "interface/listar-aulas": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/listar-aulas-piper-pt-br-cadu-medium-17cf0a48e376a144.mp3",
+        "revision": "4da4db9ecfaa5f36cb641da6aaf7aff0463878a0bd79f73def69fd2e495e1b55"
+      }
+    },
+    "interface/exercicios/introducao-ao-sistema-cardiovascular": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/exercicios/introducao-ao-sistema-cardiovascular-piper-pt-br-cadu-medium-f3e3111566a3cc49.mp3",
+        "revision": "76469572ef282a0ad9f99120b139d6cd32f99d60a39e0afaa0c4814606d50792"
+      }
+    },
+    "interface/etapa/introducao-ao-sistema-cardiovascular/introducao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/introducao-ao-sistema-cardiovascular/introducao-piper-pt-br-cadu-medium-b9287d949c0d722a.mp3",
+        "revision": "b9cba47f0ae8f3367c08258fe5c22488f882c3e3ded986d0f0264c0bcd0b3fda"
+      }
+    },
+    "interface/etapa/introducao-ao-sistema-cardiovascular/bomba-e-rede": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/introducao-ao-sistema-cardiovascular/bomba-e-rede-piper-pt-br-cadu-medium-14f65d98d07685be.mp3",
+        "revision": "672f33c8fe6e0cd66d479074ff2eee74bdeb863ccd3389e461e84bac5d2f1a2a"
+      }
+    },
+    "interface/etapa/introducao-ao-sistema-cardiovascular/vasos-sanguineos": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/introducao-ao-sistema-cardiovascular/vasos-sanguineos-piper-pt-br-cadu-medium-6ad7ca7af05b2432.mp3",
+        "revision": "7da686c763b9d0243ab1f60f30dc067b1169b90aa51011271cdb50d7e3727cb3"
+      }
+    },
+    "interface/etapa/introducao-ao-sistema-cardiovascular/circuito-pulmonar": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/introducao-ao-sistema-cardiovascular/circuito-pulmonar-piper-pt-br-cadu-medium-4915732e0e00eab5.mp3",
+        "revision": "cf416bfd7568ec454d501ddd8036b3956dc606b549ec5e6071a83e87d9005d30"
+      }
+    },
+    "interface/etapa/introducao-ao-sistema-cardiovascular/circuito-sistemico": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/introducao-ao-sistema-cardiovascular/circuito-sistemico-piper-pt-br-cadu-medium-5f3d218e46084eea.mp3",
+        "revision": "d28c40fe037ee0e1580f694e47281dd8352ee075fc1c6035fe99ad9f70771b48"
+      }
+    },
+    "interface/etapa/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/introducao-ao-sistema-cardiovascular/oxigenacao-dos-tecidos-piper-pt-br-cadu-medium-02027a6bb45e7e21.mp3",
+        "revision": "b57a991932a716dd3fb838862530afe31aefdb0881a846fa00f0e4be2f83e1ce"
+      }
+    },
+    "interface/etapa/introducao-ao-sistema-cardiovascular/resumo": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/introducao-ao-sistema-cardiovascular/resumo-piper-pt-br-cadu-medium-9a6475bc600b1c8c.mp3",
+        "revision": "3dd63c59641d0a504d805a11a83c38357a9acd6882c7006a97514770bfa77c7a"
+      }
+    },
+    "interface/pergunta/cardio-sentido-arteria/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-sentido-arteria/leitura-piper-pt-br-cadu-medium-270cf18cf6bc4e0c.mp3",
+        "revision": "2576b0c60b1205646713c201c411543778ec11fbf2119e0a9a23747d140dd9b7"
+      }
+    },
+    "interface/pergunta/cardio-sentido-arteria/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-sentido-arteria/explicacao-piper-pt-br-cadu-medium-a1f1f0b4bba2f1d3.mp3",
+        "revision": "f42a3121706028037eaab3a51915bb51265af8fa0d52a0253925d1a4db4d5930"
+      }
+    },
+    "interface/pergunta/cardio-sentido-arteria/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-sentido-arteria/alternativa-1-piper-pt-br-cadu-medium-9feb3fea372ecd1d.mp3",
+        "revision": "a78b28bd7b7f03882d53d3daf3aa204a9926dac72d89871da8644b26e19d4711"
+      }
+    },
+    "interface/pergunta/cardio-sentido-arteria/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-sentido-arteria/alternativa-2-piper-pt-br-cadu-medium-6140cca2838e8088.mp3",
+        "revision": "2cbbb212c5fa07fdc1815f16006cc1d4bdc69bc028958134aab3fafa2963149f"
+      }
+    },
+    "interface/pergunta/cardio-sentido-arteria/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-sentido-arteria/alternativa-3-piper-pt-br-cadu-medium-ae34e4f98d58986e.mp3",
+        "revision": "0976c72dd19a1943dd5f5cf2c5c62a25edda477190cc565d572ec2380682b39b"
+      }
+    },
+    "interface/pergunta/cardio-sentido-arteria/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-sentido-arteria/alternativa-4-piper-pt-br-cadu-medium-3d11b489b7c251e4.mp3",
+        "revision": "18c0e9ae8d349ea496fd699b79ec470973294b7514ae7e4373142802d8fcdd63"
+      }
+    },
+    "interface/pergunta/cardio-percurso-pulmonar/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-percurso-pulmonar/leitura-piper-pt-br-cadu-medium-c5cb7033bd11a932.mp3",
+        "revision": "dd0e8cc9160b4f712e696372c96303965cc8414365b1db4a4edbe9154eea7223"
+      }
+    },
+    "interface/pergunta/cardio-percurso-pulmonar/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-percurso-pulmonar/explicacao-piper-pt-br-cadu-medium-40ab897012031994.mp3",
+        "revision": "d94e3350215c21e9c8da2d291c83d1e1cec7c11289dfd484365d18e01a0ea06e"
+      }
+    },
+    "interface/pergunta/cardio-percurso-pulmonar/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-percurso-pulmonar/alternativa-1-piper-pt-br-cadu-medium-bfccb881a42ddb6d.mp3",
+        "revision": "14dff704e48976543540d3b4ccd5a226af32497365a5e3367878be2665cf983d"
+      }
+    },
+    "interface/pergunta/cardio-percurso-pulmonar/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-percurso-pulmonar/alternativa-2-piper-pt-br-cadu-medium-78b11baed5f71974.mp3",
+        "revision": "a6d2f8ca59b21865b12daa8dc35df0ed2b2af117bda2462941a911035ffa3b71"
+      }
+    },
+    "interface/pergunta/cardio-percurso-pulmonar/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-percurso-pulmonar/alternativa-3-piper-pt-br-cadu-medium-1b51e56da0b863d3.mp3",
+        "revision": "466a936fc12b88f62e152ee552a3e5d84df09c850d3a74fc359bb537eec91b92"
+      }
+    },
+    "interface/pergunta/cardio-percurso-pulmonar/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-percurso-pulmonar/alternativa-4-piper-pt-br-cadu-medium-8e41fcc256eb30f8.mp3",
+        "revision": "465353b08fb05ed7f8420c0ad91d4ccaf97701eb26c85d9673691e417e62da1f"
+      }
+    },
+    "interface/pergunta/cardio-resistencia-local/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-resistencia-local/leitura-piper-pt-br-cadu-medium-9ee5c36adb9e96b8.mp3",
+        "revision": "9e5a7d9b77554f1b356e625c0a2be3d58e8dd9f34c75ca53b7d9a072e52394a6"
+      }
+    },
+    "interface/pergunta/cardio-resistencia-local/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-resistencia-local/explicacao-piper-pt-br-cadu-medium-64970ba40fd75d7d.mp3",
+        "revision": "7418fd04dc6502eb8c8b6108229a2d03f8bc12f16e82d36926ed450cbdee5772"
+      }
+    },
+    "interface/pergunta/cardio-resistencia-local/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-resistencia-local/alternativa-1-piper-pt-br-cadu-medium-c829ba13b300f049.mp3",
+        "revision": "e8f63778a8277d442c5664d600810b464c97daad8fb9d99b28ce1ba7a09ad8fc"
+      }
+    },
+    "interface/pergunta/cardio-resistencia-local/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-resistencia-local/alternativa-2-piper-pt-br-cadu-medium-c445483dcbab24dd.mp3",
+        "revision": "c30fdbbe768c9c7e6d516c2edff4e914873311db8ccffc8b1facca7958ee20fd"
+      }
+    },
+    "interface/pergunta/cardio-resistencia-local/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-resistencia-local/alternativa-3-piper-pt-br-cadu-medium-f24f21e77aea4938.mp3",
+        "revision": "0cc34184f8021e1dadb2f3fa57060bf7af18ada8e9979f9759b13d8631426476"
+      }
+    },
+    "interface/pergunta/cardio-resistencia-local/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-resistencia-local/alternativa-4-piper-pt-br-cadu-medium-d13934b39b3744bd.mp3",
+        "revision": "635efdbc0051ad55a3b282721bc85b2f22a54998484f36c257feb8d783280c18"
+      }
+    },
+    "interface/pergunta/cardio-valva-aortica/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-valva-aortica/leitura-piper-pt-br-cadu-medium-38be79382e23bfb6.mp3",
+        "revision": "0081879afa533cea0d9c1e9b6966d08077197e01aea4255b4c90cfcbc383f7cd"
+      }
+    },
+    "interface/pergunta/cardio-valva-aortica/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-valva-aortica/explicacao-piper-pt-br-cadu-medium-1ee3ccf3cf5ad71a.mp3",
+        "revision": "be2b0f4e42d078f5572941f6bf1eb539b3c055f518dac97ecdb225fb159c41d0"
+      }
+    },
+    "interface/pergunta/cardio-valva-aortica/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-valva-aortica/alternativa-1-piper-pt-br-cadu-medium-5d037a7f704bf778.mp3",
+        "revision": "6e1d61e6417dce7a398c98d2cc44d6332562d82c8492f0a2b9c8274b32aaa3bf"
+      }
+    },
+    "interface/pergunta/cardio-valva-aortica/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-valva-aortica/alternativa-2-piper-pt-br-cadu-medium-62456373b01b94f5.mp3",
+        "revision": "ae258e47b4ff9fd90bfca164a0f5a7a9e5f6ca147b51e65533087483d33757b3"
+      }
+    },
+    "interface/pergunta/cardio-valva-aortica/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-valva-aortica/alternativa-3-piper-pt-br-cadu-medium-89f3dec4cf47dbf1.mp3",
+        "revision": "fcab1c96d366bbca56a128a6c8b1272d85b5169216e31c73b8b1ee1847e0c2bf"
+      }
+    },
+    "interface/pergunta/cardio-valva-aortica/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-valva-aortica/alternativa-4-piper-pt-br-cadu-medium-95412cb04380c04f.mp3",
+        "revision": "0ca661bf3a18d3250327639acfaea1e1a383b726d5e4746b233963d5aa0688d3"
+      }
+    },
+    "interface/pergunta/cardio-oferta-oxigenio/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-oferta-oxigenio/leitura-piper-pt-br-cadu-medium-8df141856df00439.mp3",
+        "revision": "f695ffafcacbcecd8a840ba67168580a1cf274cff936383e8ace385d04505140"
+      }
+    },
+    "interface/pergunta/cardio-oferta-oxigenio/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-oferta-oxigenio/explicacao-piper-pt-br-cadu-medium-a4d8bca33f87055b.mp3",
+        "revision": "009821ff3e563ca952e86720ab592bdb9864ae6d24017f2ff99f57635fdc9345"
+      }
+    },
+    "interface/pergunta/cardio-oferta-oxigenio/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-oferta-oxigenio/alternativa-1-piper-pt-br-cadu-medium-b894e216439b6569.mp3",
+        "revision": "73af7eeb2c1a747f31dff75dd9b53c8e1d181d7a90339c1b543d3fc391a4f570"
+      }
+    },
+    "interface/pergunta/cardio-oferta-oxigenio/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-oferta-oxigenio/alternativa-2-piper-pt-br-cadu-medium-b686909f06723f6e.mp3",
+        "revision": "1fd25ce6263a0c42391bbb7bf8dc4c63970f2245db88532a0cbc2147d51114e5"
+      }
+    },
+    "interface/pergunta/cardio-oferta-oxigenio/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-oferta-oxigenio/alternativa-3-piper-pt-br-cadu-medium-725dad5c25411d9b.mp3",
+        "revision": "edcdb7c723c090dcb6fd98a6d411b3d5b7137144fc2d7d107d8d34b2e9aeb132"
+      }
+    },
+    "interface/pergunta/cardio-oferta-oxigenio/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/cardio-oferta-oxigenio/alternativa-4-piper-pt-br-cadu-medium-e17ee098587e3ada.mp3",
+        "revision": "c4a30574c4e94edacc8a486ba6b2f10e265daf6ac3e3e40e9015b97f8e9c157f"
+      }
+    },
+    "interface/cartao/revisao-cardio-circuitos/pergunta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-cardio-circuitos/pergunta-piper-pt-br-cadu-medium-4dcb1726bd5c8e5a.mp3",
+        "revision": "ee4527049d8b746e374e7f9903ae91ee51f0db1e2b9eab6456faf2732895b8e3"
+      }
+    },
+    "interface/cartao/revisao-cardio-circuitos/resposta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-cardio-circuitos/resposta-piper-pt-br-cadu-medium-6477fdc209201f68.mp3",
+        "revision": "ce791b73af3c4a53a5a48200898d6b21eaba1cd3983190dfb51784caddf53a52"
+      }
+    },
+    "interface/cartao/revisao-cardio-vasos/pergunta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-cardio-vasos/pergunta-piper-pt-br-cadu-medium-57970bab1e65b0eb.mp3",
+        "revision": "80d759c967a6bdf6fb8323f8175a98e7430f49e862e8c31e9738a20a6c473a50"
+      }
+    },
+    "interface/cartao/revisao-cardio-vasos/resposta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-cardio-vasos/resposta-piper-pt-br-cadu-medium-8b2ba1a8f606ee9c.mp3",
+        "revision": "64bb3ed43809ac9bc782723636e30c18edf8cce7764d8d13c20ac803a0841f72"
+      }
+    },
+    "interface/cartao/revisao-cardio-oxigenio/pergunta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-cardio-oxigenio/pergunta-piper-pt-br-cadu-medium-4d1fdaf7e1c079b5.mp3",
+        "revision": "938740df10bdfbb15a9420fc4b7a0535e20d43b28ffe8131c01312d3fd975c9c"
+      }
+    },
+    "interface/cartao/revisao-cardio-oxigenio/resposta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-cardio-oxigenio/resposta-piper-pt-br-cadu-medium-bd9ac0febe50f614.mp3",
+        "revision": "62f332ce373d4383d96b3825b90f58a0fb81401fd53bf246f2626773f406ebde"
+      }
+    },
+    "interface/exercicios/mecanica-respiratoria": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/exercicios/mecanica-respiratoria-piper-pt-br-cadu-medium-2fe442a6fb0eadd7.mp3",
+        "revision": "53e0d02159f0cb41949769fed7a1320ddb26e1cb981d14cf985bb1b1f3a5aec0"
+      }
+    },
+    "interface/etapa/mecanica-respiratoria/introducao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/mecanica-respiratoria/introducao-piper-pt-br-cadu-medium-b9287d949c0d722a.mp3",
+        "revision": "b9cba47f0ae8f3367c08258fe5c22488f882c3e3ded986d0f0264c0bcd0b3fda"
+      }
+    },
+    "interface/etapa/mecanica-respiratoria/ventilacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/mecanica-respiratoria/ventilacao-piper-pt-br-cadu-medium-2e3c8af5b747af9b.mp3",
+        "revision": "ffe956f3f6167eff46cb556331ab259fffd05a0fbf347714d694e5a8629ac636"
+      }
+    },
+    "interface/etapa/mecanica-respiratoria/pressoes": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/mecanica-respiratoria/pressoes-piper-pt-br-cadu-medium-ac17d2a51503b09c.mp3",
+        "revision": "7be4e815553d3f9825108b6ddc2b05e7f80580bebc5170a861459e1aacb4fb31"
+      }
+    },
+    "interface/etapa/mecanica-respiratoria/inspiracao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/mecanica-respiratoria/inspiracao-piper-pt-br-cadu-medium-3f23660c324e24f2.mp3",
+        "revision": "8ab381cf802ccb9aef0ce649102c0eebe34981e385517c5120ebc631190e0840"
+      }
+    },
+    "interface/etapa/mecanica-respiratoria/expiracao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/mecanica-respiratoria/expiracao-piper-pt-br-cadu-medium-680982a80237fb34.mp3",
+        "revision": "60776dd86dc4b6c8c6a7229559a9187cbf394cfdfa29b38b10df06949d8e7ae3"
+      }
+    },
+    "interface/etapa/mecanica-respiratoria/fluxo-e-resistencia": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/mecanica-respiratoria/fluxo-e-resistencia-piper-pt-br-cadu-medium-3910d7b2d24ba681.mp3",
+        "revision": "b834f85676ebdb93062b6d45884793f7bb8f2b846b54066f8329eeda18147a9d"
+      }
+    },
+    "interface/etapa/mecanica-respiratoria/resumo": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/etapa/mecanica-respiratoria/resumo-piper-pt-br-cadu-medium-9a6475bc600b1c8c.mp3",
+        "revision": "3dd63c59641d0a504d805a11a83c38357a9acd6882c7006a97514770bfa77c7a"
+      }
+    },
+    "interface/pergunta/resp-diafragma/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-diafragma/leitura-piper-pt-br-cadu-medium-d335cecd9c74006d.mp3",
+        "revision": "13a5bd9f19b46bcbc30c8aeaf22d32000c835bff9387a632fc5c48be273a6d38"
+      }
+    },
+    "interface/pergunta/resp-diafragma/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-diafragma/explicacao-piper-pt-br-cadu-medium-946490f514c55562.mp3",
+        "revision": "d975260d4073d7a1d5e93866e542286fa944c54ef6998fc8a4840be39e829413"
+      }
+    },
+    "interface/pergunta/resp-diafragma/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-diafragma/alternativa-1-piper-pt-br-cadu-medium-a8ac81a52cb7cf93.mp3",
+        "revision": "b4f6d7828218ceb78d4462109f2ea1ad51c72df519caf5dba08fb40ff5b0d036"
+      }
+    },
+    "interface/pergunta/resp-diafragma/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-diafragma/alternativa-2-piper-pt-br-cadu-medium-6585683c635665f0.mp3",
+        "revision": "fe0052ed2175629076aa6ad9c3c7802abdaad32f3541a14a9e4815d069b52845"
+      }
+    },
+    "interface/pergunta/resp-diafragma/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-diafragma/alternativa-3-piper-pt-br-cadu-medium-a337bb6faf37cd29.mp3",
+        "revision": "96e682b488d9770e21b2fd77b4c50a74e8cad3c3732ede7ae567b49b588e6e18"
+      }
+    },
+    "interface/pergunta/resp-diafragma/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-diafragma/alternativa-4-piper-pt-br-cadu-medium-2b09588c2e4ba95e.mp3",
+        "revision": "1b244cb2ad1a11f90651c642e2fc3f4a5e2015ca4d021b70507807bdbecc318a"
+      }
+    },
+    "interface/pergunta/resp-fluxo-entrada/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fluxo-entrada/leitura-piper-pt-br-cadu-medium-6c84c008cc895901.mp3",
+        "revision": "678c54ff69963edf79fee432d5f8e97e363782712ca72eed065bab5cd62de285"
+      }
+    },
+    "interface/pergunta/resp-fluxo-entrada/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fluxo-entrada/explicacao-piper-pt-br-cadu-medium-9ebf5aaf105cbb35.mp3",
+        "revision": "41a3267d00b1989cb997b3333050ab274a534d4fcd40d98310407220a85fb4a8"
+      }
+    },
+    "interface/pergunta/resp-fluxo-entrada/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fluxo-entrada/alternativa-1-piper-pt-br-cadu-medium-98e1afa68c22f5c6.mp3",
+        "revision": "5160a7573fa9ae99491735f38f1ae83b3245431df8ee304381a605cc0dff7aa1"
+      }
+    },
+    "interface/pergunta/resp-fluxo-entrada/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fluxo-entrada/alternativa-2-piper-pt-br-cadu-medium-4f7f495dd7c8fff3.mp3",
+        "revision": "e00e3719bf15a792bfb3de20d78c2707eb176cedcdebb8173a120d8f9c7bb517"
+      }
+    },
+    "interface/pergunta/resp-fluxo-entrada/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fluxo-entrada/alternativa-3-piper-pt-br-cadu-medium-96673a7fa27f0e5b.mp3",
+        "revision": "1cca83faae33fe23e35df1a298b558c4e360a583af4d31e138762a63256e2eb0"
+      }
+    },
+    "interface/pergunta/resp-fluxo-entrada/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fluxo-entrada/alternativa-4-piper-pt-br-cadu-medium-b629676ca7a6b069.mp3",
+        "revision": "822231356e096bdd33e8ff6111bb7a6f8ad771be6b1b45cc522b31d2e7e560ff"
+      }
+    },
+    "interface/pergunta/resp-expiracao-tranquila/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-expiracao-tranquila/leitura-piper-pt-br-cadu-medium-4a1e079779513e46.mp3",
+        "revision": "023ea73e2864ecaebbdce7e6184061a5494a436be8c61dfbc7ea83c741fba028"
+      }
+    },
+    "interface/pergunta/resp-expiracao-tranquila/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-expiracao-tranquila/explicacao-piper-pt-br-cadu-medium-2225d851b7f67ba6.mp3",
+        "revision": "c114c04a8333967ec904a4c28bb64f8ba0b144b0cb95f5fec5c9deccfcdae419"
+      }
+    },
+    "interface/pergunta/resp-expiracao-tranquila/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-expiracao-tranquila/alternativa-1-piper-pt-br-cadu-medium-5f207a7574e645e1.mp3",
+        "revision": "820356225787b3db2775be55ff8a0836547a641d0815dbd56fbeaa2e242c3d2e"
+      }
+    },
+    "interface/pergunta/resp-expiracao-tranquila/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-expiracao-tranquila/alternativa-2-piper-pt-br-cadu-medium-fe95a1ccd45a2304.mp3",
+        "revision": "54d6ba5d4bb1657a474f657c678619315830b18042913a92f970ffe6d6c03200"
+      }
+    },
+    "interface/pergunta/resp-expiracao-tranquila/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-expiracao-tranquila/alternativa-3-piper-pt-br-cadu-medium-db4fd14581b50ab9.mp3",
+        "revision": "4b49a33a21247ca158f0e8db1ffa18a6fc124dbd1059adda60319bbd2d3f6273"
+      }
+    },
+    "interface/pergunta/resp-expiracao-tranquila/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-expiracao-tranquila/alternativa-4-piper-pt-br-cadu-medium-cba9e8b925e368fb.mp3",
+        "revision": "00fe6656825c884318699da70bced523350b0a43a6dfe84fc822f95677f2f990"
+      }
+    },
+    "interface/pergunta/resp-fim-da-inspiracao/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fim-da-inspiracao/leitura-piper-pt-br-cadu-medium-0e4f049e61744789.mp3",
+        "revision": "156836daadce200a6ee60dcbd8b8bf8842c932120f96026c39db27959e838bec"
+      }
+    },
+    "interface/pergunta/resp-fim-da-inspiracao/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fim-da-inspiracao/explicacao-piper-pt-br-cadu-medium-206928f4f76685ae.mp3",
+        "revision": "b5a0089c9548006834561919bfe48e0b922ea3c136b1a1fa09d7b3ebdf0399f7"
+      }
+    },
+    "interface/pergunta/resp-fim-da-inspiracao/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fim-da-inspiracao/alternativa-1-piper-pt-br-cadu-medium-15cf55ad8e387715.mp3",
+        "revision": "af1caf21601dd7c5bd7835a0b30be7889d6bd30db6aedd652ba8605a6aa20ef0"
+      }
+    },
+    "interface/pergunta/resp-fim-da-inspiracao/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fim-da-inspiracao/alternativa-2-piper-pt-br-cadu-medium-7f0c94735c305fe9.mp3",
+        "revision": "6c5137968ef90b9925ced62d8c5735af70a8e49a636c9129b79377dfa842861b"
+      }
+    },
+    "interface/pergunta/resp-fim-da-inspiracao/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fim-da-inspiracao/alternativa-3-piper-pt-br-cadu-medium-bd54b2563154c19b.mp3",
+        "revision": "2816a976da84487ec2ed3f3f67fc13c2bce2eb1492d4ecf109baa5f56c59bcf9"
+      }
+    },
+    "interface/pergunta/resp-fim-da-inspiracao/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-fim-da-inspiracao/alternativa-4-piper-pt-br-cadu-medium-7faa0ae735e52847.mp3",
+        "revision": "de48bd898bd8aaacf2b2bf9bf3029e10902954b64684b0d4d4e16bb707f87846"
+      }
+    },
+    "interface/pergunta/resp-resistencia/leitura": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-resistencia/leitura-piper-pt-br-cadu-medium-929883a7f97ed5cd.mp3",
+        "revision": "24f54433a01bc15989a0e78b950c713633d44181e5055dcb75501aecad7b1b11"
+      }
+    },
+    "interface/pergunta/resp-resistencia/explicacao": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-resistencia/explicacao-piper-pt-br-cadu-medium-dbc45f0666d6722b.mp3",
+        "revision": "37ad501c6f75984381e3ef72e7e6f3f6c9d13753f530361b95dca8bd292138da"
+      }
+    },
+    "interface/pergunta/resp-resistencia/alternativa-1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-resistencia/alternativa-1-piper-pt-br-cadu-medium-6fe59a73118f58b1.mp3",
+        "revision": "79e82169f05bffb1750511fcd51afbbdadf5953a027ae5345b1a60f8ef57503f"
+      }
+    },
+    "interface/pergunta/resp-resistencia/alternativa-2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-resistencia/alternativa-2-piper-pt-br-cadu-medium-9eaab18eed8d1f6b.mp3",
+        "revision": "e4e654cf433557e55a8a6cfc8f5e9240b33ac7d85277a1cdf94fd890f18b169c"
+      }
+    },
+    "interface/pergunta/resp-resistencia/alternativa-3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-resistencia/alternativa-3-piper-pt-br-cadu-medium-45a2c2887aef4c10.mp3",
+        "revision": "514cfcb277a22001cc56bdf733d994ef595256a2634c90f2e1b7c396a2c5f455"
+      }
+    },
+    "interface/pergunta/resp-resistencia/alternativa-4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/pergunta/resp-resistencia/alternativa-4-piper-pt-br-cadu-medium-0e50e2b32b957e68.mp3",
+        "revision": "311648df239e4df52bc78ec666b9a0fe4f1c8008e7e50646138302e0f33d1e6f"
+      }
+    },
+    "interface/cartao/revisao-resp-diafragma/pergunta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-resp-diafragma/pergunta-piper-pt-br-cadu-medium-29f2fe48561946e4.mp3",
+        "revision": "dc3bb850706316c13fcfdbc51c90daddfb25fa997a0764f53996a7e511b86a94"
+      }
+    },
+    "interface/cartao/revisao-resp-diafragma/resposta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-resp-diafragma/resposta-piper-pt-br-cadu-medium-a59d958d3c3008ea.mp3",
+        "revision": "a3beb1bc2dcb54b4e68249b595b223cffd3aad153775c5543ef752745f36089f"
+      }
+    },
+    "interface/cartao/revisao-resp-gradiente/pergunta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-resp-gradiente/pergunta-piper-pt-br-cadu-medium-04f81c0bd6143ab9.mp3",
+        "revision": "4591af8769e6c11f8472133be1514e604569ee26ca041af8a7eecbf17959b79e"
+      }
+    },
+    "interface/cartao/revisao-resp-gradiente/resposta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-resp-gradiente/resposta-piper-pt-br-cadu-medium-3f8de4e59c12bfc7.mp3",
+        "revision": "15d0bb21878163b1cddc70bc86a056acb1d907b9baf2e7d2d4ea522240abbea0"
+      }
+    },
+    "interface/cartao/revisao-resp-transpulmonar/pergunta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-resp-transpulmonar/pergunta-piper-pt-br-cadu-medium-cf7186f0da61fe36.mp3",
+        "revision": "a821e9f83f2b38880b4029c7af9be77c3f1fd37ca5384b317c5441f8f1fe16e7"
+      }
+    },
+    "interface/cartao/revisao-resp-transpulmonar/resposta": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/cartao/revisao-resp-transpulmonar/resposta-piper-pt-br-cadu-medium-90884d9269c5cf91.mp3",
+        "revision": "e93343dcb3892ffed304ff9958587420b361ff6d62d5ea758e33325a152f0dc1"
+      }
+    },
+    "interface/numero-pergunta/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/numero-pergunta/1-piper-pt-br-cadu-medium-75719cd7f9451280.mp3",
+        "revision": "97148961ec21d6b57d4774939aa1f4cd8f76d47e5c649d36d54ed3abcf1a7ae9"
+      }
+    },
+    "interface/numero-pergunta/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/numero-pergunta/2-piper-pt-br-cadu-medium-d9d480ed38001751.mp3",
+        "revision": "8a9b4b193a34dae3558a01720681f569dd3dcdc7375af772c2dbe8d116bc2991"
+      }
+    },
+    "interface/numero-pergunta/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/numero-pergunta/3-piper-pt-br-cadu-medium-76c62246a7c29970.mp3",
+        "revision": "61bf05d4a3e83aae024afe3e0a1b07763696ec1021743d43275d225ee4f46f85"
+      }
+    },
+    "interface/numero-pergunta/4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/numero-pergunta/4-piper-pt-br-cadu-medium-6b56353743913e83.mp3",
+        "revision": "995eb182bce2f051ad6d9aec2bc00d2fa88c619ebf6dc3fc8253357e2bd4ff54"
+      }
+    },
+    "interface/numero-pergunta/5": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/numero-pergunta/5-piper-pt-br-cadu-medium-4ee5dfdb6b6965de.mp3",
+        "revision": "b39df99325aa8784ed456005da1d7affc5a659d4cdc54f503ffc7b5332d5887c"
+      }
+    },
+    "interface/resultado/5/0": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resultado/5/0-piper-pt-br-cadu-medium-60b64e51fe9a8707.mp3",
+        "revision": "3d2c2ee46667a2f6c0b5367583d860a2ff3b318118849af79c6be6d5e38d7c58"
+      }
+    },
+    "interface/resultado/5/1": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resultado/5/1-piper-pt-br-cadu-medium-ca977bc3592f16ed.mp3",
+        "revision": "7cb647db883b5c7432edb0698f1af88e3cde5a9e45c24d6fe58c496c3e8c3798"
+      }
+    },
+    "interface/resultado/5/2": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resultado/5/2-piper-pt-br-cadu-medium-1bff808a45139d08.mp3",
+        "revision": "75b92ce94e4c6560fef60b568a2f94e1375feaadde2f00871f27cfffa613ff64"
+      }
+    },
+    "interface/resultado/5/3": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resultado/5/3-piper-pt-br-cadu-medium-c30e5c701e3a9eae.mp3",
+        "revision": "d9b56f5147f68f10955e1f00793fc1ad3b33d9e9b32980ceb3ba5be4f7f6e944"
+      }
+    },
+    "interface/resultado/5/4": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resultado/5/4-piper-pt-br-cadu-medium-a596497908b08f7c.mp3",
+        "revision": "382f9c0fa1c581414e23f87372e6b3c76b4da40fa62c1da93fc0955300d71497"
+      }
+    },
+    "interface/resultado/5/5": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/resultado/5/5-piper-pt-br-cadu-medium-554393488f9724f1.mp3",
+        "revision": "10b415ec04268f28669bdc15345981412e6c3509411ca245f920311adb70558b"
+      }
+    },
+    "interface/reconhecimento-indisponivel": {
+      "piper-pt-br-cadu-medium": {
+        "src": "/audio/interface/reconhecimento-indisponivel-piper-pt-br-cadu-medium-192b9524c23db246.mp3",
+        "revision": "9ce195c259e1a7eb9c503309a90eeca97662ba7c51dbf44400f195d8e234cc3e"
       }
     }
   }

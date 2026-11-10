@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useVoiceActions } from "@/components/voice/voice-provider";
 import { useVoiceQuestion } from "@/components/voice/use-voice-question";
 import type { Question } from "@/data";
+import { exerciseResultNarration, fixedNarration, narratedMessage, questionNumberNarration } from "@/lib/narration-messages";
 import { getClientStudyState, resetLessonResponses, resetQuestionResponse, saveResponse } from "@/lib/study-storage";
 import { QuestionConfirmation, QuestionFeedback, QuestionOptions } from "./question-parts";
 import { useStudy } from "./study-provider";
@@ -57,21 +58,23 @@ export function LessonQuiz({ lessonId, lessonTitle, questions, concepts }: Lesso
     answered: Boolean(answer),
     onSelect: setSelectedId,
     onConfirm: (optionId) => checkAnswer(optionId, false),
-    confirmation: "Resposta registrada.",
+    confirmation: "resposta-registrada",
   });
 
   useVoiceActions((command) => {
     if (!inQuiz() || !questions.length) return;
     if (command.kind === "next-question" || command.kind === "next-step") {
-      if (!question) return { message: "Você chegou ao resultado dos exercícios." };
-      if (!answer) return { message: "Confirme a alternativa antes de avançar." };
+      if (!question) return narratedMessage(fixedNarration("resultado-exercicios"));
+      if (!answer) return narratedMessage(fixedNarration("confirmar-antes-avancar"));
       showStep(showResult ? questions.length : currentIndex + 1);
-      return { message: showResult ? `Exercícios concluídos. ${correctCount} de ${questions.length} respostas corretas.` : `Pergunta ${currentIndex + 2}. Diga ler pergunta para ouvir.` };
+      return narratedMessage(showResult
+        ? exerciseResultNarration(correctCount, questions.length)
+        : questionNumberNarration(currentIndex + 2));
     }
     if (command.kind === "previous-question" || command.kind === "previous-step") {
-      if (currentIndex === 0) return { message: "Você já está na primeira pergunta." };
+      if (currentIndex === 0) return narratedMessage(fixedNarration("primeira-pergunta"));
       showStep(currentIndex - 1);
-      return { message: `Pergunta ${currentIndex}. Diga ler pergunta para ouvir.` };
+      return narratedMessage(questionNumberNarration(currentIndex));
     }
   });
 

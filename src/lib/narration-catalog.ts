@@ -1,26 +1,26 @@
 import { lessons, type Lesson } from "../data/index";
 import { getStepSpeechText } from "./lesson-speech";
 import { getLessonSteps, type LessonStep } from "./lesson-steps";
-import { narrationMessages } from "./narration-messages";
+import {
+  exerciseResultNarration, exerciseTitleNarration, explanationNarration, fixedNarration,
+  lessonListNarration, narrationMessages, questionNarration, questionNumberNarration,
+  reviewCardNarration, selectedOptionNarration, stepLabelNarration, type NarrationMessage,
+} from "./narration-messages";
 
 type NarrationClip = { id: string; path: string; text: string };
-const sentenceSegmenter = new Intl.Segmenter("pt-BR", { granularity: "sentence" });
-const blockLimit = 400;
+const targetBlockBytes = 700;
+const encoder = new TextEncoder();
 
 function splitForListening(text: string) {
   const blocks: string[] = [];
   let block = "";
-  for (const paragraph of text.split("\n")) {
-    let separator = "\n";
-    for (const { segment } of sentenceSegmenter.segment(paragraph)) {
-      const sentence = segment.trim();
-      if (!sentence) continue;
-      if (block && block.length + sentence.length + 1 > blockLimit) {
-        blocks.push(block);
-        block = "";
-      }
-      block = block ? block + separator + sentence : sentence;
-      separator = " ";
+  for (const paragraph of text.split("\n").map((line) => line.trim()).filter(Boolean)) {
+    const candidate = block ? `${block}\n${paragraph}` : paragraph;
+    if (block && encoder.encode(candidate).length > targetBlockBytes) {
+      blocks.push(block);
+      block = paragraph;
+    } else {
+      block = candidate;
     }
   }
   if (block) blocks.push(block);
@@ -51,12 +51,25 @@ export function getLessonNarrationClips(lesson: Lesson) {
 }
 
 export function getNarrationCatalog(): readonly NarrationClip[] {
+  const totals = [...new Set(lessons.map(({ questions }) => questions.length))];
+  const lines = [
+    ...(Object.keys(narrationMessages) as NarrationMessage[]).map(fixedNarration),
+    lessonListNarration(lessons),
+    ...lessons.flatMap((lesson) => [
+      exerciseTitleNarration(lesson),
+      ...getLessonSteps(lesson).map((step, index) => stepLabelNarration(lesson, step, index)),
+      ...lesson.questions.flatMap((question) => [
+        questionNarration(question),
+        explanationNarration(question),
+        ...question.options.map((_, index) => selectedOptionNarration(question, index)),
+      ]),
+      ...lesson.quickReview.flatMap((card) => [reviewCardNarration(card, false), reviewCardNarration(card, true)]),
+    ]),
+    ...Array.from({ length: Math.max(0, ...totals) }, (_, index) => questionNumberNarration(index + 1)),
+    ...totals.flatMap((total) => Array.from({ length: total + 1 }, (_, correct) => exerciseResultNarration(correct, total))),
+  ];
   return [
     ...lessons.flatMap(getLessonNarrationClips),
-    ...Object.entries(narrationMessages).map(([key, text]) => ({
-      id: `interface/${key}`,
-      path: `interface/${key}`,
-      text,
-    })),
+    ...lines.map(({ id, text }) => ({ id, path: id, text })),
   ];
 }

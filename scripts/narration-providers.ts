@@ -1,14 +1,15 @@
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { mkdtemp, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
+import { createInterface } from "node:readline";
 import { promisify } from "node:util";
 
 export type NarrationVoice = { id: string; label: string; language: "pt-BR"; kind: "neural" };
 type VoiceRequest = { voice: NarrationVoice; name: string };
-type Synthesize = (text: string, name: string) => Promise<Buffer>;
+type Synthesize = ((text: string, name: string) => Promise<Buffer>) & { close?: () => void };
 
 export interface NarrationProvider {
   id: string;
@@ -25,9 +26,12 @@ const cadu = "pt_BR-cadu-medium";
 // The rdh retrain kept the old filename. Pin the voice and configuration together.
 const caduModelHash = "d5a662e3f606d5a49dd29ba9ce90c304ae45dd9543f8b0c773bcb0de282499de";
 const caduConfigHash = "9fa837b7c1237ea5978bcd7be38c130798e8faa064f754873bb4ce5fc498bd88";
+const kokoroModelHash = "f3a290d384fbb27966d462905c71a46cef9e5fd00516b40df32a0b4afe77ac96";
+const kokoroVoicesHash = "bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d";
 const chirpRate = 0.95;
 const piperPace = "1.04";
 const sentencePause = "0.24";
+const kokoroRate = "0.96";
 const normalization = "loudnorm=I=-19:TP=-2:LRA=7";
 
 function voiceRequest(id: string, name: string, label: string): VoiceRequest {
@@ -88,13 +92,65 @@ async function fileHash(path: string) {
   return hash.digest("hex");
 }
 
-async function runLocal(binary: string, args: string[], label: string) {
+function localEnvironment() {
   const env = { ...process.env };
   delete env.FISIO_TTS_ACCESS_TOKEN;
+  return env;
+}
+
+async function runLocal(binary: string, args: string[], label: string) {
   try {
-    await run(binary, args, { env, windowsHide: true, timeout: 180_000 });
+    await run(binary, args, { env: localEnvironment(), windowsHide: true, timeout: 180_000 });
   } catch {
     throw new Error(`Falha ao executar ${label}. Verifique a instalação e os caminhos configurados.`);
+  }
+}
+
+function connectPiper(python: string, model: string): Synthesize {
+  const script = resolve("scripts", "synthesize-piper.py");
+  const worker = spawn(python, [script, model, piperPace, sentencePause], {
+    env: localEnvironment(), windowsHide: true, stdio: ["pipe", "pipe", "ignore"],
+  });
+  const replies = createInterface({ input: worker.stdout, terminal: false });
+  const lines = replies[Symbol.asyncIterator]();
+  const workerFailure = "Falha ao executar Piper. Verifique a instalação e os caminhos configurados.";
+  worker.on("error", () => replies.close());
+  worker.stdin.on("error", () => replies.close());
+
+  const synthesize: Synthesize = (text) => renderMp3(text, async (input, wave) => {
+    const timer = setTimeout(() => {
+      worker.kill();
+      replies.close();
+    }, 180_000);
+    try {
+      worker.stdin.write(`${JSON.stringify([input, wave])}\n`, "utf8");
+      const reply = await lines.next();
+      if (reply.value !== "ok") throw new Error(workerFailure);
+    } finally {
+      clearTimeout(timer);
+    }
+  });
+  synthesize.close = () => worker.stdin.end();
+  return synthesize;
+}
+
+async function renderMp3(text: string, renderWave: (input: string, wave: string) => Promise<void>) {
+  const ffmpeg = process.env.FISIO_FFMPEG || "ffmpeg";
+  const dir = await mkdtemp(join(tmpdir(), "fisio-narracao-"));
+  const input = join(dir, "texto.txt");
+  const wave = join(dir, "fala.wav");
+  const mp3 = join(dir, "fala.mp3");
+  try {
+    await writeFile(input, text, "utf8");
+    await renderWave(input, wave);
+    await runLocal(ffmpeg, [
+      "-nostdin", "-hide_banner", "-loglevel", "error", "-i", wave,
+      "-af", normalization, "-ar", "22050", "-ac", "1", "-c:a", "libmp3lame", "-b:a", "64k", mp3,
+    ], "FFmpeg");
+    return await readFile(mp3);
+  } finally {
+    await Promise.all([input, wave, mp3].map((path) => rm(path, { force: true })));
+    await rmdir(dir);
   }
 }
 
@@ -119,34 +175,49 @@ const piper: NarrationProvider = {
       throw new Error("A cópia do modelo Piper não é a revisão Cadu com base rdh usada pelo projeto. Confira a documentação.");
     }
 
-    const python = process.env.FISIO_PIPER_PYTHON || "python";
-    const ffmpeg = process.env.FISIO_FFMPEG || "ffmpeg";
-    return async (text) => {
-      const dir = await mkdtemp(join(tmpdir(), "fisio-narracao-"));
-      const input = join(dir, "texto.txt");
-      const wave = join(dir, "fala.wav");
-      const mp3 = join(dir, "fala.mp3");
-      try {
-        await writeFile(input, text, "utf8");
-        await runLocal(python, [
-          "-m", "piper", "--model", model, "--input-file", input, "--output-file", wave,
-          "--length-scale", piperPace, "--sentence-silence", sentencePause,
-        ], "Piper");
-        await runLocal(ffmpeg, [
-          "-nostdin", "-hide_banner", "-loglevel", "error", "-i", wave,
-          "-af", normalization, "-ar", "22050", "-ac", "1", "-c:a", "libmp3lame", "-b:a", "64k", mp3,
-        ], "FFmpeg");
-        return await readFile(mp3);
-      } finally {
-        await Promise.all([input, wave, mp3].map((path) => rm(path, { force: true })));
-        await rmdir(dir);
-      }
-    };
+    return connectPiper(process.env.FISIO_PIPER_PYTHON || "python", model);
+  },
+};
+
+const kokoroVoiceNames: ReadonlyMap<string, string> = new Map([
+  ["pf_dora", "Dora"],
+  ["pm_alex", "Alex"],
+  ["pm_santa", "Santa"],
+]);
+
+const kokoro: NarrationProvider = {
+  id: "kokoro",
+  paid: false,
+  revision: `v1-${kokoroModelHash}-${kokoroVoicesHash}-${kokoroRate}-${normalization}`,
+  voices(names) {
+    return (names.length ? names : ["pf_dora", "pm_alex"]).map((name) => {
+      const label = kokoroVoiceNames.get(name);
+      if (!label) throw new Error("Selecione uma voz Kokoro pt-BR: pf_dora, pm_alex ou pm_santa.");
+      return voiceRequest(`kokoro-${name.replace("_", "-")}`, name, `${label} (Kokoro)`);
+    });
+  },
+  async connect() {
+    const modelValue = process.env.FISIO_KOKORO_MODEL;
+    const voicesValue = process.env.FISIO_KOKORO_VOICES;
+    if (!modelValue || !voicesValue) throw new Error("Configure FISIO_KOKORO_MODEL e FISIO_KOKORO_VOICES com os arquivos locais.");
+    const model = resolve(modelValue);
+    const voices = resolve(voicesValue);
+    const [modelHash, voicesHash] = await Promise.all([fileHash(model), fileHash(voices)]).catch(() => {
+      throw new Error("O modelo Kokoro e o arquivo de vozes precisam estar disponíveis localmente.");
+    });
+    if (modelHash !== kokoroModelHash || voicesHash !== kokoroVoicesHash) {
+      throw new Error("Os arquivos Kokoro precisam corresponder ao modelo v1.0 FP16 e às vozes da publicação model-files-v1.1.");
+    }
+    const python = process.env.FISIO_KOKORO_PYTHON || "python";
+    const script = resolve("scripts", "synthesize-kokoro.py");
+    return (text, name) => renderMp3(text, (input, wave) => runLocal(python, [
+      script, model, voices, name, kokoroRate, input, wave,
+    ], "Kokoro"));
   },
 };
 
 export function getNarrationProvider(id: string) {
-  const provider = [google, piper].find((item) => item.id === id);
-  if (!provider) throw new Error("Provedor desconhecido. Use google-chirp3-hd ou piper.");
+  const provider = [google, piper, kokoro].find((item) => item.id === id);
+  if (!provider) throw new Error("Provedor desconhecido. Use google-chirp3-hd, piper ou kokoro.");
   return provider;
 }

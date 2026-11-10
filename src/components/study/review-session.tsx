@@ -2,7 +2,9 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { useVoiceQuestion } from "@/components/voice/use-voice-question";
+import { useVoiceActions } from "@/components/voice/voice-provider";
 import type { ReviewItem } from "@/data/review-items";
+import { narratedMessage, reviewCardNarration } from "@/lib/narration-messages";
 import type { ReviewGrade, ReviewRecord } from "@/lib/review-schedule";
 import { recordReview } from "@/lib/study-storage";
 import { QuestionConfirmation, QuestionFeedback, QuestionOptions } from "./question-parts";
@@ -72,7 +74,12 @@ function ReviewStep({ item, onGrade }: { item: ReviewItem; onGrade: (grade: Revi
     answered: revealed,
     onSelect: setSelected,
     onConfirm: (optionId) => answerQuestion(optionId, false),
-    confirmation: "Resposta conferida.",
+    confirmation: "resposta-conferida",
+  });
+
+  useVoiceActions((command) => {
+    if (item.kind === "card" && (command.kind === "read-question" || command.kind === "start-reading" ||
+      command.kind === "repeat-reading")) return narratedMessage(reviewCardNarration(item.card, revealed));
   });
 
   return (

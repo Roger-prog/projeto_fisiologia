@@ -3,13 +3,15 @@
 import { useSyncExternalStore } from "react";
 
 type NarrationVoice = { id: string; label: string; language: string; kind: "neural" };
-type NarrationManifest = {
+export type NarrationManifest = {
   version: 1;
   voices: NarrationVoice[];
   clips: Record<string, Record<string, { src: string }>>;
 };
 
 const manifestUrl = "/audio/manifest.json";
+const voicePreferenceKey = "fisioacessivel:narration-voice";
+const emptyManifest: NarrationManifest = { version: 1, voices: [], clips: {} };
 const manifestListeners = new Set<() => void>();
 const preferenceListeners = new Set<() => void>();
 let manifest: NarrationManifest | null = null;
@@ -24,22 +26,37 @@ function getManifest() {
   return manifest;
 }
 
+async function loadManifest(retried = false): Promise<NarrationManifest> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+  try {
+    const response = await fetch(manifestUrl, { credentials: "same-origin", signal: controller.signal });
+    if (response.status === 408 || response.status === 429 || response.status >= 500) throw new Error();
+    if (!response.ok) return emptyManifest;
+    const data = await response.json() as Partial<NarrationManifest> | null;
+    if (data?.version !== 1 || !Array.isArray(data.voices) || !data.clips || typeof data.clips !== "object") return emptyManifest;
+    const voices = data.voices.filter((voice) =>
+      voice?.kind === "neural" && typeof voice.id === "string" && typeof voice.label === "string" &&
+      voice.language === "pt-BR",
+    );
+    return { version: 1, voices, clips: data.clips };
+  } catch {
+    if (retried) return emptyManifest;
+  } finally {
+    clearTimeout(timeout);
+  }
+  await new Promise((resolve) => setTimeout(resolve, 350));
+  return loadManifest(true);
+}
+
 function subscribeManifest(listener: () => void) {
   manifestListeners.add(listener);
   if (!requested) {
     requested = true;
-    void fetch(manifestUrl, { credentials: "same-origin" }).then(async (response) => {
-      if (!response.ok) return;
-      const data = await response.json() as Partial<NarrationManifest> | null;
-      if (data?.version !== 1 || !Array.isArray(data.voices) || !data.clips || typeof data.clips !== "object") return;
-      const voices = data.voices.filter((voice) =>
-        voice?.kind === "neural" && typeof voice.id === "string" && typeof voice.label === "string" &&
-        voice.language === "pt-BR",
-      );
-      manifest = { version: 1, voices, clips: data.clips };
+    void loadManifest().then((catalog) => {
+      manifest = catalog;
+      if (catalog.voices[0] && getNarrationPreference() === null) setNarrationPreference(catalog.voices[0].id);
       manifestListeners.forEach((notify) => notify());
-    }).catch(() => {
-      // Static exports without recordings still have access to the browser voices.
     });
   }
   return () => { manifestListeners.delete(listener); };
@@ -61,12 +78,24 @@ export function getNarrationSources(catalog: NarrationManifest | null, clipIds: 
 }
 
 export function getNarrationPreference() {
+  if (preferredVoice === null && typeof window !== "undefined") {
+    try {
+      preferredVoice = window.sessionStorage.getItem(voicePreferenceKey);
+    } catch {
+      // The choice can still be kept in memory for this page.
+    }
+  }
   return preferredVoice;
 }
 
 export function setNarrationPreference(id: string) {
   if (id === preferredVoice) return;
   preferredVoice = id;
+  try {
+    window.sessionStorage.setItem(voicePreferenceKey, id);
+  } catch {
+    // Storage may be blocked by the browser.
+  }
   preferenceListeners.forEach((notify) => notify());
 }
 

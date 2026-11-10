@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { getBrowserVoiceRecognizer, isVoiceRecognitionAvailable } from "@/lib/voice-recognition";
+import { narrationMessages } from "@/lib/narration-messages";
 import { createVoiceSession, type VoiceDiagnosticEvent, type VoiceSessionState } from "@/lib/voice-session";
 
 type Support = "pending" | "available" | "unavailable";
 type Snapshot = { state: VoiceSessionState; message: string };
 
-const unavailableMessage = "O reconhecimento de voz está indisponível neste navegador. Use os controles da página para continuar.";
+const unavailableMessage = narrationMessages["reconhecimento-indisponivel"];
 
 function subscribeSupport() {
   return () => {};

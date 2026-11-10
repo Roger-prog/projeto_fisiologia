@@ -3,14 +3,16 @@ import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { cardiovascularLesson } from "../src/data/lessons/cardiovascular";
 import { getNarrationCatalog } from "../src/lib/narration-catalog";
 import { prepareNarrationText } from "../src/lib/narration-pronunciation";
-import { getNarrationProvider, type NarrationVoice } from "./narration-providers";
+import { getNarrationProvider, type NarrationProvider, type NarrationVoice } from "./narration-providers";
 
 type Track = { src: string; revision: string };
 type Manifest = { version: 1; voices: NarrationVoice[]; clips: Record<string, Record<string, Track>> };
 
 const audioDir = resolve("public", "audio");
+const samplesDir = resolve("docs", "amostras-narracao");
 const manifestPath = join(audioDir, "manifest.json");
 const assetPrefix = "/audio/";
 const slug = /^[a-z0-9-]+$/;
@@ -72,9 +74,9 @@ function isMp3(bytes: Buffer) {
   return bytes.length >= 512 && (header === "ID3" || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0));
 }
 
-async function hasMp3(src: string) {
+async function hasMp3(file: string) {
   try {
-    return isMp3(await readFile(getAssetFile(src)));
+    return isMp3(await readFile(file));
   } catch (error) {
     if (hasErrorCode(error, "ENOENT")) return false;
     throw error;
@@ -92,8 +94,8 @@ async function writeAtomic(file: string, value: Buffer | string) {
   }
 }
 
-async function withGenerationLock(work: () => Promise<void>) {
-  const path = join(tmpdir(), `fisio-audio-${hash(audioDir).slice(0, 16)}.lock`);
+async function withGenerationLock(directory: string, work: () => Promise<void>) {
+  const path = join(tmpdir(), `fisio-audio-${hash(directory).slice(0, 16)}.lock`);
   const lock = await open(path, "wx").catch((error: unknown) => {
     if (hasErrorCode(error, "EEXIST")) throw new Error(`Já existe uma geração de áudio em curso. Arquivo de controle: ${path}`);
     throw error;
@@ -106,6 +108,43 @@ async function withGenerationLock(work: () => Promise<void>) {
   }
 }
 
+async function compareVoices(provider: NarrationProvider, names: string[], generate: boolean) {
+  const example = cardiovascularLesson.sections.find(({ id }) => id === "bomba-e-rede")?.example;
+  if (!example?.formula?.spoken || !example.paragraphs[0]) throw new Error("O exemplo cardiovascular da comparação está incompleto.");
+  const text = prepareNarrationText([`${example.title}.`, example.formula.spoken, example.paragraphs[0]].join(" "));
+  if (provider.maxBytes !== undefined && Buffer.byteLength(text) > provider.maxBytes) {
+    throw new Error(`A amostra ultrapassa o limite de ${provider.maxBytes} bytes por solicitação.`);
+  }
+  const comparisonVoices = provider.id === "google-chirp3-hd" && names.length === 0
+    ? ["pt-BR-Chirp3-HD-Kore", "pt-BR-Chirp3-HD-Charon", "pt-BR-Chirp3-HD-Aoede"]
+    : names;
+  const jobs = [];
+  for (const { name, voice } of provider.voices(comparisonVoices)) {
+    const fingerprint = hash(JSON.stringify([provider.revision, voice.id, text])).slice(0, 16);
+    const file = join(samplesDir, `${voice.id}-${fingerprint}.mp3`);
+    if (!await hasMp3(file)) jobs.push({ name, file });
+  }
+  console.log(text);
+  console.log(`${provider.id} · ${jobs.length} amostras a gerar · ${[...text].length * jobs.length} caracteres`);
+  if (!generate) {
+    for (const { file } of jobs) console.log(file);
+    return;
+  }
+  if (jobs.length === 0) return;
+
+  const synthesize = await provider.connect();
+  try {
+    for (const { name, file } of jobs) {
+      const mp3 = await synthesize(text, name);
+      if (!isMp3(mp3)) throw new Error(`O provedor não retornou uma amostra MP3 válida para ${name}.`);
+      await writeAtomic(file, mp3);
+      console.log(file);
+    }
+  } finally {
+    synthesize.close?.();
+  }
+}
+
 async function main() {
   const { values } = parseArgs({ options: {
     help: { type: "boolean", short: "h" },
@@ -114,13 +153,15 @@ async function main() {
     prefix: { type: "string", multiple: true, default: [] },
     generate: { type: "boolean" },
     verify: { type: "boolean" },
+    samples: { type: "boolean" },
     "authorize-paid": { type: "boolean" },
   } });
 
   if (values.help) {
-    console.log("npm run audio:generate -- [--provider google-chirp3-hd|piper] [--voice NOME] [--prefix CAMINHO] [--generate] [--authorize-paid] [--verify]");
+    console.log("npm run audio:generate -- [--provider google-chirp3-hd|piper|kokoro] [--voice NOME] [--prefix CAMINHO] [--generate] [--authorize-paid] [--verify] [--samples]");
     console.log("Sem --generate, lista o plano sem chamar o provedor. --voice e --prefix podem ser repetidos.");
     console.log("--verify confere os arquivos referenciados e a versão do texto, sem gerar áudio.");
+    console.log("--samples prepara a mesma explicação para comparação em docs/amostras-narracao, separada das faixas do site.");
     return;
   }
 
@@ -129,6 +170,15 @@ async function main() {
   if (values.generate && provider.paid && !values["authorize-paid"]) {
     throw new Error("Nenhuma solicitação foi enviada. Revise o plano e acrescente --authorize-paid para permitir a cobrança.");
   }
+  const names = [...new Set(values.voice)];
+  if (values.samples) {
+    if (values.verify || values.prefix.length) throw new Error("Use --samples sem --verify ou --prefix.");
+    const compare = () => compareVoices(provider, names, Boolean(values.generate));
+    if (values.generate) await withGenerationLock(samplesDir, compare);
+    else await compare();
+    return;
+  }
+  if (provider.id === "kokoro") throw new Error("O Kokoro está disponível para comparação com --samples.");
 
   const catalog = new Map(getNarrationCatalog().map((clip) => {
     const text = prepareNarrationText(clip.text);
@@ -144,7 +194,7 @@ async function main() {
     for (const [id, byVoice] of Object.entries(manifest.clips)) {
       for (const [voice, track] of Object.entries(byVoice)) {
         if (catalog.get(id)?.revision !== track.revision) throw new Error(`Texto alterado ou removido em ${id} (${voice}).`);
-        if (!await hasMp3(track.src)) throw new Error(`MP3 ausente ou inválido em ${track.src}.`);
+        if (!await hasMp3(getAssetFile(track.src))) throw new Error(`MP3 ausente ou inválido em ${track.src}.`);
         count += 1;
       }
     }
@@ -156,7 +206,7 @@ async function main() {
   const selected = [...catalog.values()].filter(({ path }) =>
     values.prefix.length === 0 || values.prefix.some((prefix) => prefix.length > 0 && path.startsWith(prefix)));
   if (selected.length === 0) throw new Error("Nenhum trecho corresponde ao filtro informado.");
-  const voices = provider.voices([...new Set(values.voice)]);
+  const voices = provider.voices(names);
 
   async function planAndGenerate() {
     const manifest = await readManifest();
@@ -170,7 +220,7 @@ async function main() {
         const src = `${assetPrefix}${clip.path}-${voice.id}-${fingerprint}.mp3`;
         const track = { src, revision: clip.revision };
         const existing = manifest.clips[clip.id]?.[voice.id];
-        if (existing?.src === src && existing.revision === track.revision && await hasMp3(src)) continue;
+        if (existing?.src === src && existing.revision === track.revision && await hasMp3(getAssetFile(src))) continue;
         jobs.push({ clip, voice, name, track });
       }
     }
@@ -183,22 +233,26 @@ async function main() {
     if (jobs.length === 0) return;
 
     const synthesize = await provider.connect();
-    for (const { clip, voice, name, track } of jobs) {
-      const file = getAssetFile(track.src);
-      // Reuse a complete, content-addressed file left by an interrupted manifest update.
-      if (!await hasMp3(track.src)) {
-        const mp3 = await synthesize(clip.text, name);
-        if (!isMp3(mp3)) throw new Error(`O provedor não retornou um MP3 válido para ${clip.id}.`);
-        await writeAtomic(file, mp3);
+    try {
+      for (const { clip, voice, name, track } of jobs) {
+        const file = getAssetFile(track.src);
+        // Reuse a complete, content-addressed file left by an interrupted manifest update.
+        if (!await hasMp3(file)) {
+          const mp3 = await synthesize(clip.text, name);
+          if (!isMp3(mp3)) throw new Error(`O provedor não retornou um MP3 válido para ${clip.id}.`);
+          await writeAtomic(file, mp3);
+        }
+        if (!manifest.voices.some(({ id }) => id === voice.id)) manifest.voices.push(voice);
+        manifest.clips[clip.id] = { ...manifest.clips[clip.id], [voice.id]: track };
+        await writeAtomic(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+        console.log(track.src);
       }
-      if (!manifest.voices.some(({ id }) => id === voice.id)) manifest.voices.push(voice);
-      manifest.clips[clip.id] = { ...manifest.clips[clip.id], [voice.id]: track };
-      await writeAtomic(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-      console.log(track.src);
+    } finally {
+      synthesize.close?.();
     }
   }
 
-  if (values.generate) await withGenerationLock(planAndGenerate);
+  if (values.generate) await withGenerationLock(audioDir, planAndGenerate);
   else await planAndGenerate();
 }
 
