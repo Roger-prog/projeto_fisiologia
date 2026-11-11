@@ -38,6 +38,20 @@
   accent-color: var(--accent);
 }
 
+.cuePreference {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.cuePreference select {
+  width: auto;
+  max-width: 100%;
+}
+
 .title {
   display: flex;
   flex-wrap: wrap;
@@ -76,6 +90,16 @@
   min-block-size: 44px;
   padding-block: 0.55rem;
   cursor: pointer;
+}
+
+.interpretation {
+  margin-block: 0.45rem;
+  padding-inline-start: 0.7rem;
+  border-inline-start: 2px solid var(--border);
+}
+
+.interpretation dt {
+  font-weight: 650;
 }
 
 .inner :global(.button) {

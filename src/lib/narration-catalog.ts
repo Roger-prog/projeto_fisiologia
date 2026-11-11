@@ -1,9 +1,9 @@
-import { lessons, type Lesson } from "../data/index";
+import { lessons, modules, type Lesson } from "../data/index";
 import { getStepSpeechText } from "./lesson-speech";
 import { getLessonSteps, type LessonStep } from "./lesson-steps";
 import {
   exerciseResultNarration, exerciseTitleNarration, explanationNarration, fixedNarration,
-  lessonListNarration, narrationMessages, questionNarration, questionNumberNarration,
+  lessonListNarration, moduleLessonListNarration, narrationMessages, questionNarration, questionNumberNarration,
   reviewCardNarration, selectedOptionNarration, stepLabelNarration, type NarrationMessage,
 } from "./narration-messages";
 
@@ -55,6 +55,7 @@ export function getNarrationCatalog(): readonly NarrationClip[] {
   const lines = [
     ...(Object.keys(narrationMessages) as NarrationMessage[]).map(fixedNarration),
     lessonListNarration(lessons),
+    ...modules.map((module) => moduleLessonListNarration(module, lessons)),
     ...lessons.flatMap((lesson) => [
       exerciseTitleNarration(lesson),
       ...getLessonSteps(lesson).map((step, index) => stepLabelNarration(lesson, step, index)),

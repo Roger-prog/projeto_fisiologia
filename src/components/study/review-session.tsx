@@ -78,8 +78,14 @@ function ReviewStep({ item, onGrade }: { item: ReviewItem; onGrade: (grade: Revi
   });
 
   useVoiceActions((command) => {
-    if (item.kind === "card" && (command.kind === "read-question" || command.kind === "start-reading" ||
-      command.kind === "repeat-reading")) return narratedMessage(reviewCardNarration(item.card, revealed));
+    if (item.kind !== "card") return;
+    if (command.kind === "reveal-review-answer") {
+      setRevealed(true);
+      return narratedMessage(reviewCardNarration(item.card, true));
+    }
+    if (command.kind === "read-question" || command.kind === "start-reading" || command.kind === "repeat-reading") {
+      return narratedMessage(reviewCardNarration(item.card, revealed));
+    }
   });
 
   return (

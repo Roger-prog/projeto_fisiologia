@@ -1,6 +1,8 @@
+export type VoiceTranscript = { text: string; confidence?: number };
+
 export type VoiceRecognitionEvents = {
   onStart: () => void;
-  onFinal: (transcript: string) => void;
+  onFinal: (transcript: VoiceTranscript) => void;
   onNoMatch: () => void;
   onError: (code: string) => void;
   onEnd: () => void;
@@ -17,7 +19,7 @@ export interface VoiceRecognizer {
 
 type BrowserResult = {
   isFinal: boolean;
-  0?: { transcript: string };
+  0?: { transcript: string; confidence?: number };
 };
 
 type BrowserRecognition = {
@@ -88,10 +90,14 @@ export function getBrowserVoiceRecognizer(): VoiceRecognizer | null {
         if (activeTurn !== turn || finalDelivered) return;
         for (let index = resultIndex; index < results.length; index++) {
           const result = results[index];
-          const transcript = result?.isFinal ? result[0]?.transcript.trim() : undefined;
-          if (transcript) {
+          const alternative = result?.isFinal ? result[0] : undefined;
+          const text = alternative?.transcript.trim();
+          if (text) {
             finalDelivered = true;
-            events.onFinal(transcript);
+            const confidence = alternative?.confidence;
+            events.onFinal(typeof confidence === "number" && confidence >= 0 && confidence <= 1
+              ? { text, confidence }
+              : { text });
             break;
           }
         }

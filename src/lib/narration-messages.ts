@@ -1,4 +1,4 @@
-import type { Lesson, Question, ReviewCard } from "../data/types";
+import type { Lesson, PhysiologyModule, Question, ReviewCard } from "../data/types";
 import type { LessonStep } from "./lesson-steps";
 import { optionLetter, voiceQuestionText } from "./voice-question";
 
@@ -8,7 +8,7 @@ export const narrationMessages = {
   "resposta-correta": "Resposta correta.",
   "revisar": "Vamos revisar esse conceito.",
   "proxima-etapa": "Próxima etapa.",
-  "comando-desconhecido": "Não consegui entender o comando.",
+  "comando-desconhecido": "Não consegui entender. Você pode repetir?",
   "ajuda-comando": "Diga Ajuda para ouvir as opções.",
   "etapa-anterior": "Etapa anterior.",
   "pagina-inicial": "Página inicial.",
@@ -35,11 +35,25 @@ export const narrationMessages = {
   "ajuda-exercicios": "Exercícios. Diga Ouvir pergunta, escolha a letra e diga Confirmar resposta. Use Próxima pergunta para avançar.",
   "ajuda-etapa": "Diga Ouvir a etapa, Repetir ou Próxima etapa. Entre trechos, diga Continuar leitura ou Parar leitura.",
   "ajuda-etapa-final": "Diga Ouvir a etapa, Repetir ou Fazer exercícios. Entre trechos, diga Continuar leitura ou Parar leitura.",
-  "ajuda-aula": "Aula completa. Diga Ouvir a aula, Fazer exercícios ou Continuar de onde parei. Entre trechos, diga Continuar leitura ou Parar leitura.",
+  "ajuda-aula": "Aula completa. Diga Ouvir a aula, Fazer exercícios, Modo guiado ou Modo revisão. Entre trechos, diga Continuar leitura ou Parar leitura.",
   "ajuda-revisoes": "Você está nas revisões. Abra uma sessão pelos controles da página. Diga Ouvir pergunta para ler o item atual. Em uma pergunta, escolha a letra e diga Confirmar resposta.",
-  "ajuda-inicio": "Você está na página inicial. Diga Continuar de onde parei, Listar aulas ou Minhas Revisões. Para encerrar, diga Encerrar voz.",
-  "ajuda-modulos": "Você está nos módulos. Diga Continuar de onde parei, Listar aulas ou Minhas Revisões. Para encerrar, diga Encerrar voz.",
+  "ajuda-inicio": "Você está na página inicial. Diga Continuar estudando, Mostrar módulos ou Mostrar aulas. Para encerrar, diga Encerrar voz.",
+  "ajuda-modulos": "Você está nos módulos. Diga Cardiovascular, Respiratório ou Escolher aula.",
   "ajuda-geral": "Você está no FisioAcessível. Diga Continuar de onde parei, Listar aulas ou Minhas Revisões. Para encerrar, diga Encerrar voz.",
+  "ajuda-revisao-aula": "Você está no modo revisão. Diga Ouvir pergunta, Revelar resposta, Próxima pergunta ou Modo completo.",
+  "escolher-modo": "Você pode dizer Modo completo, Modo guiado ou Modo revisão.",
+  "escolher-aula-primeiro": "Diga o nome de uma aula para escolher o modo de estudo.",
+  "modo-completo": "Modo completo.",
+  "modo-guiado": "Modo guiado.",
+  "modo-revisao": "Modo revisão.",
+  "esclarecer-voltar": "Você quer voltar à etapa anterior ou sair da aula? Diga Etapa anterior ou Sair da aula.",
+  "comando-ambiguo": "Há mais de uma opção possível. Você pode dizer o nome completo da aula ou pedir Ajuda?",
+  "primeiro-cartao": "Este é o primeiro cartão da revisão.",
+  "ultimo-cartao": "Este é o último cartão da revisão.",
+  "microfone-pronto": "Pode falar.",
+  "microfone-encerrado": "Sessão de voz encerrada.",
+  "microfone-permissao": "O navegador não autorizou o microfone. Confira a permissão e ative a interação por voz novamente.",
+  "microfone-interrompido": "A escuta foi interrompida. Confira o aviso no painel e ative novamente se for solicitado.",
 } as const;
 
 export type NarrationMessage = keyof typeof narrationMessages;
@@ -66,6 +80,14 @@ export function lessonListNarration(lessons: readonly Lesson[]): NarrationLine {
     id: "interface/listar-aulas",
     text: `Aulas disponíveis. ${lessons.map(({ title }) => title).join(". ")}. Diga Abrir aula e o nome da aula.`,
   };
+}
+
+export function moduleLessonListNarration(module: PhysiologyModule, lessons: readonly Lesson[]): NarrationLine {
+  const available = lessons.filter(({ moduleId }) => moduleId === module.id);
+  const lessonList = available.length
+    ? `Aulas disponíveis. ${available.map(({ title }) => title).join(". ")}. Diga Abrir aula e o nome da aula.`
+    : "Este módulo ainda não tem aulas disponíveis.";
+  return { id: `interface/modulo/${module.id}`, text: `${module.title}. ${lessonList}` };
 }
 
 export function exerciseTitleNarration(lesson: Lesson): NarrationLine {

@@ -1,13 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { lessons, modules } from "../src/data";
 
-const cardiovascular = "/aulas/introducao-ao-sistema-cardiovascular/";
 const respiratoria = "/aulas/mecanica-respiratoria/";
+const aulas = lessons.map(({ id }) => `/aulas/${id}/`);
 const rotas = [
   "/",
   "/modulos/",
-  cardiovascular,
-  respiratoria,
+  ...aulas,
   "/revisao/",
   "/minhas-revisoes/",
   "/simulacoes/",
@@ -71,22 +71,23 @@ test("os módulos oferecem links apenas para as aulas disponíveis", async ({ pa
   await page.goto("/");
   await page.getByRole("link", { name: "Começar a estudar", exact: true }).click();
   await expect(page).toHaveURL(/\/modulos\/$/);
-  await expect(page.getByText("Em desenvolvimento", { exact: true })).toHaveCount(11);
+  const emDesenvolvimento = modules.flatMap(({ topics }) => topics).filter(({ lessonId }) => !lessonId);
+  await expect(page.getByText("Em desenvolvimento", { exact: true })).toHaveCount(emDesenvolvimento.length);
 
   const links = await page.getByRole("main").locator('a[href*="/aulas/"]').evaluateAll(
     (elementos) => [...new Set(elementos.map((elemento) => elemento.getAttribute("href")))].sort(),
   );
-  expect(links).toEqual([cardiovascular, respiratoria]);
+  expect(links).toEqual([...aulas].sort());
 });
 
 test("a navegação entre aulas leva ao próximo conteúdo disponível e permite voltar", async ({ page }) => {
-  await page.goto(cardiovascular);
+  await page.goto(aulas[0]);
   const navegacao = page.getByRole("navigation", { name: "Navegação entre aulas disponíveis" });
 
   await navegacao.getByRole("link", { name: /Próxima aula/ }).click();
-  await expect(page).toHaveURL(/\/aulas\/mecanica-respiratoria\/$/);
+  await expect(page).toHaveURL(aulas[1]);
   await navegacao.getByRole("link", { name: /Aula anterior/ }).click();
-  await expect(page).toHaveURL(/\/aulas\/introducao-ao-sistema-cardiovascular\/$/);
+  await expect(page).toHaveURL(aulas[0]);
 });
 
 test("o primeiro Tab revela o atalho e Enter move o foco ao conteúdo", async ({ page }) => {

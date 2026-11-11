@@ -65,7 +65,7 @@ export default async function LessonPage({ params }: PageProps) {
       <article aria-labelledby="titulo-aula">
         <header className="lesson-header">
           <p className="eyebrow"><BookOpen size={17} aria-hidden="true" />Aula · {module.title}</p>
-          <h1 id="titulo-aula">{lesson.title}</h1>
+          <h1 id="titulo-aula" tabIndex={-1}>{lesson.title}</h1>
           <div className="objective">
             <h2>Objetivo de aprendizagem</h2>
             <p>{lesson.objective}</p>

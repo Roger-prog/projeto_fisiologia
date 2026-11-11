@@ -1,7 +1,8 @@
 import { getAudioActive, subscribeAudioActivity } from "./audio-activity";
-import type { VoiceRecognitionTurn, VoiceRecognizer } from "./voice-recognition";
+import type { VoiceRecognitionTurn, VoiceRecognizer, VoiceTranscript } from "./voice-recognition";
 
 export type VoiceSessionState = "inactive" | "requesting" | "listening" | "processing" | "narrating" | "recovering" | "suspended" | "error" | "unavailable";
+export type VoiceStatusCue = "ready" | "ended" | "permission-denied" | "interrupted";
 
 export type VoiceDiagnosticEvent = {
   type: "session-started" | "session-ended" | "recognition-started" | "recognition-result" | "recognition-ended"
@@ -16,6 +17,7 @@ const permissionWaitMs = 60_000;
 const startupWaitMs = 8_000;
 const releaseWaitMs = 5_000;
 const resumeDelayMs = 250;
+const terminalCueWaitMs = 650;
 const stableListeningMs = 2_000;
 const retryDelaysMs = [500, 1000, 2000, 4000];
 const releaseMessage = "O navegador não confirmou a liberação do microfone. Aguarde e tente ativar novamente. Se o bloqueio persistir, recarregue a página.";
@@ -41,7 +43,9 @@ type Turn = {
   timer?: Timer;
   startedAt?: number;
   stopping: boolean;
-  command?: { transcript: string; href: string };
+  command?: { transcript: VoiceTranscript; href: string };
+  readyProbe?: boolean;
+  onReleased?: () => void;
 };
 type Retry = { code: string; attempt: number; delayMs: number; message: string };
 
@@ -73,9 +77,13 @@ function errorMessage(code: string) {
 
 export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
   onState: (state: VoiceSessionState, message: string) => void;
-  onTranscript: (transcript: string) => void;
+  onTranscript: (transcript: VoiceTranscript) => void;
   onEnd: () => void;
   onDiagnostic?: (event: VoiceDiagnosticEvent) => void;
+  hasReadyAudio?: () => boolean;
+  onReadyAudio?: () => boolean;
+  onListeningReady?: (usedAudio: boolean) => void;
+  onTerminalCue?: (cue: Exclude<VoiceStatusCue, "ready">, message: string, canPlay: boolean) => void;
 }) {
   let current: Turn | null = null;
   let ended = false;
@@ -91,6 +99,10 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
   let unsubscribeAudio: (() => void) | undefined;
   let microphonePermission: PermissionStatus | undefined;
   let observedGrant = false;
+  let readyNoticePending = true;
+  let readyAudioAttempted = false;
+  let readyAudioPlayed = false;
+  let readyCueActive = false;
 
   function report(event: VoiceDiagnosticEvent) {
     callbacks.onDiagnostic?.(event);
@@ -132,17 +144,37 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
     }
   }
 
-  function end(state: "inactive" | "error", message: string) {
+  function end(
+    state: "inactive" | "error",
+    message: string,
+    cue: Exclude<VoiceStatusCue, "ready"> = state === "inactive" ? "ended" : "interrupted",
+    waitForNativeEnd = true,
+  ) {
     if (ended) return;
+    const turn = current;
+    let delivered = false;
+    let timer: Timer | undefined;
+    function deliverCue(released: boolean) {
+      if (delivered) return;
+      delivered = true;
+      clearTimeout(timer);
+      if (turn) turn.onReleased = undefined;
+      callbacks.onTerminalCue?.(cue, message, released && !hidden() && !getAudioActive());
+    }
+    if (turn && waitForNativeEnd && callbacks.onTerminalCue) {
+      turn.onReleased = () => queueMicrotask(() => deliverCue(true));
+      timer = setTimeout(() => deliverCue(false), terminalCueWaitMs);
+    }
     dispose();
     report({ type: "session-ended" });
     emit(state, message);
     callbacks.onEnd();
+    if (!turn || !waitForNativeEnd) deliverCue(!turn);
   }
 
   function denied(code: string) {
     report({ type: "permission-denied", code });
-    end("error", deniedMessage);
+    end("error", deniedMessage, "permission-denied");
   }
 
   function permissionLost() {
@@ -181,6 +213,24 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
     reconcile();
   }
 
+  function requestReadyNotice() {
+    readyNoticePending = true;
+    readyAudioAttempted = false;
+    readyAudioPlayed = false;
+  }
+
+  function shouldPlayReadyAudio() {
+    return readyNoticePending && !readyAudioAttempted && callbacks.hasReadyAudio?.();
+  }
+
+  function playReadyAudio() {
+    readyAudioAttempted = true;
+    readyCueActive = true;
+    readyAudioPlayed = callbacks.onReadyAudio?.() ?? false;
+    if (!getAudioActive()) readyCueActive = false;
+    return readyCueActive;
+  }
+
   function scheduleTurn() {
     if (ended || current || restartTimer !== undefined || hidden() || getAudioActive()) return;
     if (retry) {
@@ -192,6 +242,12 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
     }
     restartTimer = setTimeout(() => {
       restartTimer = undefined;
+      if (ended || hidden() || getAudioActive()) return;
+      if (permissionLost()) {
+        denied("permission-denied");
+        return;
+      }
+      if (!retry && hasListened && shouldPlayReadyAudio() && playReadyAudio()) return;
       beginTurn();
     }, retry?.delayMs ?? resumeDelayMs);
   }
@@ -206,7 +262,7 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
     // A timer cannot prove native release. Wait for end and retain the adapter's lease otherwise.
     turn.timer = setTimeout(() => {
       report({ type: "recognition-error", code: "release-timeout" });
-      end("error", releaseMessage);
+      end("error", releaseMessage, "interrupted", false);
     }, releaseWaitMs);
   }
 
@@ -222,10 +278,19 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
     if (ended) return;
     const wasAudioActive = audioActive;
     audioActive = getAudioActive();
-    if (wasAudioActive !== audioActive) report({ type: audioActive ? "narration-started" : "narration-ended" });
+    if (wasAudioActive !== audioActive) {
+      if (!readyCueActive) {
+        report({ type: audioActive ? "narration-started" : "narration-ended" });
+        if (audioActive) requestReadyNotice();
+      }
+      if (!audioActive) readyCueActive = false;
+    }
 
     const isHidden = hidden();
-    if (isHidden && !suspended) report({ type: "suspended" });
+    if (isHidden && !suspended) {
+      report({ type: "suspended" });
+      requestReadyNotice();
+    }
     suspended = isHidden;
     if (isHidden || audioActive) {
       clearRestart();
@@ -235,7 +300,7 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
       }
       if (isHidden && current?.stopping) clearTurnTimer(current);
       if (isHidden) emit("suspended", "O microfone está suspenso. A escuta pode voltar quando você retornar à página.");
-      else emit("narrating", "A escuta está pausada durante o áudio.");
+      else emit("narrating", readyCueActive ? "Aviso de escuta em reprodução." : "A escuta está pausada durante o áudio.");
     }
     if (!isHidden && current?.stopping) waitForRelease(current);
     if (!isHidden && !audioActive) scheduleTurn();
@@ -259,6 +324,7 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
       end("error", errorMessage(code));
       return;
     }
+    requestReadyNotice();
     retry = {
       code,
       attempt: failures,
@@ -290,10 +356,15 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
   }
 
   function onTurnEnd(turn: Turn) {
-    if (current !== turn) return;
+    if (current !== turn) {
+      turn.onReleased?.();
+      return;
+    }
     clearTimeout(turn.timer);
     current = null;
     report({ type: "recognition-ended" });
+
+    if (turn.readyProbe && !hidden() && !getAudioActive() && !permissionLost() && shouldPlayReadyAudio() && playReadyAudio()) return;
 
     const command = turn.command;
     turn.command = undefined;
@@ -346,7 +417,17 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
           turn.startedAt = Date.now();
           clearTurnTimer(turn);
           report({ type: "recognition-started" });
+          if (shouldPlayReadyAudio()) {
+            turn.readyProbe = true;
+            emit("processing", "Preparando o aviso de escuta.");
+            stopTurn(turn);
+            return;
+          }
           emit("listening", "Diga um comando curto em português brasileiro.");
+          if (readyNoticePending) {
+            readyNoticePending = false;
+            callbacks.onListeningReady?.(readyAudioPlayed);
+          }
         },
         onFinal: (transcript) => {
           if (!acceptsInput() || turn.startedAt === undefined) return;
@@ -360,6 +441,7 @@ export function createVoiceSession(recognizer: VoiceRecognizer, callbacks: {
           }
           failures = 0;
           quietTurns = 0;
+          requestReadyNotice();
           turn.command = { transcript, href: window.location.href };
           report({ type: "recognition-result" });
           emit("processing", "Comando recebido.");

@@ -2,7 +2,7 @@
 
 Plataforma de estudos de Fisiologia Humana para monitoria universitária, com foco inicial em Engenharia Biomédica. As aulas combinam explicações em português brasileiro, leitura em voz alta, diagramas descritos, exercícios, revisões espaçadas e simulações.
 
-O catálogo reúne 13 tópicos de dois sistemas. Nesta versão, estão disponíveis **Introdução ao Sistema Cardiovascular** e **Mecânica Respiratória**. Os demais tópicos aparecem como “Em desenvolvimento”.
+O catálogo reúne 13 tópicos de dois sistemas e seis aulas publicadas. O módulo cardiovascular inclui introdução, músculo cardíaco, ciclo cardíaco, regulação do bombeamento e débito cardíaco. O módulo respiratório inclui Mecânica Respiratória.
 
 ## Executar no computador
 
@@ -26,8 +26,8 @@ A prévia serve o diretório `out/` em [127.0.0.1:4173](http://127.0.0.1:4173).
 
 - Em **Modo completo**, consulte a aula integral, os exemplos, as descrições sequenciais dos diagramas e os exercícios.
 - Em **Modo guiado**, leia ou ouça uma etapa por vez. Use os links de navegação para voltar ou avançar e marque as etapas concluídas quando quiser. **Continuar estudando**, na página inicial, volta à última aula ou à seção registrada. No modo completo, a seção é registrada quando você segue um link para ela.
-- Em **Interação por voz**, ative o microfone para abrir uma aula, retomar uma etapa, navegar, ouvir um trecho ou responder a exercícios em português brasileiro. **Ajuda** apresenta os comandos da tela atual. A seleção por voz só é registrada após um comando separado de confirmação.
-- A **Leitura em voz alta** oferece MP3 gerados com voz neural em português brasileiro nas duas aulas piloto. Selecione a voz e a velocidade antes de começar. Use **Pausar**, **Continuar**, **Interromper** ou **Voltar ao começo**. No modo guiado, **Repetir explicação** reinicia o trecho. O texto da aula e as vozes do navegador continuam disponíveis. [Configuração e testes da narração](docs/narracao-neural.md)
+- Em **Interação por voz**, acione o botão de ativação pelo atalho de teclado, pelo toque ou pela tecnologia assistiva do dispositivo. Escolha como receber os avisos de escuta. Diga **Mostrar módulos**, **Continuar estudando** ou **Ajuda**. Abrir uma aula pelo nome inicia no Modo Completo e apresenta os três modos. Para registrar uma resposta, escolha a alternativa e confirme em outro turno.
+- A **Leitura em voz alta** oferece narração neural em português brasileiro nas seis aulas, com os mesmos arquivos para trechos em comum nos modos Completo e Guiado. Selecione a voz e a velocidade antes de começar. Use **Pausar**, **Continuar**, **Interromper** ou **Voltar ao começo**. [Configuração da narração](docs/narracao-neural.md) · [Auditoria dos arquivos](docs/auditoria-narracao.md)
 - Em **Exercícios de fixação**, confira a resposta, leia a explicação e consulte o trecho da aula relacionado. Ao concluir, veja o desempenho por conceito e refaça uma questão ou a atividade inteira.
 - Em **Modo revisão**, consulte os resumos e tente recuperar as respostas antes de abrir os cartões. **Minhas Revisões** reúne a agenda, os itens que precisam de prática, o histórico e sessões curtas com cartões e questões que você já respondeu.
 - Em **Simulações**, compare duas frequências cardíacas com valores numéricos e batimentos sintéticos opcionais. Na simulação respiratória, percorra quatro fases da respiração tranquila e acompanhe a explicação sobre diafragma, volume, pressão e fluxo de ar.
@@ -41,14 +41,16 @@ O site usa a chave `fisioacessivel:study:v1` no `localStorage` da origem atual. 
 
 ### Comandos de voz
 
-O reconhecimento usa a Web Speech API quando disponível. A permissão é solicitada pelo navegador após a ativação explícita. A sessão pausa a escuta enquanto o site fala ou fica em segundo plano, e tenta retomar quando o navegador permite. A preferência por voz é salva separadamente da autorização do microfone. O processamento pode depender do serviço de voz do navegador e o site não guarda gravações ou transcrições. [Comandos, privacidade, diagnóstico e roteiro de testes](docs/interacao-por-voz.md)
+O reconhecimento usa a Web Speech API quando disponível. O navegador pode solicitar permissão após a ativação explícita. A escuta pausa durante a narração e quando a página fica em segundo plano, com retomada quando permitida. A interpretação aceita frases equivalentes e pequenas variações nos comandos de navegação. O navegador pode processar a fala em um serviço remoto. O diagnóstico padrão registra eventos técnicos em memória e a amostra temporária de transcrição exige uma opção adicional. [Comandos, privacidade e testes manuais](docs/interacao-por-voz.md)
 
 ## Testar
 
 ```sh
 npm run typecheck
+npm run audio:audit
 npx playwright install chromium
 npm run build
+npm run audio:audit -- --export
 npm run test:e2e
 ```
 
@@ -67,7 +69,7 @@ WCAG 2.2 AA é a meta de desenvolvimento. Os testes automatizados cobrem critér
 ## Publicar a atualização
 
 1. Na Vercel, use o projeto existente conectado ao repositório e mantenha a configuração do Next.js. Confira o Node.js 24 nas configurações de build.
-2. Crie uma prévia com a atualização e valide a página inicial, as rotas antigas, o acesso direto a uma etapa guiada, a agenda de revisões, as simulações e a reprodução dos MP3. [Roteiro da narração na Vercel](docs/narracao-neural.md#validação)
+2. Crie uma prévia com a atualização. Confira o manifesto e a reprodução no Modo Completo, especialmente nas quatro aulas cardiovasculares que receberam novas faixas. Valide também uma etapa guiada, a agenda de revisões e as simulações. [Roteiro da narração na Vercel](docs/narracao-neural.md#validação)
 3. Publique na origem de produção existente para que o navegador possa carregar o progresso salvo nesse domínio. As prévias em outros domínios têm armazenamento separado.
 
 Para Cloudflare Pages, selecione **Next.js (Static HTML Export)**, use `npm run build` e informe `out` como diretório de saída. Também é possível enviar `out/` pelo Direct Upload. [Next.js na Vercel](https://vercel.com/docs/frameworks/full-stack/nextjs) · [Cloudflare Pages](https://developers.cloudflare.com/pages/framework-guides/nextjs/deploy-a-static-nextjs-site/) · [Exportação estática do Next.js](https://nextjs.org/docs/app/guides/static-exports)
@@ -90,10 +92,11 @@ Use `npm run build` ao gerar a exportação no Windows. O pós-build corrige os 
 | `src/lib/study-storage.ts` | Leitura do progresso anterior e armazenamento do formato estendido |
 | `src/lib/lesson-steps.ts` e `src/lib/lesson-speech.ts` | Organização das etapas e texto da narração |
 | `src/lib/review-schedule.ts` e `src/lib/speech-playback.ts` | Intervalos de revisão e síntese de voz |
+| `src/lib/narration-catalog.ts`, `scripts/` e `public/audio/` | Catálogo, geração, auditoria e arquivos neurais |
 | `public/diagrams/` e `public/licencas/` | Diagramas das aulas e avisos de licenças |
 | `tests/` | Suíte Playwright |
 
-Para disponibilizar uma aula, crie os dados tipados, adicione a aula à lista em `src/data/index.ts` e associe o `lessonId` ao tópico correspondente em `src/data/modules.ts`. A exportação gera a rota e a navegação entre as aulas disponíveis segue a ordem da lista. Preserve os IDs das aulas, questões e opções já usadas, pois o progresso usa esses identificadores.
+Para disponibilizar uma aula, crie os dados tipados, adicione a aula à lista em `src/data/index.ts` e associe o `lessonId` ao tópico correspondente em `src/data/modules.ts`. Gere as faixas que faltarem, inclua o manifesto com os MP3 e rode a auditoria. Preserve os IDs das aulas, questões e opções já usadas, pois o progresso usa esses identificadores.
 
 Os modos de estudo usam os mesmos dados de aula. Cada seção tem objetivo, explicação e resumo, e os exemplos ficam vinculados à seção que os explica. A agenda identifica cartões e questões pelo ID estável do item e da aula. O reprodutor usa o contrato `AudioPlayback` para arquivos e síntese do navegador. [Como adicionar gravações](docs/narracao-neural.md#adicionar-ou-atualizar-narrações)
 

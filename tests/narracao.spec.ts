@@ -248,7 +248,7 @@ test("atualiza as vozes nativas instaladas e permite escolher uma delas", async 
   await expect.poll(chamadas).toEqual(["natural-br", "local-br"]);
 });
 
-test("exportação serve e decodifica as gravações incluídas nas duas aulas piloto", async ({ page, request }) => {
+test("exportação inicia a narração neural em todas as aulas no modo completo e no guiado", async ({ page, request }) => {
   type ManifestoPublicado = {
     version: number;
     voices: { id: string; language: string; kind: string }[];
@@ -260,22 +260,28 @@ test("exportação serve e decodifica as gravações incluídas nas duas aulas p
   expect(manifesto.version).toBe(1);
 
   await monitorarReproducaoNativa(page);
-  for (const aula of lessons) {
-    const etapa = getLessonSteps(aula)[0];
-    const clipes = getStepNarrationClips(aula, etapa);
+  async function verificarPrimeiraFaixa(rota: string, clipes: readonly { id: string }[], guiado: boolean) {
     const voz = manifesto.voices.find(({ id, language, kind }) => language === "pt-BR" && kind === "neural"
       && clipes.every((clipe) => manifesto.clips[clipe.id]?.[id]?.src));
-    expect(voz).toBeDefined();
+    expect(voz, `Cobertura neural de ${rota}`).toBeDefined();
     const faixa = manifesto.clips[clipes[0].id][voz!.id].src;
     expect(faixa).toMatch(/^\/audio\/[^?]+\.mp3$/);
-    await page.goto(guidedLessonHref(aula.id, etapa.id));
-    const player = page.getByRole("region", { name: "Leitura da etapa em voz alta" });
+    await page.goto(rota);
+    const player = page.getByRole("region", {
+      name: guiado ? "Leitura da etapa em voz alta" : "Leitura em voz alta", exact: true,
+    });
     await expect(player.getByText(/gravações com voz neural.*inteligência artificial/i)).toBeVisible();
     expect(await lerReproducaoNativa(page)).toEqual([]);
 
-    await player.getByRole("button", { name: "Ouvir a etapa", exact: true }).press("Enter");
+    await player.getByRole("button", { name: guiado ? "Ouvir a etapa" : "Ouvir a aula", exact: true }).press("Enter");
     await expect.poll(async () => (await lerReproducaoNativa(page)).at(-1)?.tempo ?? 0).toBeGreaterThan(0.1);
     expect((await lerReproducaoNativa(page)).at(-1)).toMatchObject({ caminho: faixa, tocando: true });
     await player.getByRole("button", { name: "Interromper", exact: true }).press("Enter");
+  }
+
+  for (const aula of lessons) {
+    const etapa = getLessonSteps(aula)[0];
+    await verificarPrimeiraFaixa(`/aulas/${aula.id}/`, getLessonNarrationClips(aula), false);
+    await verificarPrimeiraFaixa(guidedLessonHref(aula.id, etapa.id), getStepNarrationClips(aula, etapa), true);
   }
 });

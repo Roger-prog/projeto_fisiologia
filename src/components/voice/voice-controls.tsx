@@ -4,7 +4,7 @@ import { Mic, MicOff, Square, Volume2 } from "lucide-react";
 import { useId, useRef, useSyncExternalStore } from "react";
 import { useStudy } from "@/components/study/study-provider";
 import { getAudioActive, subscribeAudioActivity } from "@/lib/audio-activity";
-import { setStudyPreferences } from "@/lib/study-storage";
+import { setStudyPreferences, type VoiceFeedback } from "@/lib/study-storage";
 import type { VoiceSessionState } from "@/lib/voice-session";
 import { useVoiceControls } from "./voice-provider";
 import styles from "./voice-controls.module.css";
@@ -25,13 +25,17 @@ function getServerAudioActive() {
   return false;
 }
 
+const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 0 });
+
 export function VoiceControls() {
   const controls = useVoiceControls();
-  const { preferVoice } = useStudy().preferences;
+  const { preferVoice, voiceFeedback } = useStudy().preferences;
   const titleId = useId();
   const statusId = useId();
   const privacyId = useId();
   const preferenceId = useId();
+  const cueDescriptionId = useId();
+  const transcriptDescriptionId = useId();
   const messageId = useId();
   const toggle = useRef<HTMLButtonElement>(null);
   const options = useRef<HTMLButtonElement>(null);
@@ -39,17 +43,19 @@ export function VoiceControls() {
   if (!controls) return null;
 
   const { session, feedback, diagnostics } = controls;
-  const { active, state, support, message } = session;
+  const { active, state, support, message, announcement } = session;
   const announcedFeedback = feedback?.announce ? [
     feedback.notice,
     feedback.message,
     active && feedback.canUseBrowser ? "Diga Usar voz do navegador para ouvir esta mensagem." : undefined,
   ].filter(Boolean).join(" ") : "";
-  const liveMessage = state === "error" || state === "requesting"
+  const liveMessage = state === "requesting"
     ? message
-    : feedback ? announcedFeedback : state === "inactive" ? message : "";
+    : state === "error" || state === "inactive"
+      ? (audioActive ? "" : announcement || announcedFeedback)
+      : announcedFeedback || (audioActive ? "" : announcement);
   const Icon = active ? MicOff : Mic;
-  const canStopAudio = audioActive && (active || feedback?.announce === false);
+  const canStopAudio = audioActive && (active || state === "error" || feedback?.announce === false);
   const showMessage = Boolean(message && (state === "error" || message !== feedback?.message));
   const describesRecovery = state === "recovering" || state === "suspended";
   const activeDescription = describesRecovery && showMessage ? `${statusId} ${messageId}` : statusId;
@@ -109,7 +115,26 @@ export function VoiceControls() {
             Lembrar preferência por interação por voz
           </label>
           <p id={preferenceId} className="sr-only">
-            A preferência destaca o botão. Acione Ativar interação por voz quando quiser iniciar o microfone.
+            A preferência destaca o botão. Para ativar o microfone, use Enter ou Espaço, o controle de voz do dispositivo ou seu acionador.
+          </p>
+          <label className={styles.cuePreference}>
+            <span>Avisos do microfone</span>
+            <select
+              className="study-select"
+              value={voiceFeedback}
+              aria-describedby={cueDescriptionId}
+              onChange={(event) => {
+                setStudyPreferences({ voiceFeedback: event.currentTarget.value as VoiceFeedback });
+                if (active) session.prepareSignal();
+              }}
+            >
+              <option value="earcon">Sinais sonoros</option>
+              <option value="spoken">Mensagens faladas</option>
+              <option value="screen-reader">Leitor de tela</option>
+            </select>
+          </label>
+          <p id={cueDescriptionId} className="sr-only">
+            O aviso indica quando você pode falar. Em caso de falha no som, o leitor de tela recebe a mensagem.
           </p>
         </div>
         {(message || feedback) && (
@@ -143,16 +168,50 @@ export function VoiceControls() {
             <p>Até 40 eventos técnicos mantidos em memória nesta aba até recarregar a página.</p>
             {diagnostics.length > 0 ? (
               <ol className="list-decimal ps-6">
-                {diagnostics.map(({ timestamp, type, code, attempt, delayMs }, index) => (
+                {diagnostics.map(({ timestamp, type, code, attempt, delayMs, interpretation }, index) => (
                   <li key={`${timestamp}-${type}-${index}`} data-voice-event={type}>
                     <time dateTime={timestamp}>{timestamp}</time>{" "}<code>{type}</code>
                     {code && <> · <code>{code}</code></>}
                     {attempt !== undefined && <> · tentativa {attempt}</>}
                     {delayMs !== undefined && <> · {delayMs} ms</>}
+                    {interpretation && (
+                      <dl className={styles.interpretation}>
+                        {interpretation.intent && <div><dt>Intenção</dt><dd>{interpretation.intent}</dd></div>}
+                        <div><dt>Correspondência</dt><dd>{interpretation.match}</dd></div>
+                        {interpretation.reason && <div><dt>Motivo</dt><dd>{interpretation.reason}</dd></div>}
+                        {interpretation.alternatives.length > 0 && (
+                          <div><dt>Alternativas</dt><dd>{interpretation.alternatives.join(", ")}</dd></div>
+                        )}
+                        {interpretation.confidence !== undefined && (
+                          <div><dt>Confiança da transcrição</dt><dd>{percent.format(interpretation.confidence)}</dd></div>
+                        )}
+                      </dl>
+                    )}
                   </li>
                 ))}
               </ol>
             ) : <p>Nenhum evento registrado.</p>}
+            <label className={styles.preference}>
+              <input
+                type="checkbox"
+                checked={controls.transcriptDiagnosticsEnabled}
+                aria-describedby={transcriptDescriptionId}
+                onChange={(event) => controls.setTranscriptDiagnosticsEnabled(event.currentTarget.checked)}
+              />
+              Mostrar última transcrição temporariamente
+            </label>
+            <p id={transcriptDescriptionId}>
+              Ao ativar, a última frase reconhecida fica visível nesta aba por até 30 segundos. Use uma frase de teste sem dados pessoais.
+            </p>
+            {controls.transcriptSample && (
+              <div className={styles.interpretation} data-voice-transcript>
+                <p><strong>Última transcrição</strong></p>
+                <p>{controls.transcriptSample.text}</p>
+                {controls.transcriptSample.confidence !== undefined && (
+                  <p>Confiança da transcrição: {percent.format(controls.transcriptSample.confidence)}.</p>
+                )}
+              </div>
+            )}
           </details>
         )}
         <p role="status" className="sr-only">{liveMessage}</p>

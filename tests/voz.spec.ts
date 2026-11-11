@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { lessons } from "../src/data";
-import { guidedLessonHref } from "../src/lib/lesson-steps";
+import { getLessonSteps, guidedLessonHref } from "../src/lib/lesson-steps";
 import {
   aguardarFaixaNativa,
   arquivoDeTeste,
@@ -16,7 +16,7 @@ import {
   vozPrincipal,
 } from "./fixtures/narracao";
 
-type ResultadoSimulado = { resultIndex: number; results: { isFinal: boolean; 0: { transcript: string } }[] };
+type ResultadoSimulado = { resultIndex: number; results: { isFinal: boolean; 0: { transcript: string; confidence?: number } }[] };
 type EstadoSimulado = {
   escutando: boolean;
   narrando: boolean;
@@ -28,7 +28,7 @@ type EstadoSimulado = {
 };
 type VozSimulada = {
   estado: () => EstadoSimulado;
-  dizer: (texto: string, final?: boolean, atrasado?: boolean) => void;
+  dizer: (texto: string, final?: boolean, atrasado?: boolean, confianca?: number) => void;
   falhar: (codigo: string) => void;
   encerrarReconhecimento: () => void;
   revogarPermissao: () => void;
@@ -41,14 +41,16 @@ type OpcoesDeVoz = {
   recusarSegundoInicio?: boolean;
   bloquearInicioDeAudio?: boolean;
   manterManifesto?: boolean;
+  emularSinais?: boolean;
 };
 
 async function simularAPIsDeVoz(page: Page, opcoes: OpcoesDeVoz = {}) {
   if (!opcoes.manterManifesto) await servirManifestoSemClipes(page);
-  await page.addInitScript(({ modo, atrasoDeFimAposAbortar = 0, recusarSegundoInicio, bloquearInicioDeAudio }) => {
+  await page.addInitScript(({ modo, atrasoDeFimAposAbortar = 0, recusarSegundoInicio, bloquearInicioDeAudio, emularSinais }) => {
     Object.defineProperty(window, "SpeechRecognition", { value: undefined, configurable: true });
     Object.defineProperty(window, "webkitSpeechRecognition", { value: undefined, configurable: true });
     if (modo === "indisponivel") return;
+    if (!emularSinais) Object.defineProperty(window, "AudioContext", { value: undefined, configurable: true });
 
     let atual: Reconhecimento | null = null;
     let liberando: Reconhecimento | null = null;
@@ -88,7 +90,7 @@ async function simularAPIsDeVoz(page: Page, opcoes: OpcoesDeVoz = {}) {
       start() {
         inicios.push({ idioma: this.lang, continua: this.continuous, parciais: this.interimResults, alternativas: this.maxAlternatives });
         instantesDeInicio.push(Date.now());
-        if (atual || liberando || falaAtual || faixaEmReproducao()) {
+        if (atual || liberando || falaAtual || faixaEmReproducao() || Reflect.get(window, "sinalAtivoDeTeste")) {
           sobreposicoes.push("Escuta iniciada com outra operação de voz em andamento.");
           throw new DOMException("Operação de voz ainda em andamento.", "InvalidStateError");
         }
@@ -157,11 +159,11 @@ async function simularAPIsDeVoz(page: Page, opcoes: OpcoesDeVoz = {}) {
 
     const voz: VozSimulada = {
       estado: () => ({ escutando: Boolean(atual), narrando: Boolean(falaAtual), narracaoPausada, inicios, instantesDeInicio, falas, sobreposicoes }),
-      dizer(texto, final = true, atrasado = false) {
+      dizer(texto, final = true, atrasado = false, confianca) {
         const reconhecimento = atual;
         const entregar = atrasado ? entregarResultadoAnterior : reconhecimento?.onresult;
         if (!entregar) throw new Error("O teste tentou falar sem uma escuta ativa.");
-        entregar({ resultIndex: 0, results: [{ isFinal: final, 0: { transcript: texto } }] });
+        entregar({ resultIndex: 0, results: [{ isFinal: final, 0: { transcript: texto, confidence: confianca } }] });
         if (final && !atrasado && !reconhecimento?.continuous) reconhecimento?.terminar();
       },
       falhar(codigo) {
@@ -190,18 +192,70 @@ async function simularAPIsDeVoz(page: Page, opcoes: OpcoesDeVoz = {}) {
   }, opcoes);
 }
 
+async function simularSinaisDoMicrofone(page: Page) {
+  await page.addInitScript(() => {
+    const sinais: { frequencia: number; escutando: boolean }[] = [];
+    Reflect.set(window, "sinaisDoMicrofone", sinais);
+
+    class AudioContextSimulado {
+      state = "suspended";
+      destination = {};
+
+      get currentTime() { return performance.now() / 1000; }
+      async resume() { this.state = "running"; }
+      async close() { this.state = "closed"; }
+      createGain() {
+        return { gain: { setValueAtTime() {}, linearRampToValueAtTime() {} }, connect() {}, disconnect() {} };
+      }
+
+      createOscillator() {
+        let frequencia = 0;
+        let fim: ReturnType<typeof setTimeout> | undefined;
+        const contexto = this;
+        const oscilador = {
+          frequency: { setValueAtTime(valor: number) { frequencia = valor; }, linearRampToValueAtTime() {} },
+          onended: null as (() => void) | null,
+          connect() {},
+          disconnect() {},
+          start() {
+            const voz = Reflect.get(window, "vozSimulada") as VozSimulada;
+            sinais.push({ frequencia, escutando: voz.estado().escutando });
+            Reflect.set(window, "sinalAtivoDeTeste", true);
+          },
+          stop(quando?: number) {
+            clearTimeout(fim);
+            const concluir = () => {
+              Reflect.set(window, "sinalAtivoDeTeste", false);
+              oscilador.onended?.();
+            };
+            if (quando === undefined) concluir();
+            else fim = setTimeout(concluir, Math.max(0, (quando - contexto.currentTime) * 1000));
+          },
+        };
+        return oscilador;
+      }
+    }
+
+    Object.defineProperty(window, "AudioContext", { value: AudioContextSimulado, configurable: true });
+  });
+}
+
 const painel = (page: Page) => page.locator("[data-voice-state]");
 const feedback = (page: Page) => page.locator("[data-voice-feedback]");
 const ativar = (page: Page) => page.getByRole("button", { name: "Ativar interação por voz", exact: true });
+
+function lerSinais(page: Page) {
+  return page.evaluate(() => Reflect.get(window, "sinaisDoMicrofone") as { frequencia: number; escutando: boolean }[]);
+}
 
 function estado(page: Page) {
   return page.evaluate(() => (Reflect.get(window, "vozSimulada") as VozSimulada).estado());
 }
 
-function dizer(page: Page, texto: string, final = true, atrasado = false) {
-  return page.evaluate(({ texto, final, atrasado }) => {
-    (Reflect.get(window, "vozSimulada") as VozSimulada).dizer(texto, final, atrasado);
-  }, { texto, final, atrasado });
+function dizer(page: Page, texto: string, final = true, atrasado = false, confianca?: number) {
+  return page.evaluate(({ texto, final, atrasado, confianca }) => {
+    (Reflect.get(window, "vozSimulada") as VozSimulada).dizer(texto, final, atrasado, confianca);
+  }, { texto, final, atrasado, confianca });
 }
 
 function falhar(page: Page, codigo: string) {
@@ -235,10 +289,10 @@ async function esperarEscuta(page: Page) {
   await expect.poll(async () => (await estado(page)).escutando).toBe(true);
 }
 
-async function executarComando(page: Page, frase: string) {
+async function executarComando(page: Page, frase: string, confianca?: number) {
   await esperarEscuta(page);
   const iniciosAntes = (await estado(page)).inicios.length;
-  await dizer(page, frase);
+  await dizer(page, frase, true, false, confianca);
   await expect.poll(async () => {
     const atual = await estado(page);
     return atual.narrando || (atual.escutando && atual.inicios.length > iniciosAntes);
@@ -293,7 +347,7 @@ test("executa dez comandos com uma ativação, retomando etapas e navegando entr
   expect((await estado(page)).inicios[0]).toEqual({ idioma: "pt-BR", continua: false, parciais: false, alternativas: 1 });
   await executarComando(page, "Preciso de ajuda");
   await expect(feedback(page)).toContainText("Diga");
-  await executarComando(page, "Continuar de onde parei");
+  await executarComando(page, "Continuar");
   await expect(page).toHaveURL(`${respiratoria}inspiracao/`);
   await executarComando(page, "Próxima");
   await expect(page).toHaveURL(`${respiratoria}expiracao/`);
@@ -319,7 +373,8 @@ test("executa dez comandos com uma ativação, retomando etapas e navegando entr
   await executarComando(page, "Parar leitura");
   await expect(player.getByText("Leitura interrompida.", { exact: true })).toBeVisible();
   await executarComando(page, "Abrir aula de Introdução ao Sistema Cardiovascular");
-  await expect(page).toHaveURL("/aulas/introducao-ao-sistema-cardiovascular/guiado/introducao/");
+  await expect(page).toHaveURL("/aulas/introducao-ao-sistema-cardiovascular/");
+  await expect(feedback(page)).toContainText("Modo completo, Modo guiado ou Modo revisão");
   await executarComando(page, "Minhas Revisões");
   await expect(page).toHaveURL("/minhas-revisoes/");
   expect((await estado(page)).inicios.length).toBeGreaterThanOrEqual(11);
@@ -336,6 +391,118 @@ test("executa dez comandos com uma ativação, retomando etapas e navegando entr
   expect(final.escutando).toBe(false);
   expect(final.sobreposicoes).toEqual([]);
   expect(final.falas.every(({ idioma }) => idioma === "pt-BR")).toBe(true);
+});
+
+test("abre módulos, resolve Voltar e troca entre os três modos sem perder o progresso", async ({ page }) => {
+  const aula = lessons.find(({ id }) => id === "mecanica-respiratoria")!;
+  const pressoes = getLessonSteps(aula).find(({ id }) => id === "pressoes")!;
+  const pergunta = aula.questions[0];
+  const concluidaEm = "2026-11-01T13:00:00.000Z";
+  const rotaCompleta = `/aulas/${aula.id}/`;
+  const rotaGuiada = guidedLessonHref(aula.id, pressoes.id);
+  await simularAPIsDeVoz(page);
+  await page.addInitScript(({ aulaId, etapaId, perguntaId, resposta, concluidaEm }) => {
+    const chave = "fisioacessivel:study:v1";
+    if (!localStorage.getItem(chave)) localStorage.setItem(chave, JSON.stringify({
+      progress: {
+        lessons: {
+          [aulaId]: {
+            lastGuidedStep: etapaId,
+            completedSteps: { [etapaId]: concluidaEm },
+            responses: { [perguntaId]: { optionId: resposta, answeredAt: concluidaEm } },
+          },
+        },
+      },
+    }));
+  }, { aulaId: aula.id, etapaId: pressoes.id, perguntaId: pergunta.id, resposta: pergunta.correctOptionId, concluidaEm });
+  await page.goto("/");
+  await ativar(page).press("Enter");
+
+  await executarComando(page, "Mostrar módulos");
+  await expect(page).toHaveURL("/modulos/");
+  await executarComando(page, "Quero estudar o coração");
+  await expect(page).toHaveURL("/modulos/#cardiovascular");
+  await expect(page.locator("#cardiovascular")).toBeFocused();
+  await executarComando(page, "Quais aulas tem?");
+  await expect(page).toHaveURL("/modulos/#cardiovascular");
+  await expect(feedback(page)).toContainText(/ciclo cardíaco/i);
+  await expect(feedback(page)).not.toContainText(aula.title);
+
+  await executarComando(page, `Abrir aula de ${aula.title}`);
+  await expect(page).toHaveURL(rotaCompleta);
+  await expect(page.getByRole("heading", { name: aula.title, level: 1 })).toBeFocused();
+  await expect(feedback(page)).toContainText("Modo completo, Modo guiado ou Modo revisão");
+  await executarComando(page, "Explica por partes");
+  await expect(page).toHaveURL(rotaGuiada);
+  await expect(page.getByRole("button", { name: "Marcar etapa como concluída" })).toHaveAttribute("aria-pressed", "true");
+
+  await executarComando(page, "Quero voltar");
+  await expect(page).toHaveURL(rotaGuiada);
+  await expect(feedback(page)).toContainText("etapa anterior ou sair da aula");
+  await executarComando(page, "Primeira opção");
+  await expect(page).toHaveURL(guidedLessonHref(aula.id, "ventilacao"));
+  await executarComando(page, "Quero a aula inteira");
+  await expect(page).toHaveURL(`${rotaCompleta}#ventilacao`);
+
+  await executarComando(page, "Vamos fazer uma revisão");
+  await expect(page).toHaveURL(`/revisao/#revisao-${aula.id}`);
+  const revisao = page.locator(`#revisao-${aula.id}`);
+  await expect(revisao).toBeFocused();
+  const [primeiro, segundo] = aula.quickReview;
+  const cartao = revisao.locator(`#cartao-${primeiro.id}`);
+  await executarComando(page, "Ouvir pergunta");
+  await expect(feedback(page)).toContainText(primeiro.prompt);
+  await expect(cartao.getByText(primeiro.answer, { exact: true })).toBeHidden();
+  await executarComando(page, "Revelar a resposta");
+  await expect(cartao.getByText(primeiro.answer, { exact: true })).toBeVisible();
+  await expect(feedback(page)).toContainText(primeiro.answer);
+  await executarComando(page, "Próxima pergunta");
+  await expect(revisao.locator(`#cartao-${segundo.id}`)).toBeFocused();
+  await expect(feedback(page)).toContainText(segundo.prompt);
+
+  await executarComando(page, "Voltar para o modo completo");
+  await expect(page).toHaveURL(`${rotaCompleta}#ventilacao`);
+  await executarComando(page, "Voltar ao início");
+  await expect(page).toHaveURL("/");
+  await executarComando(page, "Onde eu parei?");
+  await expect(page).toHaveURL(`${rotaCompleta}#ventilacao`);
+  expect(await respostaSalva(page, aula.id, pergunta.id)).toBe(pergunta.correctOptionId);
+  expect(await page.evaluate(({ aulaId, etapaId }) => {
+    const dados = JSON.parse(localStorage.getItem("fisioacessivel:study:v1") ?? "{}");
+    return dados.progress?.lessons?.[aulaId]?.completedSteps?.[etapaId];
+  }, { aulaId: aula.id, etapaId: pressoes.id })).toBe(concluidaEm);
+  expect((await estado(page)).inicios.length).toBeGreaterThanOrEqual(15);
+  expect((await estado(page)).sobreposicoes).toEqual([]);
+});
+
+test("sinaliza escuta após a ativação e após narrar, sem captar o próprio aviso", async ({ page }) => {
+  await simularAPIsDeVoz(page, { emularSinais: true });
+  await simularSinaisDoMicrofone(page);
+  await page.goto("/");
+  const avisos = page.getByRole("combobox", { name: "Avisos do microfone", exact: true });
+  await expect(avisos).toHaveValue("earcon");
+  await expect(avisos.locator("option")).toHaveText(["Sinais sonoros", "Mensagens faladas", "Leitor de tela"]);
+  expect(await lerSinais(page)).toEqual([]);
+  expect((await estado(page)).inicios).toEqual([]);
+
+  await ativar(page).press("Enter");
+  await esperarEscuta(page);
+  expect(await lerSinais(page)).toEqual([{ frequencia: 680, escutando: false }]);
+  await executarComando(page, "Ajuda");
+  expect(await lerSinais(page)).toEqual([
+    { frequencia: 680, escutando: false }, { frequencia: 680, escutando: false },
+  ]);
+
+  await falhar(page, "no-speech");
+  await esperarEscuta(page);
+  expect(await lerSinais(page)).toHaveLength(2);
+
+  await page.evaluate(() => (Reflect.get(window, "vozSimulada") as VozSimulada).revogarPermissao());
+  await expect(painel(page)).toHaveAttribute("data-voice-state", "error");
+  await expect.poll(async () => (await lerSinais(page)).at(-1)).toEqual({ frequencia: 440, escutando: false });
+  await expect(painel(page).getByRole("status")).toContainText("O navegador não autorizou o microfone");
+  expect((await estado(page)).sobreposicoes).toEqual([]);
+  expect((await estado(page)).escutando).toBe(false);
 });
 
 test("seleciona a alternativa falada e exige confirmação explícita para salvar", async ({ page }) => {
@@ -368,7 +535,11 @@ test("seleciona a alternativa falada e exige confirmação explícita para salva
   await expect(feedback(page)).toContainText("Comando não reconhecido");
   expect(await respostaSalva(page, aula.id, pergunta.id)).toBeNull();
 
-  await executarComando(page, "Confirmar a resposta");
+  await executarComando(page, "Confirmar", 0.25);
+  await expect(feedback(page)).toContainText("Comando não reconhecido");
+  expect(await respostaSalva(page, aula.id, pergunta.id)).toBeNull();
+
+  await executarComando(page, "Confirmar", 0.91);
   await expect(feedback(page)).toContainText("Resposta registrada");
   await expect(exercicios.locator(".quiz-feedback")).toBeVisible();
   expect(await respostaSalva(page, aula.id, pergunta.id)).toBe(pergunta.options[1].id);
@@ -587,7 +758,7 @@ test("mantém a voz neural em cada mensagem ao narrar, avançar e retomar uma et
   await expect(page).toHaveURL("/");
   await executarComandoNeural(page, "Ajuda", ["interface/boas-vindas", "interface/ajuda-inicio"]);
   await expect(feedback(page)).toContainText("Bem-vindo ao FisioAcessível");
-  await expect(feedback(page)).toContainText("Continuar de onde parei");
+  await expect(feedback(page)).toContainText("Continuar estudando");
   await executarComandoNeural(page, "Continuar de onde parei", [
     "interface/retomar", `lesson/${aulaId}/titulo/1`, `interface/etapa/${aulaId}/pressoes`,
   ]);
@@ -680,7 +851,7 @@ test("aguarda escolha explícita antes de narrar uma mensagem indisponível com 
   await expect(page.getByRole("button", { name: "Tentar narração novamente", exact: true })).toBeVisible();
   await esperarEscuta(page);
   await expect(feedback(page)).toContainText("Bem-vindo ao FisioAcessível");
-  await expect(feedback(page)).toContainText("Continuar de onde parei");
+  await expect(feedback(page)).toContainText("Continuar estudando");
   await expect(painel(page).getByRole("status")).toContainText("Diga Usar voz do navegador para ouvir esta mensagem");
   expect(requisicoes).toContainEqual({ caminho: arquivoAusente, metodo: "HEAD", status: 404 });
   expect(await lerReproducaoNativa(page)).toEqual([]);
@@ -693,7 +864,7 @@ test("aguarda escolha explícita antes de narrar uma mensagem indisponível com 
   const falaTemporaria = (await estado(page)).falas.map(({ texto }) => texto).join(" ");
   expect(falaTemporaria).toMatch(/voz do navegador usada temporariamente/i);
   expect(falaTemporaria).toMatch(/Bem-vindo ao F[ií]sio\s*Acessível/i);
-  expect(falaTemporaria).toContain("Continuar de onde parei");
+  expect(falaTemporaria).toContain("Continuar estudando");
 
   arquivoIndisponivel = false;
   await executarComandoNeural(page, "Ajuda", ["interface/boas-vindas", "interface/ajuda-inicio"], vozPrincipal);
@@ -715,7 +886,7 @@ test("retoma a escuta e preserva o feedback em texto quando a narração não in
   expect((await estado(page)).sobreposicoes).toEqual([]);
 });
 
-test("oferece atalho de teclado, lembra a preferência e mantém o diagnóstico sem transcrição", async ({ page }) => {
+test("oferece atalho de teclado e só exibe transcrição por opção e por tempo limitado", async ({ page }) => {
   await page.clock.install();
   await simularAPIsDeVoz(page);
   await page.goto("/");
@@ -735,19 +906,43 @@ test("oferece atalho de teclado, lembra a preferência e mantém o diagnóstico 
   const preferencia = page.getByRole("checkbox", { name: "Lembrar preferência por interação por voz", exact: true });
   await preferencia.press("Space");
   await expect(preferencia).toBeChecked();
+  const avisos = page.getByRole("combobox", { name: "Avisos do microfone", exact: true });
+  await avisos.selectOption("screen-reader");
   expect((await estado(page)).inicios).toEqual([]);
 
   await ativar(page).press("Enter");
+  await esperarEscuta(page);
+  await expect(painel(page).getByRole("status")).toContainText("Escutando. Pode falar.");
   const frasePrivada = "frase simulada privada que não deve ir para o diagnóstico";
   await executarComando(page, frasePrivada);
   const diagnostico = page.locator("[data-voice-diagnostics]");
   await diagnostico.locator("summary").press("Enter");
   await expect(diagnostico.locator('[data-voice-event*="result"]')).toBeVisible();
+  const permitirTranscricao = diagnostico.getByRole("checkbox", { name: "Mostrar última transcrição temporariamente" });
+  const amostra = diagnostico.locator("[data-voice-transcript]");
+  await expect(permitirTranscricao).not.toBeChecked();
+  await expect(amostra).toHaveCount(0);
   await expect(diagnostico).not.toContainText(frasePrivada);
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(frasePrivada);
 
+  await permitirTranscricao.press("Space");
+  const fraseDeTeste = "O que eu posso fazer?";
+  await executarComando(page, fraseDeTeste, 0.82);
+  await expect(amostra).toContainText(fraseDeTeste);
+  await expect(amostra).toContainText(/82\s*%/);
+  const interpretacao = diagnostico.locator('[data-voice-event="command-interpreted"]').last();
+  await expect(interpretacao).toContainText("options");
+  await expect(interpretacao).toContainText("exact");
+  expect(await page.evaluate(() => JSON.stringify({ localStorage, sessionStorage }))).not.toContain(fraseDeTeste);
+  await page.clock.fastForward(31_000);
+  await expect(amostra).toHaveCount(0);
+
   await page.reload();
   await expect(preferencia).toBeChecked();
+  await expect(avisos).toHaveValue("screen-reader");
+  await diagnostico.locator("summary").press("Enter");
+  await expect(permitirTranscricao).not.toBeChecked();
+  await expect(amostra).toHaveCount(0);
   await expect(ativar(page)).toBeEnabled();
   await page.clock.fastForward(30_000);
   await expect(painel(page)).toHaveAttribute("data-voice-state", "inactive");

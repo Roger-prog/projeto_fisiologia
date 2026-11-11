@@ -2,14 +2,13 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { setTimeout as wait } from "node:timers/promises";
 import { parseArgs } from "node:util";
 import { cardiovascularLesson } from "../src/data/lessons/cardiovascular";
 import { getNarrationCatalog } from "../src/lib/narration-catalog";
 import { prepareNarrationText } from "../src/lib/narration-pronunciation";
+import { auditNarration, isMp3, type Manifest } from "./audit-narration";
 import { getNarrationProvider, type NarrationProvider, type NarrationVoice } from "./narration-providers";
-
-type Track = { src: string; revision: string };
-type Manifest = { version: 1; voices: NarrationVoice[]; clips: Record<string, Record<string, Track>> };
 
 const audioDir = resolve("public", "audio");
 const samplesDir = resolve("docs", "amostras-narracao");
@@ -55,9 +54,9 @@ function parseManifest(value: unknown): Manifest {
   return { version: 1, voices: [...voices.values()], clips: Object.fromEntries(clips) };
 }
 
-async function readManifest(): Promise<Manifest> {
+async function readManifest(file = manifestPath): Promise<Manifest> {
   try {
-    return parseManifest(JSON.parse(await readFile(manifestPath, "utf8")));
+    return parseManifest(JSON.parse(await readFile(file, "utf8")));
   } catch (error) {
     if (hasErrorCode(error, "ENOENT")) return { version: 1, voices: [], clips: {} };
     if (error instanceof SyntaxError) throw new Error("O manifesto de áudio não contém JSON válido.");
@@ -67,11 +66,6 @@ async function readManifest(): Promise<Manifest> {
 
 function getAssetFile(src: string) {
   return join(audioDir, src.slice(assetPrefix.length));
-}
-
-function isMp3(bytes: Buffer) {
-  const header = bytes.subarray(0, 3).toString("ascii");
-  return bytes.length >= 512 && (header === "ID3" || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0));
 }
 
 async function hasMp3(file: string) {
@@ -88,7 +82,16 @@ async function writeAtomic(file: string, value: Buffer | string) {
   const temp = `${file}.${randomUUID()}.tmp`;
   try {
     await writeFile(temp, value, { flag: "wx" });
-    await rename(temp, file);
+    // On Windows a concurrent reader can briefly prevent replacement of the manifest.
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await rename(temp, file);
+        break;
+      } catch (error) {
+        if (attempt === 5 || !["EPERM", "EACCES", "EBUSY"].some((code) => hasErrorCode(error, code))) throw error;
+        await wait(50 * (attempt + 1));
+      }
+    }
   } finally {
     await rm(temp, { force: true });
   }
@@ -153,6 +156,9 @@ async function main() {
     prefix: { type: "string", multiple: true, default: [] },
     generate: { type: "boolean" },
     verify: { type: "boolean" },
+    decode: { type: "boolean" },
+    export: { type: "boolean" },
+    json: { type: "boolean" },
     samples: { type: "boolean" },
     "authorize-paid": { type: "boolean" },
   } });
@@ -160,12 +166,16 @@ async function main() {
   if (values.help) {
     console.log("npm run audio:generate -- [--provider google-chirp3-hd|piper|kokoro] [--voice NOME] [--prefix CAMINHO] [--generate] [--authorize-paid] [--verify] [--samples]");
     console.log("Sem --generate, lista o plano sem chamar o provedor. --voice e --prefix podem ser repetidos.");
-    console.log("--verify confere os arquivos referenciados e a versão do texto, sem gerar áudio.");
+    console.log("npm run audio:audit -- [--export] [--decode] [--json]");
+    console.log("--verify audita a cobertura e o texto das aulas e da interface, sem gerar áudio.");
     console.log("--samples prepara a mesma explicação para comparação em docs/amostras-narracao, separada das faixas do site.");
     return;
   }
 
   if (values.verify && values.generate) throw new Error("Use --verify ou --generate em execuções separadas.");
+  if (!values.verify && (values.decode || values.export || values.json)) {
+    throw new Error("Use --decode, --export e --json com --verify ou npm run audio:audit.");
+  }
   const provider = getNarrationProvider(values.provider);
   if (values.generate && provider.paid && !values["authorize-paid"]) {
     throw new Error("Nenhuma solicitação foi enviada. Revise o plano e acrescente --authorize-paid para permitir a cobrança.");
@@ -180,26 +190,21 @@ async function main() {
   }
   if (provider.id === "kokoro") throw new Error("O Kokoro está disponível para comparação com --samples.");
 
-  const catalog = new Map(getNarrationCatalog().map((clip) => {
+  const clips = getNarrationCatalog();
+  const catalog = new Map(clips.map((clip) => {
     const text = prepareNarrationText(clip.text);
     if (!catalogPath.test(clip.id) || !catalogPath.test(clip.path) || !text) {
       throw new Error("O catálogo contém um trecho sem texto ou com caminho inválido.");
     }
     return [clip.id, { ...clip, text, revision: hash(text) }] as const;
   }));
+  if (catalog.size !== clips.length) throw new Error("O catálogo contém identificadores de trecho duplicados.");
 
   if (values.verify) {
-    const manifest = await readManifest();
-    let count = 0;
-    for (const [id, byVoice] of Object.entries(manifest.clips)) {
-      for (const [voice, track] of Object.entries(byVoice)) {
-        if (catalog.get(id)?.revision !== track.revision) throw new Error(`Texto alterado ou removido em ${id} (${voice}).`);
-        if (!await hasMp3(getAssetFile(track.src))) throw new Error(`MP3 ausente ou inválido em ${track.src}.`);
-        count += 1;
-      }
-    }
-    if (count === 0) throw new Error("O manifesto ainda não contém faixas de áudio.");
-    console.log(`${count} faixas verificadas.`);
+    const directory = values.export ? resolve("out", "audio") : audioDir;
+    const manifest = await readManifest(join(directory, "manifest.json"));
+    const complete = await auditNarration({ manifest, catalog, directory, decode: Boolean(values.decode), json: Boolean(values.json) });
+    if (!complete) process.exitCode = 1;
     return;
   }
 
