@@ -17,7 +17,7 @@ export const modules: readonly PhysiologyModule[] = [
       { id: "debito-cardiaco", title: "Débito cardíaco", lessonId: "debito-cardiaco" },
       { id: "hemodinamica", title: "Hemodinâmica: princípios físicos da circulação", lessonId: "hemodinamica" },
       { id: "circulacao-coronariana", title: "Circulação coronariana", lessonId: "circulacao-coronariana" },
-      { id: "regulacao-da-pressao-arterial", title: "Regulação da pressão arterial" },
+      { id: "regulacao-da-pressao-arterial", title: "Regulação da pressão arterial", lessonId: "regulacao-da-pressao-arterial" },
     ],
   },
   {

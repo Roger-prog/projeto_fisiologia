@@ -4,6 +4,7 @@ import { regulacaoBombeamentoLesson } from "./lessons/regulacao-do-bombeamento";
 import { debitoCardiacoLesson } from "./lessons/debito-cardiaco";
 import { hemodinamicaLesson } from "./lessons/hemodinamica";
 import { circulacaoCoronarianaLesson } from "./lessons/circulacao-coronariana";
+import { regulacaoPressaoArterialLesson } from "./lessons/regulacao-da-pressao-arterial";
 import { cardiovascularLesson } from "./lessons/cardiovascular";
 import { respiratoryLesson } from "./lessons/respiratory";
 import { modules } from "./modules";
@@ -14,7 +15,7 @@ export * from "./types";
 export { figureCredits } from "./credits";
 export { modules, references };
 
-export const lessons: readonly Lesson[] = [cardiovascularLesson, musculoCardiacoLesson, cicloCardiacoLesson, regulacaoBombeamentoLesson, debitoCardiacoLesson, hemodinamicaLesson, circulacaoCoronarianaLesson, respiratoryLesson];
+export const lessons: readonly Lesson[] = [cardiovascularLesson, musculoCardiacoLesson, cicloCardiacoLesson, regulacaoBombeamentoLesson, debitoCardiacoLesson, hemodinamicaLesson, circulacaoCoronarianaLesson, regulacaoPressaoArterialLesson, respiratoryLesson];
 
 export function getLesson(id: string) {
   return lessons.find((lesson) => lesson.id === id);
